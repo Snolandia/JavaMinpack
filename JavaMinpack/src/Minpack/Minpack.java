@@ -2865,9 +2865,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	// ! the user must provide a subroutine which calculates the
 	// ! functions and the rows of the jacobian.
 	//
-//	    subroutine lmstr(fcn, m, n, x, Fvec, Fjac, Ldfjac, Ftol, Xtol, Gtol, Maxfev, &
-//	                     Diag, Mode, Factor, Nprint, Info, Nfev, Njev, Ipvt, Qtf, &
-//	                     Wa1, Wa2, Wa3, Wa4)
+//	    
 //	        implicit none
 	//
 //	        procedure(fcn_lmstr) :: fcn !! user-supplied subroutine which
@@ -2970,38 +2968,42 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa4(m) !! work array of length m.
 	//
-		public static void lmstr() {
-			
-		}
-//	        integer :: i, iflag, iter, j, l
-//	        real(wp) :: actred, delta, dirder, fnorm, &
-//	                    fnorm1, gnorm, par, pnorm, prered, &
-//	                    ratio, sum, temp, temp1, temp2, xnorm
-//	        logical :: sing
-	//
-//	        real(wp), parameter :: p1 = 1.0e-1_wp
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p25 = 2.5e-1_wp
-//	        real(wp), parameter :: p75 = 7.5e-1_wp
-//	        real(wp), parameter :: p0001 = 1.0e-4_wp
-	//
-//	        Info = 0
-//	        iflag = 0
-//	        Nfev = 0
-//	        Njev = 0
-	//
+		public static void lmstr(SystemOfEquations fcn, int m, int n, double[] x, double[] fvec, double[][] fJac, int ldfJac,double fTol,
+								 double xTol, double gTol, int maxfev, double[] diag, int mode, double factor, int nPrint, int info, int nfev, 
+								 int njev,int[] ipvt, double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
+			// subroutine lmstr(fcn, m, n, x, Fvec, Fjac, Ldfjac, Ftol, Xtol, Gtol, Maxfev, &
+//	                     Diag, Mode, Factor, Nprint, Info, Nfev, Njev, Ipvt, Qtf, &
+//	                     Wa1, Wa2, Wa3, Wa4)
+		
+	        int i, iFlag, iter, j, l;
+	        double actred, delta, dirder, fnorm,
+	                    fnorm1, gnorm, par, pnorm, prered,
+	                    ratio, sum, temp, temp1, temp2, xnorm;
+	        boolean sing;
+	
+	        double p1 = 1.0e-1;
+	        double p5 = 5.0e-1;
+	        double p25 = 2.5e-1;
+	        double p75 = 7.5e-1;
+	        double p0001 = 1.0e-4;
+	
+	        info = 0;
+	        iFlag = 0;
+	        nfev = 0;
+	        njev = 0;
+
 //	        main : block
 	//
-//	            ! check the input parameters for errors.
+//	            check the input parameters for errors.
 	//
-//	            if (n <= 0 .or. m < n .or. Ldfjac < n .or. Ftol < zero .or. &
-//	                Xtol < zero .or. Gtol < zero .or. Maxfev <= 0 .or. Factor <= zero) &
-//	                exit main
-//	            if (Mode == 2) then
+//	            if (n <= 0 .or. m < n || Ldfjac < n || Ftol < zero || 
+//	                Xtol < zero .or. Gtol < zero || Maxfev <= 0 || Factor <= zero)
+//	                thorw.exception();
+//	            if (Mode == 2){}
 //	                do j = 1, n
 //	                    if (Diag(j) <= zero) exit main
-//	                end do
-//	            end if
+//	                }
+//	            }
 	//
 //	            ! evaluate the function at the starting point
 //	            ! and calculate its norm.
@@ -3247,7 +3249,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        iflag = 0
 //	        if (Nprint > 0) call fcn(m, n, x, Fvec, Wa3, iflag)
 	//
-//	    end subroutine lmstr
+	}
 	// !*****************************************************************************************
 	//
 	// !*****************************************************************************************
@@ -3318,37 +3320,39 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	                                                !! the computation of r.
 //	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
 	//
-		public static void lmstr1() {
+		public static void lmstr1(SystemOfEquations fcn, int m,int n,double[] x,double[] fVec,double[][] fJac,int ldfJac,double tol,int info,int[] ipvt,double[] wa,int lwa) {
 			
+	        int maxfev, mode, nfev = 0, njev = 0, nprint;
+	        double fTol, gTol, xTol;
+			double[] wa1 = new double[n];// real(wp), intent(inout) :: wa1(n) !! work array
+			double[] wa2 = new double[n];// real(wp), intent(inout) :: wa2(n) !! work array
+			double[] wa3 = new double[n];// real(wp), intent(inout) :: wa3(n) !! work array
+			double[] wa4 = new double[n];// real(wp), intent(inout) :: wa4(n) !! work array
+			double[] wa5 = new double[n];// real(wp), intent(inout) :: wa4(n) !! work array
+	
+	        double factor = 1.0e2;
+	
+	        info = 0;
+	
+	        // check the input parameters for errors.
+	
+	        if (n > 0 & m >= n & ldfJac >= n & tol >= 0 & lwa >= (5*n + m)){
+	            //call lmstr.
+	            maxfev = 100 * (n + 1);
+	            fTol = tol;
+	            xTol = tol;
+	            gTol = 0;
+	            mode = 1;
+	            nprint = 0;
+	            lmstr(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxfev,
+	                       wa, mode, factor, nprint, info, nfev, njev, ipvt, wa1,
+	                       wa2, wa3, wa4, wa5);
+	            if (info == 8){
+					info = 4;
+				}
+	        }
 		}
-//	        integer :: maxfev, mode, nfev, njev, nprint
-//	        real(wp) :: ftol, gtol, xtol
-	//
-//	        real(wp), parameter :: factor = 1.0e2_wp
-	//
-//	        Info = 0
-	//
-//	        ! check the input parameters for errors.
-	//
-//	        if (n > 0 .and. m >= n .and. Ldfjac >= n .and. Tol >= zero .and. &
-//	            Lwa >= 5*n + m) then
-	//
-//	            ! call lmstr.
-	//
-//	            maxfev = 100*(n + 1)
-//	            ftol = Tol
-//	            xtol = Tol
-//	            gtol = zero
-//	            mode = 1
-//	            nprint = 0
-//	            call lmstr(fcn, m, n, x, Fvec, Fjac, Ldfjac, ftol, xtol, gtol, maxfev, &
-//	                       Wa(1), mode, factor, nprint, Info, nfev, njev, Ipvt, Wa(n + 1), &
-//	                       Wa(2*n + 1), Wa(3*n + 1), Wa(4*n + 1), Wa(5*n + 1))
-//	            if (Info == 8) Info = 4
-//	        end if
-	//
-//	    end subroutine lmstr1
-	// !*****************************************************************************************
+		
 
 	/**
 	 * <p>
@@ -3589,177 +3593,182 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		}
 	}
 
-	// !*****************************************************************************************
-	// !>
-	// ! given an m by n matrix a, an n by n diagonal matrix d,
-	// ! and an m-vector b, the problem is to determine an x which
-	// ! solves the system
-	// !```
-	// ! a*x = b , d*x = 0 ,
-	// !```
-	// ! in the least squares sense.
-	// !
-	// ! this subroutine completes the solution of the problem
-	// ! if it is provided with the necessary information from the
-	// ! qr factorization, with column pivoting, of a. that is, if
-	// ! a*p = q*r, where p is a permutation matrix, q has orthogonal
-	// ! columns, and r is an upper triangular matrix with diagonal
-	// ! elements of nonincreasing magnitude, then qrsolv expects
-	// ! the full upper triangle of r, the permutation matrix p,
-	// ! and the first n components of (q transpose)*b. the system
-	// ! a*x = b, d*x = 0, is then equivalent to
-	// !```
-	// ! t t
-	// ! r*z = q *b , p *d*p*z = 0 ,
-	// !```
-	// ! where x = p*z. if this system does not have full rank,
-	// ! then a least squares solution is obtained. on output qrsolv
-	// ! also provides an upper triangular matrix s such that
-	// !```
-	// ! t t t
-	// ! p *(a *a + d*d)*p = s *s .
-	// !```
-	// ! s is computed within qrsolv and may be of separate interest.
-	//
-//	    subroutine qrsolv(n, r, Ldr, Ipvt, Diag, Qtb, x, Sdiag, Wa)
-//	        implicit none
-	//
-//	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
-//	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
-//	                                  !! which specifies the leading dimension of the array r.
-//	        integer, intent(in) :: Ipvt(n) !! an integer input array of length n which defines the
-//	                                      !! permutation matrix p such that a*p = q*r. column j of p
-//	                                      !! is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the full upper triangle
-//	                                            !! must contain the full upper triangle of the matrix r.
-//	                                            !! on output the full upper triangle is unaltered, and the
-//	                                            !! strict lower triangle contains the strict upper triangle
-//	                                            !! (transposed) of the upper triangular matrix s.
-//	        real(wp), intent(in) :: Diag(n) !! an input array of length n which must contain the
-//	                                       !! diagonal elements of the matrix d.
-//	        real(wp), intent(in) :: Qtb(n) !! an input array of length n which must contain the first
-//	                                      !! n elements of the vector (q transpose)*b.
-//	        real(wp), intent(out) :: x(n) !! an output array of length n which contains the least
-//	                                     !! squares solution of the system a*x = b, d*x = 0.
-//	        real(wp), intent(out) :: Sdiag(n) !! an output array of length n which contains the
-//	                                         !! diagonal elements of the upper triangular matrix s.
-//	        real(wp), intent(inout) :: Wa(n) !! a work array of length n.
-	//
-	public static void qrsolv() {
-		
+/*	!*****************************************************************************************
+	!>
+	! given an m by n matrix a, an n by n diagonal matrix d,
+	! and an m-vector b, the problem is to determine an x which
+	! solves the system
+	!```
+	! a*x = b , d*x = 0 ,
+	!```
+	! in the least squares sense.
+	!
+	! this subroutine completes the solution of the problem
+	! if it is provided with the necessary information from the
+	! qr factorization, with column pivoting, of a. that is, if
+	! a*p = q*r, where p is a permutation matrix, q has orthogonal
+	! columns, and r is an upper triangular matrix with diagonal
+	! elements of nonincreasing magnitude, then qrsolv expects
+	! the full upper triangle of r, the permutation matrix p,
+	! and the first n components of (q transpose)*b. the system
+	! a*x = b, d*x = 0, is then equivalent to
+	!```
+	! t t
+	! r*z = q *b , p *d*p*z = 0 ,
+	!```
+	! where x = p*z. if this system does not have full rank,
+	! then a least squares solution is obtained. on output qrsolv
+	! also provides an upper triangular matrix s such that
+	!```
+	! t t t
+	! p *(a *a + d*d)*p = s *s .
+	!```
+	! s is computed within qrsolv and may be of separate interest.
+	
+	    subroutine qrsolv(n, r, Ldr, Ipvt, Diag, Qtb, x, Sdiag, Wa)
+	        implicit none
+	
+	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
+	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
+	                                  !! which specifies the leading dimension of the array r.
+	        integer, intent(in) :: Ipvt(n) !! an integer input array of length n which defines the
+	                                      !! permutation matrix p such that a*p = q*r. column j of p
+	                                      !! is column ipvt(j) of the identity matrix.
+	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the full upper triangle
+	                                            !! must contain the full upper triangle of the matrix r.
+	                                            !! on output the full upper triangle is unaltered, and the
+	                                            !! strict lower triangle contains the strict upper triangle
+	                                            !! (transposed) of the upper triangular matrix s.
+	        real(wp), intent(in) :: Diag(n) !! an input array of length n which must contain the
+	                                       !! diagonal elements of the matrix d.
+	        real(wp), intent(in) :: Qtb(n) !! an input array of length n which must contain the first
+	                                      !! n elements of the vector (q transpose)*b.
+	        real(wp), intent(out) :: x(n) !! an output array of length n which contains the least
+	                                     !! squares solution of the system a*x = b, d*x = 0.
+	        real(wp), intent(out) :: Sdiag(n) !! an output array of length n which contains the
+	                                         !! diagonal elements of the upper triangular matrix s.
+	        real(wp), intent(inout) :: Wa(n) !! a work array of length n.
+	*/
+
+	public static void qrsolv(int n, double[][] r, int ldr, int[] ipvt,double[] diag,double[] qtb, double[] x, double[] sDiag, double[] wa) {
+
+		//!!!!!!!UNTESTED!!!!!!!!!!!!
+	
+	        int i, j, jp1, k, kp1, l, nsing;
+	        double cos, cotan, qtbpj, sin, sum, tan, temp;
+	
+	        double p5 = 5.0e-1;
+	        double p25 = 2.5e-1;
+	
+	        //Copy r and (q transpose)*b to preserve input and initialize s.
+	        //in particular, save the diagonal elements of r in x.
+	
+	        for(j = 0;j<n;j++){
+	            for(i = j;i<n;i++){
+	                r[i][j] = r[j][i];
+	            }
+	            x[j] = r[j][j];
+	            wa[j] = qtb[j];
+	        }
+	
+	        //! eliminate the diagonal matrix d using a givens rotation.
+	
+	        for(j=0;j<n;j++){
+	
+	            // prepare the row of d to be eliminated, locating the
+	            // diagonal element using p from the qr factorization.
+	
+	            l = ipvt[j];
+	            if (diag[l] != 0){
+	                for(k = j;k<n;k++){
+	                    sDiag[k] = 0;
+	                }
+	                sDiag[j] = diag[l];
+	
+	            // the transformations to eliminate the row of d
+	            // modify only a single element of (q transpose)*b
+	            // beyond the first n, which is initially zero.
+	
+	                qtbpj = 0;
+	                for(k = j;k<n;k++){
+	
+	                    // determine a givens rotation which eliminates the
+	                    // appropriate element in the current row of d.
+	
+	                    if (sDiag[k] != 0){
+	                        if (Math.abs(r[k][k]) >= Math.abs(sDiag[k])){
+	                            tan = sDiag[k]/r[k][k];
+	                            cos = p5/Math.sqrt(p25 + p25*tan*tan);
+	                            sin = cos*tan;
+	                        }else{
+	                            cotan = r[k][k]/sDiag[k];
+	                            sin = p5/Math.sqrt(p25 + p25*cotan*cotan);
+	                            cos = sin*cotan;
+	                        }
+	
+	                        // compute the modified diagonal element of r and
+	                        // the modified element of ((q transpose)*b,0).
+	
+	                        r[k][k] = cos*r[k][k] + sin*sDiag[k];
+	                        temp = cos*wa[k] + sin*qtbpj;
+	                        qtbpj = -sin*wa[k] + cos*qtbpj;
+	                        wa[k] = temp;
+	
+	                        // accumulate the tranformation in the row of s.
+	
+	                        kp1 = k + 1;
+	                        if(n >= kp1){
+	                            for(i = kp1;i< n;i++){
+	                                temp = cos*r[i][k] + sin*sDiag[i];
+	                                sDiag[i] = -sin*r[i][k] + cos*sDiag[i];
+	                                r[i][k] = temp;
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+			
+	
+	            // store the diagonal element of s and restore
+	            // the corresponding diagonal element of r.
+	
+	            sDiag[j] = r[j][j];
+	            r[j][j] = x[j];
+	        }
+	
+	        // solve the triangular system for z. if the system is
+	        // singular, then obtain a least squares solution.
+	
+	        nsing = n;
+	        for(j = 0;j< n;j++){
+	            if (sDiag[j] == 0 & nsing == n){
+					 nsing = j - 1;
+				}
+	            if (nsing < n){
+					 wa[j] = 0;
+				}
+	        }
+	        if (nsing >= 1){  //might need to be changed o >= 0
+	            for(k = 0;k<nsing;k++){
+	                j = nsing - k + 1;
+	                sum = 0;
+	                jp1 = j + 1;
+	                if (nsing >= jp1) {
+	                    for(i = jp1;i < nsing;i++){
+	                        sum = sum + r[i][j]*wa[i];
+	                    }
+	                }
+	                wa[j] = (wa[j] - sum)/sDiag[j];
+	            }
+	        }
+	
+	        // permute the components of z back to components of x.
+	
+	        for(j = 0;j< n;j++){
+	            l = ipvt[j];
+	            x[l] = wa[j];
+	        }
 	}
-//	        integer :: i, j, jp1, k, kp1, l, nsing
-//	        real(wp) :: cos, cotan, qtbpj, sin, sum, tan, temp
-	//
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p25 = 2.5e-1_wp
-	//
-//	        ! copy r and (q transpose)*b to preserve input and initialize s.
-//	        ! in particular, save the diagonal elements of r in x.
-	//
-//	        do j = 1, n
-//	            do i = j, n
-//	                r(i, j) = r(j, i)
-//	            end do
-//	            x(j) = r(j, j)
-//	            Wa(j) = Qtb(j)
-//	        end do
-	//
-//	        ! eliminate the diagonal matrix d using a givens rotation.
-	//
-//	        do j = 1, n
-	//
-//	            ! prepare the row of d to be eliminated, locating the
-//	            ! diagonal element using p from the qr factorization.
-	//
-//	            l = Ipvt(j)
-//	            if (Diag(l) /= zero) then
-//	                do k = j, n
-//	                    Sdiag(k) = zero
-//	                end do
-//	                Sdiag(j) = Diag(l)
-	//
-//	                ! the transformations to eliminate the row of d
-//	                ! modify only a single element of (q transpose)*b
-//	                ! beyond the first n, which is initially zero.
-	//
-//	                qtbpj = zero
-//	                do k = j, n
-	//
-//	                    ! determine a givens rotation which eliminates the
-//	                    ! appropriate element in the current row of d.
-	//
-//	                    if (Sdiag(k) /= zero) then
-//	                        if (abs(r(k, k)) >= abs(Sdiag(k))) then
-//	                            tan = Sdiag(k)/r(k, k)
-//	                            cos = p5/sqrt(p25 + p25*tan**2)
-//	                            sin = cos*tan
-//	                        else
-//	                            cotan = r(k, k)/Sdiag(k)
-//	                            sin = p5/sqrt(p25 + p25*cotan**2)
-//	                            cos = sin*cotan
-//	                        end if
-	//
-//	                        ! compute the modified diagonal element of r and
-//	                        ! the modified element of ((q transpose)*b,0).
-	//
-//	                        r(k, k) = cos*r(k, k) + sin*Sdiag(k)
-//	                        temp = cos*Wa(k) + sin*qtbpj
-//	                        qtbpj = -sin*Wa(k) + cos*qtbpj
-//	                        Wa(k) = temp
-	//
-//	                        ! accumulate the tranformation in the row of s.
-	//
-//	                        kp1 = k + 1
-//	                        if (n >= kp1) then
-//	                            do i = kp1, n
-//	                                temp = cos*r(i, k) + sin*Sdiag(i)
-//	                                Sdiag(i) = -sin*r(i, k) + cos*Sdiag(i)
-//	                                r(i, k) = temp
-//	                            end do
-//	                        end if
-//	                    end if
-//	                end do
-//	            end if
-	//
-//	            ! store the diagonal element of s and restore
-//	            ! the corresponding diagonal element of r.
-	//
-//	            Sdiag(j) = r(j, j)
-//	            r(j, j) = x(j)
-//	        end do
-	//
-//	        ! solve the triangular system for z. if the system is
-//	        ! singular, then obtain a least squares solution.
-	//
-//	        nsing = n
-//	        do j = 1, n
-//	            if (Sdiag(j) == zero .and. nsing == n) nsing = j - 1
-//	            if (nsing < n) Wa(j) = zero
-//	        end do
-//	        if (nsing >= 1) then
-//	            do k = 1, nsing
-//	                j = nsing - k + 1
-//	                sum = zero
-//	                jp1 = j + 1
-//	                if (nsing >= jp1) then
-//	                    do i = jp1, nsing
-//	                        sum = sum + r(i, j)*Wa(i)
-//	                    end do
-//	                end if
-//	                Wa(j) = (Wa(j) - sum)/Sdiag(j)
-//	            end do
-//	        end if
-	//
-//	        ! permute the components of z back to components of x.
-	//
-//	        do j = 1, n
-//	            l = Ipvt(j)
-//	            x(l) = Wa(j)
-//	        end do
-	//
-//	    end subroutine qrsolv
-	// !*****************************************************************************************
 	
 	/**
 	 * 
@@ -3996,99 +4005,103 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		}
 	}
 
-	public static double[] rwupdt(int n, double[][] r, int ldr, double[] w, double[] b, double alpha, double[] cos,
-			double[] sin) {
-		// !*****************************************************************************************
-		// !>
-		// ! given an n by n upper triangular matrix r, this subroutine
-		// ! computes the qr decomposition of the matrix formed when a row
-		// ! is added to r. if the row is specified by the vector w, then
-		// ! rwupdt determines an orthogonal matrix q such that when the
-		// ! n+1 by n matrix composed of r augmented by w is premultiplied
-		// ! by (q transpose), the resulting matrix is upper trapezoidal.
-		// ! the matrix (q transpose) is the product of n transformations
-		// !```
-		// ! g(n)*g(n-1)* ... *g(1)
-		// !```
-		// ! where g(i) is a givens rotation in the (i,n+1) plane which
-		// ! eliminates elements in the (n+1)-st plane. rwupdt also
-		// ! computes the product (q transpose)*c where c is the
-		// ! (n+1)-vector (b,alpha). q itself is not accumulated, rather
-		// ! the information to recover the g rotations is supplied.
-		//
-//	    subroutine rwupdt(n, r, Ldr, w, b, Alpha, Cos, Sin)
-//	        implicit none
-		//
-//	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
-//	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
-//	                                  !! which specifies the leading dimension of the array r.
-//	        real(wp), intent(inout) :: Alpha !! a variable. on input alpha must contain the
-//	                                        !! (n+1)-st element of the vector c. on output alpha contains
-//	                                        !! the (n+1)-st element of the vector (q transpose)*c.
-//	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the upper triangular part of
-//	                                            !! r must contain the matrix to be updated. on output r
-//	                                            !! contains the updated triangular matrix.
-//	        real(wp), intent(in) :: w(n) !! an input array of length n which must contain the row
-//	                                    !! vector to be added to r.
-//	        real(wp), intent(inout) :: b(n) !! an array of length n. on input b must contain the
-//	                                       !! first n elements of the vector c. on output b contains
-//	                                       !! the first n elements of the vector (q transpose)*c.
-//	        real(wp), intent(out) :: Cos(n) !! an output array of length n which contains the
-//	                                       !! cosines of the transforming givens rotations.
-//	        real(wp), intent(out) :: Sin(n) !! an output array of length n which contains the
-//	                                       !! sines of the transforming givens rotations.
-		//
-//	        integer :: i, j, jm1
-//	        real(wp) :: cotan, rowj, tan, temp
-//				
-		return w;
+	/*
+	 * !*****************************************************************************************
+		!>
+		! given an n by n upper triangular matrix r, this subroutine
+		! computes the qr decomposition of the matrix formed when a row
+		! is added to r. if the row is specified by the vector w, then
+		! rwupdt determines an orthogonal matrix q such that when the
+		! n+1 by n matrix composed of r augmented by w is premultiplied
+		! by (q transpose), the resulting matrix is upper trapezoidal.
+		! the matrix (q transpose) is the product of n transformations
+		!```
+		! g(n)*g(n-1)* ... *g(1)
+		!```
+		! where g(i) is a givens rotation in the (i,n+1) plane which
+		! eliminates elements in the (n+1)-st plane. rwupdt also
+		! computes the product (q transpose)*c where c is the
+		! (n+1)-vector (b,alpha). q itself is not accumulated, rather
+		! the information to recover the g rotations is supplied.
+		
+		subroutine rwupdt(n, r, Ldr, w, b, Alpha, Cos, Sin)
+	        implicit none
+		
+	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
+	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
+	                                  !! which specifies the leading dimension of the array r.
+	        real(wp), intent(inout) :: Alpha !! a variable. on input alpha must contain the
+	                                        !! (n+1)-st element of the vector c. on output alpha contains
+	                                        !! the (n+1)-st element of the vector (q transpose)*c.
+	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the upper triangular part of
+	                                            !! r must contain the matrix to be updated. on output r
+	                                            !! contains the updated triangular matrix.
+	        real(wp), intent(in) :: w(n) !! an input array of length n which must contain the row
+	                                    !! vector to be added to r.
+	        real(wp), intent(inout) :: b(n) !! an array of length n. on input b must contain the
+	                                       !! first n elements of the vector c. on output b contains
+	                                       !! the first n elements of the vector (q transpose)*c.
+	        real(wp), intent(out) :: Cos(n) !! an output array of length n which contains the
+	                                       !! cosines of the transforming givens rotations.
+	        real(wp), intent(out) :: Sin(n) !! an output array of length n which contains the
+	                                       !! sines of the transforming givens rotations.
+	 * 
+	 * 
+	 */
 
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p25 = 2.5e-1_wp
-		//
-//	        do j = 1, n
-//	            rowj = w(j)
-//	            jm1 = j - 1
-		//
-//	            ! apply the previous transformations to
-//	            ! r(i,j), i=1,2,...,j-1, and to w(j).
-		//
-//	            if (jm1 >= 1) then
-//	                do i = 1, jm1
-//	                    temp = Cos(i)*r(i, j) + Sin(i)*rowj
-//	                    rowj = -Sin(i)*r(i, j) + Cos(i)*rowj
-//	                    r(i, j) = temp
-//	                end do
-//	            end if
-		//
-//	            ! determine a givens rotation which eliminates w(j).
-		//
-//	            Cos(j) = one
-//	            Sin(j) = zero
-//	            if (rowj /= zero) then
-//	                if (abs(r(j, j)) >= abs(rowj)) then
-//	                    tan = rowj/r(j, j)
-//	                    Cos(j) = p5/sqrt(p25 + p25*tan**2)
-//	                    Sin(j) = Cos(j)*tan
-//	                else
-//	                    cotan = r(j, j)/rowj
-//	                    Sin(j) = p5/sqrt(p25 + p25*cotan**2)
-//	                    Cos(j) = Sin(j)*cotan
-//	                end if
-		//
-//	                ! apply the current transformation to r(j,j), b(j), and alpha.
-		//
-//	                r(j, j) = Cos(j)*r(j, j) + Sin(j)*rowj
-//	                temp = Cos(j)*b(j) + Sin(j)*Alpha
-//	                Alpha = -Sin(j)*b(j) + Cos(j)*Alpha
-//	                b(j) = temp
-//	            end if
-//	        end do
-		//
-//	    end subroutine rwupdt
-		// !*****************************************************************************************
-		//
-	}
+
+
+	public static void rwupdt(int n, double[][] r, int ldr, double[] w, double[] b, double alpha, double[] cos,
+
+//!!!!!!!!!!!!!! CURRENTLY UNTESTED
+
+			double[] sin) {
+		
+	        int i, j, jm1;
+	        double cotan, rowj, tan, temp; 
+
+	        double p5 = 5.0e-1;
+	        double p25 = 2.5e-1;
+		
+	        for(j=0;j<n;j++){}
+	            rowj = w[j];
+	            jm1 = j - 1;
+		
+	            // Apply the previous transformations to
+	            // r(i,j), i=1,2,...,j-1, and to w(j).
+		
+	            if (jm1 >= 0){
+	                for(i = 0;i<jm1;i++){
+	                    temp = cos[i]*r[i][j] + sin[i]*rowj;
+	                    rowj = -sin[i]*r[i][j] + cos[i]*rowj;
+	                    r[i][j] = temp;
+					}
+				}
+		
+	            // Determine a givens rotation which eliminates w(j).
+		
+	            cos[j] = 1;
+	            sin[j] = 0;
+	            if (rowj != 0){
+	                if (Math.abs(r[j][j]) >= Math.abs(rowj)){
+	                    tan = rowj/r[j][j];
+	                    cos[j] = p5/Math.sqrt(p25 + p25*tan*tan);
+	                    sin[j] = cos[j]*tan;
+					}else{
+	                    cotan = r[j][j]/rowj;
+	                    sin[j] = p5/Math.sqrt(p25 + p25*cotan*cotan);
+	                    cos[j] = sin[j]*cotan;
+					}
+		
+	                // apply the current transformation to r(j,j), b(j), and alpha.
+		
+	                r[j][j] = cos[j]*r[j][j] + sin[j]*rowj;
+	                temp = cos[j]*b[j] + sin[j]*alpha;
+	                alpha = -sin[j] * b[j] + cos[j] * alpha; 
+					b[j] = temp;
+				}
+	        }
+	
 	// !*****************************************************************************************
 	// end module minpack_module
 	// !*****************************************************************************************
