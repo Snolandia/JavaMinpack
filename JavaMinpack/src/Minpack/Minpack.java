@@ -1324,127 +1324,158 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), parameter :: p5 = 5.0e-1_wp
 //	        real(wp), parameter :: p001 = 1.0e-3_wp
 //	        real(wp), parameter :: p0001 = 1.0e-4_wp
-		public static void hybrj() {
-		}
-//	        Info = 0
-//	        iflag = 0
-//	        Nfev = 0
-//	        Njev = 0
+		public static void hybrj(SystemOfEquations fcn, int n, double[] x, double[] fvec,double[][] fjac, int ldfjac,double xTol, int maxfev,
+									double[] diag, int mode, double factor, int nprint, int info,int nfev,int njev, double[] r,
+									 int lr,double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
+		
+		// (fcn, n, x, Fvec, Fjac, Ldfjac, Xtol, Maxfev, Diag, Mode, &
+//	                     Factor, Nprint, Info, Nfev, Njev, r, Lr, Qtf, Wa1, Wa2, &
+//	                     Wa3, Wa
+			int i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2;
+	        int[] iwa;
+	        boolean jeval, sing;
+	        double actred, delta, fnorm, fnorm1, pnorm, prered, ratio, sum, temp, xnorm;
+
+			double p1 = 1.0e-1;
+	        double p5 = 5.0e-1;
+	        double p001 = 1.0e-3;
+	        double p0001 = 1.0e-4;
+	        info = 0;
+	        iflag = 0;
+	        nfev = 0;
+	        njev = 0;
 	//
 //	        main : block
 	//
-//	            ! check the input parameters for errors.
+//	            Check the input parameters for errors.
 	//
-//	            if (n <= 0 .or. Ldfjac < n .or. Xtol < zero .or. Maxfev <= 0 .or. &
-//	                Factor <= zero .or. Lr < (n*(n + 1))/2) exit main
-//	            if (Mode == 2) then
-//	                do j = 1, n
-//	                    if (Diag(j) <= zero) exit main
-//	                end do
-//	            end if
-	//
-//	            ! evaluate the function at the starting point
-//	            ! and calculate its norm.
-	//
-//	            iflag = 1
-//	            call fcn(n, x, Fvec, Fjac, Ldfjac, iflag)
-//	            Nfev = 1
-//	            if (iflag < 0) exit main
-//	            fnorm = enorm(n, Fvec)
-	//
-//	            ! initialize iteration counter and monitors.
-	//
-//	            iter = 1
-//	            ncsuc = 0
-//	            ncfail = 0
-//	            nslow1 = 0
-//	            nslow2 = 0
-	//
-//	            ! beginning of the outer loop.
+	            if (n <= 0 || ldfjac < n || xTol < 0 || maxfev <= 0 || 
+	                factor <= 0 || lr < (n*(n + 1))/2){
+						// Add throw error
+				} 			
+	            if (mode == 2){
+	                for(j = 0;j< n;j++){
+	                    if (diag[j] <= 0){ 
+						//Add throw error
+						}
+	                }
+	            }
+	
+//	            Evaluate the function at the starting point
+//	            and calculate its norm.
+	
+	            iflag = 1;
+	            //fcn(n, x, fvec, fjac, ldfjac, iflag) //ToDo Fix
+	            nfev = 1;
+	            if (iflag < 0) {
+					// Add throw eroor
+				}
+	            fnorm = enorm(n, fvec);
+	
+//	            Initialize iteration counter and monitors.
+	
+	            iter = 1;
+	            ncsuc = 0;
+	            ncfail = 0;
+	            nslow1 = 0;
+	            nslow2 = 0;
+	
+//	            Beginning of the outer loop.
 //	            outer : do
+	
+	                jeval = true;
+	
+//	                Calculate the jacobian matrix.
+	
+	                iflag = 2;
+	                // call fcn(n, x, Fvec, Fjac, Ldfjac, iflag) // todo fix
+	                njev = njev + 1;
+	                if (iflag < 0){
+						// throw error
+					}
+//	                Compute the qr factorization of the jacobian.
+	
+	                // call qrfac(n, n, Fjac, Ldfjac, .false., iwa, 1, Wa1, Wa2, Wa3) //maybe to do?
+	
+//	                On the first iteration and if mode is 1, scale according
+//	                to the norms of the columns of the initial jacobian.
+	
+	                if (iter == 1){
+	                    if (mode != 2){
+	                        for(j = 0,j< n;j++){
+	                            diag[j] = wa2[j];
+	                            if (wa2[j] == 0){
+									diag[j] = 1;
+								}
+	                        }
+	                    }
+	
+//	                    On the first iteration, calculate the norm of the scaled x
+//	                    and initialize the step bound delta.
+	
+	                    for(j = 0;j< n;j++){
+	                        wa3[j] = diag[j]*x[j];
+	                    }
+	                    xnorm = enorm(n, wa3);
+	                    delta = factor*xnorm;
+	                    if (delta == 0){
+							 delta = factor;
+							}
+	                }
+	
+//	                Form (q transpose)*fvec and store in qtf.
+	
+	                for(i = 0;i< n;i++){
+	                    qtf[i] = fvec[i];
+	                }
+	                for(j = 0;j<n;j++){
+	                    if (fjac[j][j] != 0){
+	                        sum = 0;
+	                        for(i = j;i< n;i++){
+	                            sum = sum + fjac[i][j]*qtf[i];
+	                        }
+	                        temp = -sum/fjac[j][j];
+	                        for(i = j;i< n;i++){
+	                            qtf[i] = qtf[i] + fjac[i][j]*temp;
+	                        }
+	                    }
+	                }
+	
+//	                Copy the triangular factor of the qr factorization into r.
+	
+	                sing = false;
+	                for(j = 0;j< n;j++){
+	                    l = j;
+	                    jm1 = j - 1;
+	                    if (jm1 >= 0){
+	                        for(i = 0;i<jm1;i++){
+	                            r[l] = fjac[i][j];
+	                            l = l + n - i;
+	                        }
+	                    }
+	                    r[l] = wa1[j];
+	                    if (wa1[j] == 0){
+							 sing = true;
+							}
+	                }
+	
+//	                Accumulate the orthogonal factor in fjac.
+
+//	                call qform(n, n, Fjac, Ldfjac, Wa1) //todo
+	
+//	                Rescale if necessary.
+	
+//	                if (mode != 2) {
+//	                    for(j = 0;j< n;j++){
+							if(diag[j]>wa2[j]){
+								diag[j] = diag[j];
+							}else{
+								diag[j] = wa2[j];
+							}
+//	                    }
+//	                }
 	//
-//	                jeval = .true.
-	//
-//	                ! calculate the jacobian matrix.
-	//
-//	                iflag = 2
-//	                call fcn(n, x, Fvec, Fjac, Ldfjac, iflag)
-//	                Njev = Njev + 1
-//	                if (iflag < 0) exit main
-	//
-//	                ! compute the qr factorization of the jacobian.
-	//
-//	                call qrfac(n, n, Fjac, Ldfjac, .false., iwa, 1, Wa1, Wa2, Wa3)
-	//
-//	                ! on the first iteration and if mode is 1, scale according
-//	                ! to the norms of the columns of the initial jacobian.
-	//
-//	                if (iter == 1) then
-//	                    if (Mode /= 2) then
-//	                        do j = 1, n
-//	                            Diag(j) = Wa2(j)
-//	                            if (Wa2(j) == zero) Diag(j) = one
-//	                        end do
-//	                    end if
-	//
-//	                    ! on the first iteration, calculate the norm of the scaled x
-//	                    ! and initialize the step bound delta.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = Diag(j)*x(j)
-//	                    end do
-//	                    xnorm = enorm(n, Wa3)
-//	                    delta = Factor*xnorm
-//	                    if (delta == zero) delta = Factor
-//	                end if
-	//
-//	                ! form (q transpose)*fvec and store in qtf.
-	//
-//	                do i = 1, n
-//	                    Qtf(i) = Fvec(i)
-//	                end do
-//	                do j = 1, n
-//	                    if (Fjac(j, j) /= zero) then
-//	                        sum = zero
-//	                        do i = j, n
-//	                            sum = sum + Fjac(i, j)*Qtf(i)
-//	                        end do
-//	                        temp = -sum/Fjac(j, j)
-//	                        do i = j, n
-//	                            Qtf(i) = Qtf(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end if
-//	                end do
-	//
-//	                ! copy the triangular factor of the qr factorization into r.
-	//
-//	                sing = .false.
-//	                do j = 1, n
-//	                    l = j
-//	                    jm1 = j - 1
-//	                    if (jm1 >= 1) then
-//	                        do i = 1, jm1
-//	                            r(l) = Fjac(i, j)
-//	                            l = l + n - i
-//	                        end do
-//	                    end if
-//	                    r(l) = Wa1(j)
-//	                    if (Wa1(j) == zero) sing = .true.
-//	                end do
-	//
-//	                ! accumulate the orthogonal factor in fjac.
-	//
-//	                call qform(n, n, Fjac, Ldfjac, Wa1)
-	//
-//	                ! rescale if necessary.
-	//
-//	                if (Mode /= 2) then
-//	                    do j = 1, n
-//	                        Diag(j) = max(Diag(j), Wa2(j))
-//	                    end do
-//	                end if
-	//
-//	                ! beginning of the inner loop.
+//	                Beginning of the inner loop.
 //	                inner : do
 	//
 //	                    ! if requested, call fcn to enable printing of iterates.
@@ -1593,7 +1624,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        if (iflag < 0) Info = iflag
 //	        iflag = 0
 //	        if (Nprint > 0) call fcn(n, x, Fvec, Fjac, Ldfjac, iflag)
-	//
+	}
 //	    end subroutine hybrj
 	// !*****************************************************************************************
 	//
