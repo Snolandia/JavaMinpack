@@ -1315,22 +1315,12 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa4(n) !! work array of length n.
 	//
-//	        integer :: i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2
-//	        integer :: iwa(1)
-//	        logical :: jeval, sing
-//	        real(wp) :: actred, delta, fnorm, fnorm1, pnorm, prered, ratio, sum, temp, xnorm
-	//
-//	        real(wp), parameter :: p1 = 1.0e-1_wp
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p001 = 1.0e-3_wp
-//	        real(wp), parameter :: p0001 = 1.0e-4_wp
+//	        
 		public static void hybrj(SystemOfEquations fcn, int n, double[] x, double[] fvec,double[][] fjac, int ldfjac,double xTol, int maxfev,
 									double[] diag, int mode, double factor, int nprint, int info,int nfev,int njev, double[] r,
 									 int lr,double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
 		
-		// (fcn, n, x, Fvec, Fjac, Ldfjac, Xtol, Maxfev, Diag, Mode, &
-//	                     Factor, Nprint, Info, Nfev, Njev, r, Lr, Qtf, Wa1, Wa2, &
-//	                     Wa3, Wa
+		
 			int i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2;
 	        int[] iwa;
 	        boolean jeval, sing;
@@ -1365,7 +1355,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	            and calculate its norm.
 	
 	            iflag = 1;
-	            //fcn(n, x, fvec, fjac, ldfjac, iflag) //ToDo Fix
+	            //fcn(n, x, fvec, fjac, ldfjac, iflag); //ToDo Fix
 	            nfev = 1;
 	            if (iflag < 0) {
 					// Add throw eroor
@@ -1388,14 +1378,14 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	                Calculate the jacobian matrix.
 	
 	                iflag = 2;
-	                // call fcn(n, x, Fvec, Fjac, Ldfjac, iflag) // todo fix
+	                // fcn(n, x, fvec, fjac, ldfjac, iflag); // todo fix
 	                njev = njev + 1;
 	                if (iflag < 0){
 						// throw error
 					}
 //	                Compute the qr factorization of the jacobian.
 	
-	                // call qrfac(n, n, Fjac, Ldfjac, .false., iwa, 1, Wa1, Wa2, Wa3) //maybe to do?
+	                qrfac(n, n, fjac, ldfjac, false, iwa, 1, wa1, wa2, wa3); //maybe to do?
 	
 //	                On the first iteration and if mode is 1, scale according
 //	                to the norms of the columns of the initial jacobian.
@@ -1461,171 +1451,216 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	
 //	                Accumulate the orthogonal factor in fjac.
 
-//	                call qform(n, n, Fjac, Ldfjac, Wa1) //todo
+	                qform(n, n, fjac, ldfjac, wa1);
 	
 //	                Rescale if necessary.
 	
-//	                if (mode != 2) {
-//	                    for(j = 0;j< n;j++){
+	                if (mode != 2) {
+	                    for(j = 0;j< n;j++){
 							if(diag[j]>wa2[j]){
 								diag[j] = diag[j];
 							}else{
 								diag[j] = wa2[j];
 							}
-//	                    }
-//	                }
+	                    }
+	                }
 	//
 //	                Beginning of the inner loop.
 //	                inner : do
-	//
-//	                    ! if requested, call fcn to enable printing of iterates.
-	//
-//	                    if (Nprint > 0) then
-//	                        iflag = 0
-//	                        if (mod(iter - 1, Nprint) == 0) &
-//	                            call fcn(n, x, Fvec, Fjac, Ldfjac, iflag)
-//	                        if (iflag < 0) exit main
-//	                    end if
-	//
-//	                    ! determine the direction p.
-	//
-//	                    call dogleg(n, r, Lr, Diag, Qtf, delta, Wa1, Wa2, Wa3)
-	//
-//	                    ! store the direction p and x + p. calculate the norm of p.
-	//
-//	                    do j = 1, n
-//	                        Wa1(j) = -Wa1(j)
-//	                        Wa2(j) = x(j) + Wa1(j)
-//	                        Wa3(j) = Diag(j)*Wa1(j)
-//	                    end do
-//	                    pnorm = enorm(n, Wa3)
-	//
-//	                    ! on the first iteration, adjust the initial step bound.
-	//
-//	                    if (iter == 1) delta = min(delta, pnorm)
-	//
-//	                    ! evaluate the function at x + p and calculate its norm.
-	//
-//	                    iflag = 1
-//	                    call fcn(n, Wa2, Wa4, Fjac, Ldfjac, iflag)
-//	                    Nfev = Nfev + 1
-//	                    if (iflag < 0) exit main
-	//
-//	                    fnorm1 = enorm(n, Wa4)
-	//
-//	                    ! compute the scaled actual reduction.
-	//
-//	                    actred = -one
-//	                    if (fnorm1 < fnorm) actred = one - (fnorm1/fnorm)**2
-	//
-//	                    ! compute the scaled predicted reduction.
-	//
-//	                    l = 1
-//	                    do i = 1, n
-//	                        sum = zero
-//	                        do j = i, n
-//	                            sum = sum + r(l)*Wa1(j)
-//	                            l = l + 1
-//	                        end do
-//	                        Wa3(i) = Qtf(i) + sum
-//	                    end do
-//	                    temp = enorm(n, Wa3)
-//	                    prered = zero
-//	                    if (temp < fnorm) prered = one - (temp/fnorm)**2
-	//
-//	                    ! compute the ratio of the actual to the predicted
-//	                    ! reduction.
-	//
-//	                    ratio = zero
-//	                    if (prered > zero) ratio = actred/prered
-	//
-//	                    ! update the step bound.
-	//
-//	                    if (ratio >= p1) then
-//	                        ncfail = 0
-//	                        ncsuc = ncsuc + 1
-//	                        if (ratio >= p5 .or. ncsuc > 1) delta = max(delta, pnorm/p5)
-//	                        if (abs(ratio - one) <= p1) delta = pnorm/p5
-//	                    else
-//	                        ncsuc = 0
-//	                        ncfail = ncfail + 1
-//	                        delta = p5*delta
-//	                    end if
-	//
-//	                    ! test for successful iteration.
-	//
-//	                    if (ratio >= p0001) then
-	//
-//	                        ! successful iteration. update x, fvec, and their norms.
-	//
-//	                        do j = 1, n
-//	                            x(j) = Wa2(j)
-//	                            Wa2(j) = Diag(j)*x(j)
-//	                            Fvec(j) = Wa4(j)
-//	                        end do
-//	                        xnorm = enorm(n, Wa2)
-//	                        fnorm = fnorm1
-//	                        iter = iter + 1
-//	                    end if
-	//
-//	                    ! determine the progress of the iteration.
-	//
-//	                    nslow1 = nslow1 + 1
-//	                    if (actred >= p001) nslow1 = 0
-//	                    if (jeval) nslow2 = nslow2 + 1
-//	                    if (actred >= p1) nslow2 = 0
-	//
-//	                    ! test for convergence.
-	//
-//	                    if (delta <= Xtol*xnorm .or. fnorm == zero) Info = 1
-//	                    if (Info /= 0) exit main
-	//
-//	                    ! tests for termination and stringent tolerances.
-	//
-//	                    if (Nfev >= Maxfev) Info = 2
-//	                    if (p1*max(p1*delta, pnorm) <= epsmch*xnorm) Info = 3
-//	                    if (nslow2 == 5) Info = 4
-//	                    if (nslow1 == 10) Info = 5
-//	                    if (Info /= 0) exit main
-	//
-//	                    ! criterion for recalculating jacobian.
-	//
-//	                    if (ncfail == 2) cycle outer
-	//
-//	                    ! calculate the rank one modification to the jacobian
-//	                    ! and update qtf if necessary.
-	//
-//	                    do j = 1, n
-//	                        sum = zero
-//	                        do i = 1, n
-//	                            sum = sum + Fjac(i, j)*Wa4(i)
-//	                        end do
-//	                        Wa2(j) = (sum - Wa3(j))/pnorm
-//	                        Wa1(j) = Diag(j)*((Diag(j)*Wa1(j))/pnorm)
-//	                        if (ratio >= p0001) Qtf(j) = sum
-//	                    end do
-	//
-//	                    ! compute the qr factorization of the updated jacobian.
-	//
-//	                    call r1updt(n, n, r, Lr, Wa1, Wa2, Wa3, sing)
-//	                    call r1mpyq(n, n, Fjac, Ldfjac, Wa2, Wa3)
-//	                    call r1mpyq(1, n, Qtf, 1, Wa2, Wa3)
-	//
-//	                    jeval = .false.
-	//
+	
+//	                    If requested, call fcn to enable printing of iterates.
+	
+	                    if (nprint > 0){
+	                        iflag = 0;
+	                        if ((iter - 1)%nprint == 0){
+	                            // fcn.evaluate(n, x, fvec, fjac, ldfjac, iflag); //ToDo fix
+							}
+	                        if (iflag < 0){
+								//Add Error Handling
+							}
+	                    }
+	
+//	                    Determine the direction p.
+	
+	                    dogleg(n, r, lr, diag, qtf, delta, wa1, wa2, wa3);
+	
+//	                    Store the direction p and x + p. calculate the norm of p.
+	
+	                    for(j = 0;j< n;j++){
+	                        wa1[j] = -wa1[j];
+	                        wa2[j] = x[j] + wa1[j];
+	                        wa3[j] = diag[j]*wa1[j];
+	                    }
+	                    pnorm = enorm(n, wa3);
+	
+//	                    On the first iteration, adjust the initial step bound.
+	
+	                    if (iter == 1){
+							if(pnorm<delta){
+								delta=pnorm;
+						}
+
+//	                    Evaluate the function at x + p and calculate its norm.
+	
+	                    iflag = 1;
+	                    // fcn(n, wa2, wa4, fjac, ldfjac, iflag); //todo
+	                    nfev = nfev + 1;
+	                    if (iflag < 0){
+							// add error handling
+						}
+	
+	                    fnorm1 = enorm(n, wa4);
+	
+//	                    Compute the scaled actual reduction.
+	
+	                    actred = -1;
+	                    if (fnorm1 < fnorm){
+							actred = 1 - (fnorm1/fnorm)*(fnorm1/fnorm);
+						}
+//	                    Compute the scaled predicted reduction.
+	
+	                    l = 0;
+	                    for(i = 0;i< n;i++){
+	                        sum = 0;
+	                        for( j = i;j< n;j++){
+	                            sum = sum + r[l]*wa1[j];
+	                            l = l + 1;
+	                        }
+	                        wa3[i] = qtf[i] + sum;
+	                    }
+	                    temp = enorm(n, wa3);
+	                    prered = 0;
+	                    if (temp < fnorm){
+							prered = 1 - (temp/fnorm)*(temp/fnorm);
+						}
+	
+//	                    Compute the ratio of the actual to the predicted
+//	                    reduction.
+	
+	                    ratio = 0;
+	                    if (prered > 0){
+							 ratio = actred/prered;
+						}
+	
+//	                    Update the step bound.
+	
+	                    if (ratio >= p1){
+	                        ncfail = 0;
+	                        ncsuc = ncsuc + 1;
+	                        if (ratio >= p5 || ncsuc > 1){
+								if(pnorm/p5>delta){
+									delta = pnorm/p5;
+								}							
+							} 
+	                        if (Math.abs(ratio - 1) <= p1)
+								 delta = pnorm/p5;
+							}
+	                    }else{
+	                        ncsuc = 0;
+	                        ncfail = ncfail + 1;
+	                        delta = p5*delta;
+	                    }
+	
+//	                    Test for successful iteration.
+	
+	                    if (ratio >= p0001){
+	
+	                        // Successful iteration. update x, fvec, and their norms.
+	
+	                        for(j = 1;j< n;j++){
+	                            x[j] = wa2[j];
+	                            wa2[j] = diag[j]*x[j];
+	                            fvec[j] = wa4[j];
+	                        }
+	                        xnorm = enorm(n, wa2);
+	                        fnorm = fnorm1;
+	                        iter = iter + 1;
+	                    }
+	
+//	                    Determine the progress of the iteration.
+	
+	                    nslow1 = nslow1 + 1;
+	                    if (actred >= p001) {
+							nslow1 = 0;
+						}
+	                    if (jeval) {
+							nslow2 = nslow2 + 1;
+						}
+	                    if (actred >= p1) {
+							nslow2 = 0;
+						}
+	
+//	                    Test for convergence.
+	
+	                    if (delta <= xTol*xnorm || fnorm == 0) {info = 1;}
+	                    if (info != 0) {
+							// add error handling
+						}
+	
+//	                    Tests for termination and stringent tolerances.
+	
+	                    if (nfev >= maxfev) {
+							info = 2;
+						}
+	                    if (p1*Math.max(p1*delta, pnorm) <= epsmch*xnorm) {
+							info = 3;
+						}
+	                    if (nslow2 == 5) {
+							info = 4;
+						}
+	                    if (nslow1 == 10) {
+							info = 5;
+						}
+	                    if (info != 0) {
+							//add error handling
+						}
+	
+//	                    Criterion for recalculating jacobian.
+	
+	                    // if (ncfail == 2) cycle outer //ToDo
+	
+//	                    Calculate the rank one modification to the jacobian
+//	                    and update qtf if necessary.
+	
+	                    for(j = 0;j< n;j++){
+	                        sum = 0;
+	                        for(i = 0;i< n;i++){
+	                            sum = sum + fjac[i][j]*wa4[i];
+	                        }
+	                        wa2[j] = (sum - wa3[j])/pnorm;
+	                        wa1[j] = diag[j]*((diag[j]*wa1[j])/pnorm);
+	                        if (ratio >= p0001) {
+								qtf[j] = sum;
+							}
+	                    }
+	
+//	                    Compute the qr factorization of the updated jacobian.
+
+	
+	                    r1updt(n, n, r, lr, wa1, wa2, wa3, sing);
+	                    r1mpyq(n, n, fjac, ldfjac, wa2, wa3);
+	                    // r1mpyq(1, n, qtf, 1, wa2, wa3); //Todo need to figure out how to pass qtf since its a [], not a [][]
+	
+	                    jeval = false;
+	
 //	                end do inner  ! end of the inner loop.
-	//
+	
 //	            end do outer  ! end of the outer loop.
-	//
+	
 //	        end block main
-	//
-//	        ! termination, either normal or user imposed.
-	//
-//	        if (iflag < 0) Info = iflag
-//	        iflag = 0
-//	        if (Nprint > 0) call fcn(n, x, Fvec, Fjac, Ldfjac, iflag)
-	}
-//	    end subroutine hybrj
+	
+//	        Termination, either normal or user imposed.
+	
+	        if (iflag < 0) {
+				info = iflag;
+			}
+	        iflag = 0;
+	        if (nprint > 0) {
+				// fcn(n, x, fvec, fjac, ldfjac, iflag); // todo
+			}
+}
+
+
 	// !*****************************************************************************************
 	//
 	// !*****************************************************************************************
