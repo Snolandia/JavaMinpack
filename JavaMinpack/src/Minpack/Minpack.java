@@ -3067,31 +3067,31 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							 sing =  true;
 						}
 	                    ipvt[j] = j;
-	                    wa2[j] = enorm(j, fjac[0][j]) //Needs to be fixed
+	                    wa2[j] = enorm(j, fjac[0][j]); //Needs to be fixed
 	                }
-//	                if (sing) then
-//	                    call qrfac(n, n, Fjac, Ldfjac, .true., Ipvt, n, Wa1, Wa2, Wa3)
-//	                    do j = 1, n
-//	                        if (Fjac(j, j) /= zero) then
-//	                            sum = zero
-//	                            do i = j, n
-//	                                sum = sum + Fjac(i, j)*Qtf(i)
-//	                            end do
-//	                            temp = -sum/Fjac(j, j)
-//	                            do i = j, n
-//	                                Qtf(i) = Qtf(i) + Fjac(i, j)*temp
-//	                            end do
-//	                        end if
-//	                        Fjac(j, j) = Wa1(j)
-//	                    end do
-//	                end if
-	//
-//	                ! on the first iteration and if mode is 1, scale according
-//	                ! to the norms of the columns of the initial jacobian.
-	//
-//	                if (iter == 1) then
-//	                    if (Mode /= 2) then
-//	                        do j = 1, n
+	                if (sing){
+	                    qrfac(n, n, fjac, ldfjac, true, ipvt, n, wa1, wa2, wa3);
+	                    for(j = 0;j< n;j++){
+	                        if (fjac[j][j] != 0) {
+	                            sum = 0;
+	                            for(i = j;i< n;i++){
+	                                sum = sum + fjac[i][j]*qtf[i];
+	                            }
+	                            temp = -sum/fjac[j][j];
+	                            for(i = j;i< n;i++){
+	                                qtf[i] = qtf[i] + fjac[i][j]*temp;
+	                            }
+	                        }
+	                        fjac[j][j] = wa1[j];
+	                    }
+	                }
+	
+//	                On the first iteration and if mode is 1, scale according
+//	                to the norms of the columns of the initial jacobian.
+	
+//	                if (iter == 1){
+//	                    if (Mode /= 2){
+//	                        for(j = 0;j< n;j++){
 //	                            Diag(j) = Wa2(j)
 //	                            if (Wa2(j) == zero) Diag(j) = one
 //	                        end do
