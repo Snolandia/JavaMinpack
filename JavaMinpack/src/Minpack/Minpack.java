@@ -346,7 +346,6 @@ public class Minpack {
 	 *          <p>
 	 * @return enorm double -> Containing the euclidean norm of x.
 	 */
-
 	public static double enorm(int n, double[] x) {
 
 		int i; // Used for the loops
@@ -455,7 +454,6 @@ public class Minpack {
 	 *               referenced.
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */       
-
 	public static void fdjac1(SystemOfEquations fcn, int n, double[] x, double[] fvec, double[][] fjac, int ldfjac,
 			int iflag, int ml, int mu, double epsfcn, double[] wa1, double[] wa2) {
 		
@@ -587,7 +585,6 @@ public class Minpack {
 		}
 	}
 		
-
 /**
  * <p>The purpose of hybrd is to find a zero of a system of n nonlinear functions
  * in n variables by a modification of the powell hybrid method. the user must
@@ -707,7 +704,6 @@ public class Minpack {
  * @return Returns a double[] that contains the solved values, x
  * 
  */
-	
 public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] fvec, double xTol, int maxFev, int ml,
 			int mu, double epsfcn, double[] diag, int mode, double factor, int nPrint, int info, int nfev,
 			double[][] fjac, int ldfjac, double[] r, int lr, double[] qtf, double[] wa1, double[] wa2, double[] wa3,
@@ -871,15 +867,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //					Evaluate the function at x + p and calculate its norm.
 					iFlag = 1;
 					wa4 = fcn.evaluate(wa2);
-
-//					System.out.println("test " + wa2[j]);
-//					for (i = 0; i < n; i++) {
-//						for (j = 0; j < n; j++) {
-//							System.out.println("test " + wa2[j]);
-//							System.out.println("test " + wa4[j]);
-//						}
-//					}
-//					System.exit(0);
 					nfev = nfev + 1;
 					if (iFlag < 0) {
 						throw new IllegalArgumentException("iFlag returned from fcn as a negative");
@@ -977,11 +964,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 						info = 5;
 					}
 					if (info != 0) {
-						for(int zx = 0;zx<n;zx++) {
-							//System.out.println(x[zx]);
-						}
 						return x;
-						//throw new IllegalArgumentException(infoDict[info]);
 					}
 //					Criterion for recalculating jacobian approximation
 //					by forward differences.
@@ -1227,104 +1210,105 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		return x;
 	}
 
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of hybrj is to find a zero of a system of
-	// ! n nonlinear functions in n variables by a modification
-	// ! of the powell hybrid method. the user must provide a
-	// ! subroutine which calculates the functions and the jacobian.
-	//
-//	    subroutine hybrj(fcn, n, x, Fvec, Fjac, Ldfjac, Xtol, Maxfev, Diag, Mode, &
-//	                     Factor, Nprint, Info, Nfev, Njev, r, Lr, Qtf, Wa1, Wa2, &
-//	                     Wa3, Wa4)
-	//
-//	        implicit none
-	//
-//	        procedure(fcn_hybrj) :: fcn !! the user-supplied subroutine which
-//	                                !! calculates the functions and the jacobian
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                            !! of functions and variables.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
-//	                                    !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
-//	                                    !! occurs when the number of calls to fcn with iflag = 1
-//	                                    !! has reached maxfev.
-//	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
-//	                                !! variables will be scaled internally. if mode = 2,
-//	                                !! the scaling is specified by the input diag. other
-//	                                !! values of mode are equivalent to mode = 1.
-//	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
-//	                                    !! printing of iterates if it is positive. in this case,
-//	                                    !! fcn is called with iflag = 0 at the beginning of the first
-//	                                    !! iteration and every nprint iterations thereafter and
-//	                                    !! immediately prior to return, with x and fvec available
-//	                                    !! for printing. fvec and fjac should not be altered.
-//	                                    !! if nprint is not positive, no special calls of fcn
-//	                                    !! with iflag = 0 are made.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                !! terminated execution, info is set to the (negative)
-//	                                !! value of iflag. see description of fcn. otherwise,
-//	                                !! info is set as follows:
-//	                                !!
-//	                                !!  * ***info = 0***   improper input parameters.
-//	                                !!  * ***info = 1***   relative error between two consecutive iterates
-//	                                !!    is at most xtol.
-//	                                !!  * ***info = 2***   number of calls to fcn with iflag = 1 has
-//	                                !!    reached maxfev.
-//	                                !!  * ***info = 3***   xtol is too small. no further improvement in
-//	                                !!    the approximate solution x is possible.
-//	                                !!  * ***info = 4***   iteration is not making good progress, as
-//	                                !!    measured by the improvement from the last
-//	                                !!    five jacobian evaluations.
-//	                                !!  * ***info = 5***   iteration is not making good progress, as
-//	                                !!    measured by the improvement from the last
-//	                                !!    ten iterations.
-//	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
-//	                                !! calls to fcn with iflag = 1.
-//	        integer, intent(out) :: Njev !! an integer output variable set to the number of
-//	                                !! calls to fcn with iflag = 2.
-//	        integer, intent(in) :: Lr !! a positive integer input variable not less than
-//	                                !! (n*(n+1))/2.
-//	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
-//	                                !! occurs when the relative error between two consecutive
-//	                                !! iterates is at most xtol.
-//	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
-//	                                    !! initial step bound. this bound is set to the product of
-//	                                    !! factor and the euclidean norm of diag*x if nonzero, or else
-//	                                    !! to factor itself. in most cases factor should lie in the
-//	                                    !! interval (.1,100.). 100. is a generally recommended value.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                    !! an initial estimate of the solution vector. on output x
-//	                                    !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(n) !! an output array of length n which contains
-//	                                    !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array which contains the
-//	                                            !! orthogonal matrix q produced by the qr factorization
-//	                                            !! of the final approximate jacobian.
-//	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
-//	                                        !! below), diag is internally set. if mode = 2, diag
-//	                                        !! must contain positive entries that serve as
-//	                                        !! multiplicative scale factors for the variables.
-//	        real(wp), intent(out) :: r(Lr) !! an output array of length lr which contains the
-//	                                    !! upper triangular matrix produced by the qr factorization
-//	                                    !! of the final approximate jacobian, stored rowwise.
-//	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
-//	                                    !! the vector (q transpose)*fvec.
-//	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa4(n) !! work array of length n.
-	//
-//	        
-		public static void hybrj(SystemOfEquations fcn, int n, double[] x, double[] fvec,double[][] fjac, int ldfjac,double xTol, int maxfev,
+/**
+	!>
+	! the purpose of hybrj is to find a zero of a system of
+	! n nonlinear functions in n variables by a modification
+	! of the powell hybrid method. the user must provide a
+	! subroutine which calculates the functions and the jacobian.
+	
+	    subroutine hybrj(fcn, n, x, Fvec, Fjac, Ldfjac, Xtol, Maxfev, Diag, Mode, &
+	                     Factor, Nprint, Info, Nfev, Njev, r, Lr, Qtf, Wa1, Wa2, &
+	                     Wa3, Wa4)
+	
+	        implicit none
+	
+	        procedure(fcn_hybrj) :: fcn !! the user-supplied subroutine which
+	                                !! calculates the functions and the jacobian
+	        integer, intent(in) :: n !! a positive integer input variable set to the number
+	                            !! of functions and variables.
+	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
+	                                    !! which specifies the leading dimension of the array fjac.
+	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
+	                                    !! occurs when the number of calls to fcn with iflag = 1
+	                                    !! has reached maxfev.
+	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
+	                                !! variables will be scaled internally. if mode = 2,
+	                                !! the scaling is specified by the input diag. other
+	                                !! values of mode are equivalent to mode = 1.
+	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
+	                                    !! printing of iterates if it is positive. in this case,
+	                                    !! fcn is called with iflag = 0 at the beginning of the first
+	                                    !! iteration and every nprint iterations thereafter and
+	                                    !! immediately prior to return, with x and fvec available
+	                                    !! for printing. fvec and fjac should not be altered.
+	                                    !! if nprint is not positive, no special calls of fcn
+	                                    !! with iflag = 0 are made.
+	        integer, intent(out) :: Info !! an integer output variable. if the user has
+	                                !! terminated execution, info is set to the (negative)
+	                                !! value of iflag. see description of fcn. otherwise,
+	                                !! info is set as follows:
+	                                !!
+	                                !!  * ***info = 0***   improper input parameters.
+	                                !!  * ***info = 1***   relative error between two consecutive iterates
+	                                !!    is at most xtol.
+	                                !!  * ***info = 2***   number of calls to fcn with iflag = 1 has
+	                                !!    reached maxfev.
+	                                !!  * ***info = 3***   xtol is too small. no further improvement in
+	                                !!    the approximate solution x is possible.
+	                                !!  * ***info = 4***   iteration is not making good progress, as
+	                                !!    measured by the improvement from the last
+	                                !!    five jacobian evaluations.
+	                                !!  * ***info = 5***   iteration is not making good progress, as
+	                                !!    measured by the improvement from the last
+	                                !!    ten iterations.
+	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
+	                                !! calls to fcn with iflag = 1.
+	        integer, intent(out) :: Njev !! an integer output variable set to the number of
+	                                !! calls to fcn with iflag = 2.
+	        integer, intent(in) :: Lr !! a positive integer input variable not less than
+	                                !! (n*(n+1))/2.
+	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
+	                                !! occurs when the relative error between two consecutive
+	                                !! iterates is at most xtol.
+	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
+	                                    !! initial step bound. this bound is set to the product of
+	                                    !! factor and the euclidean norm of diag*x if nonzero, or else
+	                                    !! to factor itself. in most cases factor should lie in the
+	                                    !! interval (.1,100.). 100. is a generally recommended value.
+	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
+	                                    !! an initial estimate of the solution vector. on output x
+	                                    !! contains the final estimate of the solution vector.
+	        real(wp), intent(out) :: Fvec(n) !! an output array of length n which contains
+	                                    !! the functions evaluated at the output x.
+	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array which contains the
+	                                            !! orthogonal matrix q produced by the qr factorization
+	                                            !! of the final approximate jacobian.
+	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
+	                                        !! below), diag is internally set. if mode = 2, diag
+	                                        !! must contain positive entries that serve as
+	                                        !! multiplicative scale factors for the variables.
+	        real(wp), intent(out) :: r(Lr) !! an output array of length lr which contains the
+	                                    !! upper triangular matrix produced by the qr factorization
+	                                    !! of the final approximate jacobian, stored rowwise.
+	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
+	                                    !! the vector (q transpose)*fvec.
+	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
+	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
+	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
+	        real(wp), intent(inout) :: Wa4(n) !! work array of length n.
+*/
+
+		public static double[] hybrj(SystemOfEquations fcn, int n, double[] x, double[] fvec,double[][] fjac, int ldfjac,double xTol, int maxfev,
 									double[] diag, int mode, double factor, int nprint, int info,int nfev,int njev, double[] r,
 									 int lr,double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
 		
 		
-			int i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2;
-	        int[] iwa;
+			int i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2=0;
+	        int[] iwa = new int[1]; // need to verify 1 is the correct value
 	        boolean jeval, sing;
-	        double actred, delta, fnorm, fnorm1, pnorm, prered, ratio, sum, temp, xnorm;
+	        double actred=0, delta=0, fnorm=0, fnorm1=0, pnorm=0, prered=0, ratio=0, sum=0, temp=0, xnorm=0;
+			double[][] qtfHold = new double[1][n]; //Used to create a sub-array to pass
 
 			double p1 = 1.0e-1;
 	        double p5 = 5.0e-1;
@@ -1334,75 +1318,63 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	        iflag = 0;
 	        nfev = 0;
 	        njev = 0;
-	//
-//	        main : block
-	//
+	
+			do{ // main : block
 //	            Check the input parameters for errors.
-	//
 	            if (n <= 0 || ldfjac < n || xTol < 0 || maxfev <= 0 || 
 	                factor <= 0 || lr < (n*(n + 1))/2){
+						throw new IllegalArgumentException("Input parameters do not match as expected");
 						// Add throw error
-				} 			
+					} 			
 	            if (mode == 2){
 	                for(j = 0;j< n;j++){
 	                    if (diag[j] <= 0){ 
+							throw new IllegalArgumentException("Diagonal Error at Hybrd");
 						//Add throw error
 						}
 	                }
 	            }
-	
 //	            Evaluate the function at the starting point
 //	            and calculate its norm.
-	
 	            iflag = 1;
-	            //fcn(n, x, fvec, fjac, ldfjac, iflag); //ToDo Fix
+	            fcn.evaluate(x); //to update at future date
 	            nfev = 1;
 	            if (iflag < 0) {
-					// Add throw eroor
+					throw new IllegalArgumentException("iFlag was returned as negative");
 				}
 	            fnorm = enorm(n, fvec);
-	
 //	            Initialize iteration counter and monitors.
-	
 	            iter = 1;
 	            ncsuc = 0;
 	            ncfail = 0;
 	            nslow1 = 0;
 	            nslow2 = 0;
-	
 //	            Beginning of the outer loop.
-//	            outer : do
-	
+	            do{ //outer : do
 	                jeval = true;
-	
 //	                Calculate the jacobian matrix.
-	
 	                iflag = 2;
-	                // fcn(n, x, fvec, fjac, ldfjac, iflag); // todo fix
+					fvec = fcn.evaluate(x); //to update at future date
+					fjac = fcn.evaluateJacobian(x); //to update at future date
 	                njev = njev + 1;
 	                if (iflag < 0){
 						// throw error
 					}
 //	                Compute the qr factorization of the jacobian.
-	
 	                qrfac(n, n, fjac, ldfjac, false, iwa, 1, wa1, wa2, wa3); //maybe to do?
-	
 //	                On the first iteration and if mode is 1, scale according
 //	                to the norms of the columns of the initial jacobian.
-	
 	                if (iter == 1){
 	                    if (mode != 2){
-	                        for(j = 0,j< n;j++){
+	                        for(j = 0;j< n;j++){
 	                            diag[j] = wa2[j];
 	                            if (wa2[j] == 0){
 									diag[j] = 1;
 								}
 	                        }
 	                    }
-	
 //	                    On the first iteration, calculate the norm of the scaled x
 //	                    and initialize the step bound delta.
-	
 	                    for(j = 0;j< n;j++){
 	                        wa3[j] = diag[j]*x[j];
 	                    }
@@ -1412,9 +1384,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							 delta = factor;
 							}
 	                }
-	
 //	                Form (q transpose)*fvec and store in qtf.
-	
 	                for(i = 0;i< n;i++){
 	                    qtf[i] = fvec[i];
 	                }
@@ -1430,9 +1400,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                        }
 	                    }
 	                }
-	
 //	                Copy the triangular factor of the qr factorization into r.
-	
 	                sing = false;
 	                for(j = 0;j< n;j++){
 	                    l = j;
@@ -1448,13 +1416,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							 sing = true;
 							}
 	                }
-	
 //	                Accumulate the orthogonal factor in fjac.
-
 	                qform(n, n, fjac, ldfjac, wa1);
-	
 //	                Rescale if necessary.
-	
 	                if (mode != 2) {
 	                    for(j = 0;j< n;j++){
 							if(diag[j]>wa2[j]){
@@ -1464,61 +1428,47 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							}
 	                    }
 	                }
-	//
 //	                Beginning of the inner loop.
 //	                inner : do
-	
+					do{
 //	                    If requested, call fcn to enable printing of iterates.
-	
 	                    if (nprint > 0){
 	                        iflag = 0;
 	                        if ((iter - 1)%nprint == 0){
-	                            // fcn.evaluate(n, x, fvec, fjac, ldfjac, iflag); //ToDo fix
+	                            fcn.evaluate(x); //ToDo fix
 							}
 	                        if (iflag < 0){
 								//Add Error Handling
 							}
 	                    }
-	
 //	                    Determine the direction p.
-	
 	                    dogleg(n, r, lr, diag, qtf, delta, wa1, wa2, wa3);
-	
 //	                    Store the direction p and x + p. calculate the norm of p.
-	
 	                    for(j = 0;j< n;j++){
 	                        wa1[j] = -wa1[j];
 	                        wa2[j] = x[j] + wa1[j];
 	                        wa3[j] = diag[j]*wa1[j];
 	                    }
 	                    pnorm = enorm(n, wa3);
-	
 //	                    On the first iteration, adjust the initial step bound.
-	
 	                    if (iter == 1){
 							if(pnorm<delta){
 								delta=pnorm;
 						}
-
 //	                    Evaluate the function at x + p and calculate its norm.
-	
 	                    iflag = 1;
-	                    // fcn(n, wa2, wa4, fjac, ldfjac, iflag); //todo
+	                    wa4 = fcn.evaluate(wa2);//(n, wa2, wa4, fjac, ldfjac, iflag); //I think this is right
 	                    nfev = nfev + 1;
 	                    if (iflag < 0){
 							// add error handling
 						}
-	
 	                    fnorm1 = enorm(n, wa4);
-	
 //	                    Compute the scaled actual reduction.
-	
 	                    actred = -1;
 	                    if (fnorm1 < fnorm){
 							actred = 1 - (fnorm1/fnorm)*(fnorm1/fnorm);
 						}
 //	                    Compute the scaled predicted reduction.
-	
 	                    l = 0;
 	                    for(i = 0;i< n;i++){
 	                        sum = 0;
@@ -1533,17 +1483,13 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                    if (temp < fnorm){
 							prered = 1 - (temp/fnorm)*(temp/fnorm);
 						}
-	
 //	                    Compute the ratio of the actual to the predicted
 //	                    reduction.
-	
 	                    ratio = 0;
 	                    if (prered > 0){
 							 ratio = actred/prered;
 						}
-	
 //	                    Update the step bound.
-	
 	                    if (ratio >= p1){
 	                        ncfail = 0;
 	                        ncsuc = ncsuc + 1;
@@ -1560,13 +1506,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                        ncfail = ncfail + 1;
 	                        delta = p5*delta;
 	                    }
-	
 //	                    Test for successful iteration.
-	
 	                    if (ratio >= p0001){
-	
 	                        // Successful iteration. update x, fvec, and their norms.
-	
 	                        for(j = 1;j< n;j++){
 	                            x[j] = wa2[j];
 	                            wa2[j] = diag[j]*x[j];
@@ -1576,9 +1518,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                        fnorm = fnorm1;
 	                        iter = iter + 1;
 	                    }
-	
 //	                    Determine the progress of the iteration.
-	
 	                    nslow1 = nslow1 + 1;
 	                    if (actred >= p001) {
 							nslow1 = 0;
@@ -1589,16 +1529,13 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                    if (actred >= p1) {
 							nslow2 = 0;
 						}
-	
 //	                    Test for convergence.
-	
 	                    if (delta <= xTol*xnorm || fnorm == 0) {info = 1;}
 	                    if (info != 0) {
+							return x;
 							// add error handling
 						}
-	
 //	                    Tests for termination and stringent tolerances.
-	
 	                    if (nfev >= maxfev) {
 							info = 2;
 						}
@@ -1612,16 +1549,15 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							info = 5;
 						}
 	                    if (info != 0) {
+							return x;
 							//add error handling
 						}
-	
 //	                    Criterion for recalculating jacobian.
-	
-	                    // if (ncfail == 2) cycle outer //ToDo
-	
+	                    if (ncfail == 2){
+							break; //Cycles outer loop
+						} 
 //	                    Calculate the rank one modification to the jacobian
 //	                    and update qtf if necessary.
-	
 	                    for(j = 0;j< n;j++){
 	                        sum = 0;
 	                        for(i = 0;i< n;i++){
@@ -1633,35 +1569,25 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 								qtf[j] = sum;
 							}
 	                    }
-	
 //	                    Compute the qr factorization of the updated jacobian.
-
-	
 	                    r1updt(n, n, r, lr, wa1, wa2, wa3, sing);
 	                    r1mpyq(n, n, fjac, ldfjac, wa2, wa3);
-	                    // r1mpyq(1, n, qtf, 1, wa2, wa3); //Todo need to figure out how to pass qtf since its a [], not a [][]
-	
+						for (int z = 0; z < n; z++) {
+						qtfHold[0][z] = qtf[z]; //Used to pass a smaller array to r1mpyq
+						}
+						qtfHold = r1mpyq(1, n, qtfHold, 1, wa2, wa3);
+						for (int z = 0; z < n; z++) {
+							qtf[z] = qtfHold[0][z]; //Used to pass r1mpyq results back to qtf
+						}
+
 	                    jeval = false;
-	
-//	                end do inner  ! end of the inner loop.
-	
-//	            end do outer  ! end of the outer loop.
-	
-//	        end block main
-	
-//	        Termination, either normal or user imposed.
-	
-	        if (iflag < 0) {
-				info = iflag;
-			}
-	        iflag = 0;
-	        if (nprint > 0) {
-				// fcn(n, x, fvec, fjac, ldfjac, iflag); // todo
-			}
+	                } while(true);//End of the inner loop.
+	            } while(true); // End of the outer loop.
+	        } while(true); //End block main
 }
 
 
-	// !*****************************************************************************************
+/**	// !*****************************************************************************************
 	//
 	// !*****************************************************************************************
 	// !>
@@ -1709,10 +1635,11 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	                                            !! orthogonal matrix q produced by the qr factorization
 //	                                            !! of the final approximate jacobian.
 //	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
+*/
 	//
 		public static void hyberj1() {
 			
-		}
+		
 //	        integer :: j, lr, maxfev, mode, nfev, njev, nprint
 //	        real(wp) :: xtol
 	//
@@ -1738,9 +1665,8 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	            if (Info == 5) Info = 4
 //	        end if
 	//
-//	    end subroutine hybrj1
-	// !*****************************************************************************************
-	//
+		}
+/**
 	// !*****************************************************************************************
 	// !>
 	// ! the purpose of lmder is to minimize the sum of the squares of
@@ -1856,10 +1782,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa4(m) !! work array of length m.
-	//
+*/
 		public static void lmder() {
 			
-		}
+		
 //	        integer :: i, iflag, iter, j, l
 //	        real(wp) :: actred, delta, dirder, fnorm, fnorm1, gnorm, par, &
 //	                    pnorm, prered, ratio, sum, temp, temp1, temp2, xnorm
@@ -2112,9 +2038,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        iflag = 0
 //	        if (Nprint > 0) call fcn(m, n, x, Fvec, Fjac, Ldfjac, iflag)
 	//
-//	    end subroutine lmder
-	// !*****************************************************************************************
-	//
+	}
+
+/**
 	// !*****************************************************************************************
 	// !>
 	// ! the purpose of lmder1 is to minimize the sum of the squares of
@@ -2188,10 +2114,11 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp) :: ftol, gtol, xtol
 	//
 //	        real(wp), parameter :: factor = 100.0_wp
-	//		
+ */
+
 		public static void lmder1() {
 			
-		}
+		
 //	        Info = 0
 	//
 			
@@ -2212,9 +2139,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	            if (Info == 8) Info = 4
 //	        end if
 	//
-//	    end subroutine lmder1
-	// !*****************************************************************************************
-	//
+}
+	
+/**
 	// !*****************************************************************************************
 	// !>
 	// ! the purpose of lmdif is to minimize the sum of the squares of
@@ -2345,9 +2272,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), parameter :: p25 = 2.5e-1_wp
 //	        real(wp), parameter :: p75 = 7.5e-1_wp
 //	        real(wp), parameter :: p0001 = 1.0e-4_wp
+*/
 		public static void lmdif() {
 			
-		}
+		
 //	        Info = 0
 //	        iflag = 0
 //	        Nfev = 0
@@ -2602,8 +2530,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        iflag = 0
 //	        if (Nprint > 0) call fcn(m, n, x, Fvec, iflag)
 	//
-//	    end subroutine lmdif
-	// !*****************************************************************************************
+	}
+	
+/**	
 	//
 	// !*****************************************************************************************
 	// !>
@@ -2656,10 +2585,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
 //	                                        !! the functions evaluated at the output x.
 //	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-	//
+	*/
 		public static void lmdif1() {
 			
-		}
+		
 //	        integer :: maxfev, mode, mp5n, nfev, nprint
 //	        real(wp) :: epsfcn, ftol, gtol, xtol
 	//
@@ -2687,9 +2616,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	            if (Info == 8) Info = 4
 //	        end if
 	//
-//	    end subroutine lmdif1
-	// !*****************************************************************************************
-	//
+	}
+
+	/**
 	// !*****************************************************************************************
 	// !>
 	// ! given an m by n matrix a, an n by n nonsingular diagonal
@@ -2759,9 +2688,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
 	//
+	*/
 		public static void lmpar() {
 			
-		}
+		
 //	        integer :: i, iter, j, jm1, jp1, k, l, nsing
 //	        real(wp) :: dxnorm, fp, gnorm, parc, parl, paru, sum, temp
 	//
@@ -2919,10 +2849,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	            end do ! end of an iteration.
 	//
 //	        end if
-	//
-//	    end subroutine lmpar
-	// !*****************************************************************************************
-	//
+	}
+
+	
+/**
 	// !*****************************************************************************************
 	// !>
 	// ! the purpose of lmstr is to minimize the sum of the squares of
@@ -3034,14 +2964,15 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
 //	        real(wp), intent(inout) :: Wa4(m) !! work array of length m.
 	//
-		public static void lmstr(SystemOfEquations fcn, int m, int n, double[] x, double[] fvec, double[][] fJac, int ldfJac,double fTol,
-								 double xTol, double gTol, int maxfev, double[] diag, int mode, double factor, int nPrint, int info, int nfev, 
+*/
+		public static void lmstr(SystemOfEquations fcn, int m, int n, double[] x, double[] fvec, double[][] fjac, int ldfjac,double ftol,
+								 double xtol, double gtol, int maxfev, double[] diag, int mode, double factor, int nprint, int info, int nfev, 
 								 int njev,int[] ipvt, double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
 			// subroutine lmstr(fcn, m, n, x, Fvec, Fjac, Ldfjac, Ftol, Xtol, Gtol, Maxfev, &
 //	                     Diag, Mode, Factor, Nprint, Info, Nfev, Njev, Ipvt, Qtf, &
 //	                     Wa1, Wa2, Wa3, Wa4)
 		
-	        int i, iFlag, iter, j, l;
+	        int i, iflag, iter, j, l;
 	        double actred, delta, dirder, fnorm,
 	                    fnorm1, gnorm, par, pnorm, prered,
 	                    ratio, sum, temp, temp1, temp2, xnorm;
@@ -3054,79 +2985,90 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	        double p0001 = 1.0e-4;
 	
 	        info = 0;
-	        iFlag = 0;
+	        iflag = 0;
 	        nfev = 0;
 	        njev = 0;
 
-//	        main : block
+	        do{ //main : block
+	
+//	            Check the input parameters for errors.
+	
+	            if (n <= 0 || m < n || ldfjac < n || ftol < 0 || xtol < 0 || gtol < 0 || maxfev <= 0 || factor <= 0){
+	                // thorw.exception();
+				}
+	            if (mode == 2){
+	                for(j = 0;j< n;j++){
+	                    if (diag[j] <= 0){
+						// throw error
+						}
+	                }
+	            }
+	
+//	            Evaluate the function at the starting point
+//	            and calculate its norm.
+	
+	            iflag = 1;
+	            fvec = fcn.evaluate(x); // fcn(m, n, x, fvec, wa3, iflag)
+	            nfev = 1;
+	            if (iflag < 0){
+					// throw error exit main
+				}
+	            fnorm = enorm(m, fvec);
+	
+//	            Initialize levenberg-marquardt parameter and iteration counter.
+	
+	            par = 0;
+	            iter = 1;
+	
+//	            Beginning of the outer loop.
+	
+	            do{ //outer : do
+	
+//	                If requested, call fcn to enable printing of iterates.
+	
+	                if (nprint > 0){
+	                    iflag = 0;
+	                    if (((iter - 1) % nprint) == 0){
+							//  fcn(m, n, x, fvec, wa3, iflag)
+							}
+	                    if (iflag < 0){
+						// throw error exit main
+						}
+	                }
+	
+//	                Compute the qr factorization of the jacobian matrix
+//	                calculated one row at a time, while simultaneously
+//	                forming (q transpose)*fvec and storing the first
+//	                n components in qtf.
+	                for( j = 0;j< n;j++){
+	                    qtf[j] = 0;
+	                    for(i = 0;i< n;i++){
+	                        fjac[i][j] = 0;
+	                    }
+	                }
+	                iflag = 2;
+	                for(i = 0;i< m;i++){
+	                    fvec = fcn.evaluate(x); // fcn(m, n, x, fvec, wa3, iflag)
+	                    if (iflag < 0){
+							// throw error exit main
+						}
+	                    temp = fvec[i];
+	                    rwupdt(n, fjac, ldfjac, wa3, qtf, temp, wa1, wa2);
+	                    iflag = iflag + 1
+	                }
+	                njev = njev + 1;
 	//
-//	            check the input parameters for errors.
-	//
-//	            if (n <= 0 .or. m < n || Ldfjac < n || Ftol < zero || 
-//	                Xtol < zero .or. Gtol < zero || Maxfev <= 0 || Factor <= zero)
-//	                thorw.exception();
-//	            if (Mode == 2){}
-//	                do j = 1, n
-//	                    if (Diag(j) <= zero) exit main
-//	                }
-//	            }
-	//
-//	            ! evaluate the function at the starting point
-//	            ! and calculate its norm.
-	//
-//	            iflag = 1
-//	            call fcn(m, n, x, Fvec, Wa3, iflag)
-//	            Nfev = 1
-//	            if (iflag < 0) exit main
-//	            fnorm = enorm(m, Fvec)
-	//
-//	            ! initialize levenberg-marquardt parameter and iteration counter.
-	//
-//	            par = zero
-//	            iter = 1
-	//
-//	            ! beginning of the outer loop.
-	//
-//	            outer : do
-	//
-//	                ! if requested, call fcn to enable printing of iterates.
-	//
-//	                if (Nprint > 0) then
-//	                    iflag = 0
-//	                    if (mod(iter - 1, Nprint) == 0) call fcn(m, n, x, Fvec, Wa3, iflag)
-//	                    if (iflag < 0) exit main
-//	                end if
-	//
-//	                ! compute the qr factorization of the jacobian matrix
-//	                ! calculated one row at a time, while simultaneously
-//	                ! forming (q transpose)*fvec and storing the first
-//	                ! n components in qtf.
-	//
-//	                do j = 1, n
-//	                    Qtf(j) = zero
-//	                    do i = 1, n
-//	                        Fjac(i, j) = zero
-//	                    end do
-//	                end do
-//	                iflag = 2
-//	                do i = 1, m
-//	                    call fcn(m, n, x, Fvec, Wa3, iflag)
-//	                    if (iflag < 0) exit main
-//	                    temp = Fvec(i)
-//	                    call rwupdt(n, Fjac, Ldfjac, Wa3, Qtf, temp, Wa1, Wa2)
-//	                    iflag = iflag + 1
-//	                end do
-//	                Njev = Njev + 1
-	//
-//	                ! if the jacobian is rank deficient, call qrfac to
-//	                ! reorder its columns and update the components of qtf.
-	//
-//	                sing = .false.
-//	                do j = 1, n
-//	                    if (Fjac(j, j) == zero) sing = .true.
-//	                    Ipvt(j) = j
-//	                    Wa2(j) = enorm(j, Fjac(1, j))
-//	                end do
+//	                If the jacobian is rank deficient, call qrfac to
+//	                reorder its columns and update the components of qtf.
+	
+	                sing = false;
+	                for(j = 0;j< n;j++){
+	                    if (fjac[j][j] == 0){
+							 sing =  true;
+						}
+	                    ipvt[j] = j;
+	                    wa2[j] = enorm(j, fjac[0][j]) //Needs to be fixed
+	                }
 //	                if (sing) then
 //	                    call qrfac(n, n, Fjac, Ldfjac, .true., Ipvt, n, Wa1, Wa2, Wa3)
 //	                    do j = 1, n
@@ -3305,9 +3247,9 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	//
 //	                end do inner ! end of the inner loop. repeat if iteration unsuccessful.
 	//
-//	            end do outer ! end of the outer loop.
+	            } //end do outer ! end of the outer loop.
 	//
-//	        end block main
+	        } //end block main
 	//
 //	        ! termination, either normal or user imposed.
 	//
@@ -3316,8 +3258,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        if (Nprint > 0) call fcn(m, n, x, Fvec, Wa3, iflag)
 	//
 	}
-	// !*****************************************************************************************
-	//
+/**
 	// !*****************************************************************************************
 	// !>
 	// ! the purpose of lmstr1 is to minimize the sum of the squares of
@@ -3386,6 +3327,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	                                                !! the computation of r.
 //	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
 	//
+ */
 		public static void lmstr1(SystemOfEquations fcn, int m,int n,double[] x,double[] fVec,double[][] fJac,int ldfJac,double tol,int info,int[] ipvt,double[] wa,int lwa) {
 			
 	        int maxfev, mode, nfev = 0, njev = 0, nprint;
@@ -3418,8 +3360,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 				}
 	        }
 		}
-		
-
 	/**
 	 * <p>
 	 * this subroutine proceeds from the computed qr factorization ofan m by n
@@ -3442,8 +3382,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 * 
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-	
-	public static void qform(int m, int n, double[][] q, int ldq, double[] wa) {
+		public static void qform(int m, int n, double[][] q, int ldq, double[] wa) {
 		
 		int i, j, jm1, k, l, minmn, np1; //temporary variables 
 		double sum, temp; //temporary variables 
@@ -3493,8 +3432,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 				}
 			}
 		}
-	}
-	
+	}	
 /**
  * <p>
  * This subroutine uses householder transformations with column pivoting
@@ -3551,8 +3489,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
  * 
  * 
  */				
-	
-
 	public static void qrfac(int m, int n, double[][] a, int lda, boolean pivot, int[] ipvt, int lipvt,
 			double[] rdiag, double[] acnorm, double[] wa) {
 				
@@ -3658,7 +3594,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			rdiag[j] = -ajnorm;
 		}
 	}
-
 /*	!*****************************************************************************************
 	!>
 	! given an m by n matrix a, an n by n diagonal matrix d,
@@ -3715,7 +3650,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	                                         !! diagonal elements of the upper triangular matrix s.
 	        real(wp), intent(inout) :: Wa(n) !! a work array of length n.
 	*/
-
 	public static void qrsolv(int n, double[][] r, int ldr, int[] ipvt,double[] diag,double[] qtb, double[] x, double[] sDiag, double[] wa) {
 
 		//!!!!!!!UNTESTED!!!!!!!!!!!!
@@ -3835,7 +3769,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	            x[l] = wa[j];
 	        }
 	}
-	
 	/**
 	 * 
 	 * Given an m by n matrix a, this subroutine computes a*q whereq is the product
@@ -3866,7 +3799,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 *            <p>
 	 * @return A double[][] array
 	 */
-	
 	public static double[][] r1mpyq(int m, int n, double[][] a, int lda, double[] v, double[] w) {
 		
 		int i, j, nmj, nm1; //Temporary variables
@@ -3913,7 +3845,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		}
 		return a;
 	}
-
 	/**
 	 * <p>
 	 * Given an m by n lower trapezoidal matrix s, an m-vector u, and an n-vector v,
@@ -3955,7 +3886,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 *             <p>
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-	
 	public static void r1updt(int m, int n, double[] s, int Ls, double[] u, double[] v, double[] w,
 			boolean sing) {
 		
@@ -4070,7 +4000,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			sing = true;
 		}
 	}
-
 	/*
 	 * !*****************************************************************************************
 		!>
@@ -4114,9 +4043,6 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 * 
 	 * 
 	 */
-
-
-
 	public static void rwupdt(int n, double[][] r, int ldr, double[] w, double[] b, double alpha, double[] cos,
 
 //!!!!!!!!!!!!!! CURRENTLY UNTESTED
