@@ -2689,166 +2689,199 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
 	//
 	*/
-		public static void lmpar() {
-			
+		public static void lmpar(int n,double[][] r,int ldr,int[] ipvt,double[] diag,double[] qtb,double delta, double par,
+								 double[] x, double[] sdiag, double[] wa1, double[] wa2) {
+			// lmpar(n, r, Ldr, Ipvt, Diag, Qtb, Delta, Par, x, Sdiag, Wa1, Wa2)
 		
-//	        integer :: i, iter, j, jm1, jp1, k, l, nsing
-//	        real(wp) :: dxnorm, fp, gnorm, parc, parl, paru, sum, temp
-	//
-//	        real(wp), parameter :: p1 = 1.0e-1_wp
-//	        real(wp), parameter :: p001 = 1.0e-3_wp
-//	        real(wp), parameter :: dwarf = dpmpar(2) !! the smallest positive magnitude
-	//
-//	        ! compute and store in x the gauss-newton direction. if the
-//	        ! jacobian is rank-deficient, obtain a least squares solution.
-	//
-//	        nsing = n
-//	        do j = 1, n
-//	            Wa1(j) = Qtb(j)
-//	            if (r(j, j) == zero .and. nsing == n) nsing = j - 1
-//	            if (nsing < n) Wa1(j) = zero
-//	        end do
-//	        if (nsing >= 1) then
-//	            do k = 1, nsing
-//	                j = nsing - k + 1
-//	                Wa1(j) = Wa1(j)/r(j, j)
-//	                temp = Wa1(j)
-//	                jm1 = j - 1
-//	                if (jm1 >= 1) then
-//	                    do i = 1, jm1
-//	                        Wa1(i) = Wa1(i) - r(i, j)*temp
-//	                    end do
-//	                end if
-//	            end do
-//	        end if
-//	        do j = 1, n
-//	            l = Ipvt(j)
-//	            x(l) = Wa1(j)
-//	        end do
-	//
-//	        ! initialize the iteration counter.
-//	        ! evaluate the function at the origin, and test
-//	        ! for acceptance of the gauss-newton direction.
-	//
-//	        iter = 0
-//	        do j = 1, n
-//	            Wa2(j) = Diag(j)*x(j)
-//	        end do
-//	        dxnorm = enorm(n, Wa2)
-//	        fp = dxnorm - Delta
-//	        if (fp <= p1*Delta) then
-//	            ! termination.
-//	            if (iter == 0) Par = zero
-//	        else
-	//
-//	            ! if the jacobian is not rank deficient, the newton
-//	            ! step provides a lower bound, parl, for the zero of
-//	            ! the function. otherwise set this bound to zero.
-	//
-//	            parl = zero
-//	            if (nsing >= n) then
-//	                do j = 1, n
-//	                    l = Ipvt(j)
-//	                    Wa1(j) = Diag(l)*(Wa2(l)/dxnorm)
-//	                end do
-//	                do j = 1, n
-//	                    sum = zero
-//	                    jm1 = j - 1
-//	                    if (jm1 >= 1) then
-//	                        do i = 1, jm1
-//	                            sum = sum + r(i, j)*Wa1(i)
-//	                        end do
-//	                    end if
-//	                    Wa1(j) = (Wa1(j) - sum)/r(j, j)
-//	                end do
-//	                temp = enorm(n, Wa1)
-//	                parl = ((fp/Delta)/temp)/temp
-//	            end if
-	//
-//	            ! calculate an upper bound, paru, for the zero of the function.
-	//
-//	            do j = 1, n
-//	                sum = zero
-//	                do i = 1, j
-//	                    sum = sum + r(i, j)*Qtb(i)
-//	                end do
-//	                l = Ipvt(j)
-//	                Wa1(j) = sum/Diag(l)
-//	            end do
-//	            gnorm = enorm(n, Wa1)
-//	            paru = gnorm/Delta
-//	            if (paru == zero) paru = dwarf/min(Delta, p1)
-	//
-//	            ! if the input par lies outside of the interval (parl,paru),
-//	            ! set par to the closer endpoint.
-	//
-//	            Par = max(Par, parl)
-//	            Par = min(Par, paru)
-//	            if (Par == zero) Par = gnorm/dxnorm
-	//
-//	            ! beginning of an iteration.
-//	            do
-	//
-//	                iter = iter + 1
-	//
-//	                ! evaluate the function at the current value of par.
-	//
-//	                if (Par == zero) Par = max(dwarf, p001*paru)
-//	                temp = sqrt(Par)
-//	                do j = 1, n
-//	                    Wa1(j) = temp*Diag(j)
-//	                end do
-//	                call qrsolv(n, r, Ldr, Ipvt, Wa1, Qtb, x, Sdiag, Wa2)
-//	                do j = 1, n
-//	                    Wa2(j) = Diag(j)*x(j)
-//	                end do
-//	                dxnorm = enorm(n, Wa2)
-//	                temp = fp
-//	                fp = dxnorm - Delta
-	//
-//	                ! if the function is small enough, accept the current value
-//	                ! of par. also test for the exceptional cases where parl
-//	                ! is zero or the number of iterations has reached 10.
-	//
-//	                if (abs(fp) <= p1*Delta .or. parl == zero .and. fp <= temp .and. &
-//	                    temp < zero .or. iter == 10) then
-//	                    if (iter == 0) Par = zero
-//	                    exit
-//	                else
-	//
-//	                    ! compute the newton correction.
-	//
-//	                    do j = 1, n
-//	                        l = Ipvt(j)
-//	                        Wa1(j) = Diag(l)*(Wa2(l)/dxnorm)
-//	                    end do
-//	                    do j = 1, n
-//	                        Wa1(j) = Wa1(j)/Sdiag(j)
-//	                        temp = Wa1(j)
-//	                        jp1 = j + 1
-//	                        if (n >= jp1) then
-//	                            do i = jp1, n
-//	                                Wa1(i) = Wa1(i) - r(i, j)*temp
-//	                            end do
-//	                        end if
-//	                    end do
-//	                    temp = enorm(n, Wa1)
-//	                    parc = ((fp/Delta)/temp)/temp
-	//
+	        int i, iter, j, jm1, jp1, k, l, nsing;
+	        double dxnorm, fp, gnorm, parc, parl, paru, sum, temp;
+	
+	        double p1 = 1.0e-1;
+	        double p001 = 1.0e-3;
+	        double dwarf = dpmpar[2]; // the smallest positive magnitude
+	
+//	        Compute and store in x the gauss-newton direction. if the
+//	        jacobian is rank-deficient, obtain a least squares solution.
+	
+	        nsing = n;
+	        for(j = 0;j< n;j++){
+	            wa1[j] = qtb[j];
+	            if (r[j][j] == 0 && nsing == n) {
+					nsing = j - 1;//might need fixing
+				}
+	            if (nsing < n) {
+					wa1[j] = 0;
+				}
+			}
+	        if (nsing >= 1) {
+	            for(k = 0;k< nsing;k++){
+	                j = nsing - k + 1; //might need fixing
+	                wa1[j] = wa1[j]/r[j][j];
+	                temp = wa1[j];
+	                jm1 = j - 1;
+	                if (jm1 >= 0){
+	                    for(i = 0;i< jm1;i++){
+	                        wa1[i] = wa1[i] - r[i][j]*temp;
+						}
+					}
+				}
+			}
+	        for(j = 0;j< n;j++){
+	            l = ipvt[j];
+	            x[l] = wa1[j];
+			}
+	
+//	        Initialize the iteration counter.
+//	        evaluate the function at the origin, and test
+//	        for acceptance of the gauss-newton direction.
+	
+	        iter = 0;
+	        for(j = 0;j< n;j++){
+	            wa2[j] = diag[j]*x[j];
+			}
+	        dxnorm = enorm(n, wa2);
+	        fp = dxnorm - delta;
+	        if (fp <= p1*delta) {
+//	            Termination.
+	            if (iter == 0) {
+					par = 0;
+				}
+			}else{
+	
+//	            If the jacobian is not rank deficient, the newton
+//	            step provides a lower bound, parl, for the zero of
+//	            the function. otherwise set this bound to zero.
+	
+	            parl = 0;
+	            if (nsing >= n){
+	                for(j = 0;j< n;j++){
+	                    l = ipvt[j];
+	                    wa1[j] = diag[l]*(wa2[l]/dxnorm);
+					}
+	                for(j = 0;j< n;j++){
+	                    sum = 0;
+	                    jm1 = j - 1;
+	                    if (jm1 >= 0) {
+	                        for(i = 0;i<jm1;i++){
+	                            sum = sum + r[i][j]*wa1[i];
+							}
+						}
+	                    wa1[j] = (wa1[j] - sum)/r[j][j];
+					}
+	                temp = enorm(n, wa1);
+	                parl = ((fp/delta)/temp)/temp;
+				}
+	
+//	            Calculate an upper bound, paru, for the zero of the function.
+	
+	            for(j = 0;j< n;j++){
+	                sum = 0;
+	                for(i = 0;i< j;i++){
+	                    sum = sum + r[i][j]*qtb[i];
+					}
+	                l = ipvt[j];
+	                wa1[j] = sum/diag[l];
+				}
+	            gnorm = enorm(n, wa1);
+	            paru = gnorm/delta;
+	            if (paru == 0){
+					if(delta>p1){
+						paru = dwarf/p1;
+					}else{
+						paru = dwarf/delta;
+					}
+				}	
+//	            If the input par lies outside of the interval (parl,paru),
+//	            set par to the closer endpoint.
+				if(parl>par){
+					par=parl;
+				}
+				if(par>paru){
+					par = paru;
+				}
+	            if (par == 0) {
+					par = gnorm/dxnorm;
+				}
+	
+//	            Beginning of an iteration.
+	            do{
+	
+	                iter = iter + 1;
+	
+//	                Evaluate the function at the current value of par.
+	
+	                if (par == 0){
+						if(dwarf>p001*paru){
+							par = dwarf;
+						}else{
+							par = p001*paru;
+						}
+					}
+	                temp = Math.sqrt(par);
+	                for(j = 0;j< n;j++){
+	                    wa1[j] = temp*diag[j];
+					}
+	                qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
+	                for(j = 0;j< n;j++){
+	                    wa2[j] = diag[j]*x[j];
+					}
+	                dxnorm = enorm(n, wa2);
+	                temp = fp;
+	                fp = dxnorm - delta;
+	
+//	                If the function is small enough, accept the current value
+//	                of par. also test for the exceptional cases where parl
+//	                is zero or the number of iterations has reached 10.
+	
+	                if (Math.abs(fp) <= p1*delta || parl == 0 && fp <= temp && temp < 0 || iter == 10){
+	                    if (iter == 0) {
+							par = 0;
+	                    	//exit maybe a break or continure?
+					}else{
+	
+//	                    Compute the newton correction.
+	
+	                    for(j = 0;j< n;j++){
+	                        l = ipvt[j];
+	                        wa1[j] = diag[l]*(wa2[l]/dxnorm);
+						}
+	                    for(j = 0;j< n;j++){
+	                        wa1[j] = wa1[j]/sdiag[j]
+	                        temp = wa1[j];
+	                        jp1 = j + 1;
+	                        if (n >= jp1){
+	                            for(i = jp1;i< n;i++){
+	                                wa1[i] = wa1[i] - r[i][j]*temp;
+								}
+							}
+						}
+	                    temp = enorm(n, wa1);
+	                    parc = ((fp/delta)/temp)/temp;
+	
 //	                    ! depending on the sign of the function, update parl or paru.
-	//
-//	                    if (fp > zero) parl = max(parl, Par)
-//	                    if (fp < zero) paru = min(paru, Par)
-	//
-//	                    ! compute an improved estimate for par.
-	//
-//	                    Par = max(parl, Par + parc)
-	//
-//	                end if
-	//
-//	            end do ! end of an iteration.
-	//
-//	        end if
+	
+	                    if (fp > 0){
+							if(par>parl){
+								parl = par;
+							}
+						}
+	                    if (fp < 0){
+							if(par<paru){
+								paru = par;
+							}
+						}
+//	                    Compute an improved estimate for par.
+						if(parl>par+parc){
+							par = parl;
+						}else{
+							par = par + parc;
+						}
+	
+					}
+	
+				}while(true); // end of an iteration.
+	
+			}
 	}
 
 	
@@ -3089,168 +3122,207 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //	                On the first iteration and if mode is 1, scale according
 //	                to the norms of the columns of the initial jacobian.
 	
-//	                if (iter == 1){
-//	                    if (Mode /= 2){
-//	                        for(j = 0;j< n;j++){
-//	                            Diag(j) = Wa2(j)
-//	                            if (Wa2(j) == zero) Diag(j) = one
-//	                        end do
-//	                    end if
+	                if (iter == 1){
+	                    if (mode != 2){
+	                        for(j = 0;j< n;j++){
+	                            diag[j] = wa2[j]
+	                            if (wa2[j] == 0) {
+								diag[j] = 1;
+								}
+	                        }
+	                    }
+	
+//	                    On the first iteration, calculate the norm of the scaled x
+//	                    and initialize the step bound delta.
+	
+	                    for(j = 0;j< n;j++){
+	                        wa3[j] = diag[j]*x[j];
+	                    }
+	                    xnorm = enorm(n, wa3);
+	                    delta = factor*xnorm;
+	                    if (delta == 0){
+							 delta = factor;
+						}
+	                }
+	
+//	                Compute the norm of the scaled gradient.
+	
+	                gnorm = 0;
+	                if (fnorm != 0){
+	                    for(j = 0;j< n;j++){
+	                        l = ipvt[j];
+	                        if (wa2[l] != 0) {
+	                            sum = 0;
+	                            for(i = 0;i< j;i++){
+	                                sum = sum + fjac[i][j]*(qtf[i]/fnorm);
+	                            }
+								if(Math.abs(sum/wa2[l])>gnorm){
+									gnorm = Math.abs(sum/wa2[l]);
+								}
+	                        }
+	                    }
+	                }
+	
+//	                Test for convergence of the gradient norm.
+	
+	                if (gnorm <= gtol){
+						info = 4;
+					}
+	                if (info != 0){
+						//throw error exit
+					}
+	
+//	                Rescale if necessary.
+	
+	                if (mode != 2){
+	                    for(j = 0;j< n;j++){
+							if(wa2[j]>diag[j]){
+								diag[j] = wa2[j];
+							}
+	                    }
+	                }
+	
+//	                Beginning of the inner loop.
+	
+	                do{ //inner : do
+	
+//	                    Determine the levenberg-marquardt parameter.
 	//
-//	                    ! on the first iteration, calculate the norm of the scaled x
-//	                    ! and initialize the step bound delta.
+	                    lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, par, wa1, wa2, wa3, wa4);
 	//
-//	                    do j = 1, n
-//	                        Wa3(j) = Diag(j)*x(j)
-//	                    end do
-//	                    xnorm = enorm(n, Wa3)
-//	                    delta = Factor*xnorm
-//	                    if (delta == zero) delta = Factor
-//	                end if
+//	                    Store the direction p and x + p. calculate the norm of p.
 	//
-//	                ! compute the norm of the scaled gradient.
+	                    for(j = 0;j< n;j++){
+	                        wa1[j] = -wa1[j];
+	                        wa2[j] = x[j] + wa1[j];
+	                        wa3[j] = diag[j]*wa1[j];
+	                    }
+	                    pnorm = enorm(n, wa3);
+	
+//	                    On the first iteration, adjust the initial step bound.
+	
+	                    if (iter == 1){ 
+							if(delta>pnorm){
+								delta = pnorm;
+							}
+						}
+//	                    Evaluate the function at x + p and calculate its norm.
 	//
-//	                gnorm = zero
-//	                if (fnorm /= zero) then
-//	                    do j = 1, n
-//	                        l = Ipvt(j)
-//	                        if (Wa2(l) /= zero) then
-//	                            sum = zero
-//	                            do i = 1, j
-//	                                sum = sum + Fjac(i, j)*(Qtf(i)/fnorm)
-//	                            end do
-//	                            gnorm = max(gnorm, abs(sum/Wa2(l)))
-//	                        end if
-//	                    end do
-//	                end if
-	//
-//	                ! test for convergence of the gradient norm.
-	//
-//	                if (gnorm <= Gtol) Info = 4
-//	                if (Info /= 0) exit main
-	//
-//	                ! rescale if necessary.
-	//
-//	                if (Mode /= 2) then
-//	                    do j = 1, n
-//	                        Diag(j) = max(Diag(j), Wa2(j))
-//	                    end do
-//	                end if
-	//
-//	                ! beginning of the inner loop.
-	//
-//	                inner : do
-	//
-//	                    ! determine the levenberg-marquardt parameter.
-	//
-//	                    call lmpar(n, Fjac, Ldfjac, Ipvt, Diag, Qtf, delta, par, Wa1, Wa2, Wa3, Wa4)
-	//
-//	                    ! store the direction p and x + p. calculate the norm of p.
-	//
-//	                    do j = 1, n
-//	                        Wa1(j) = -Wa1(j)
-//	                        Wa2(j) = x(j) + Wa1(j)
-//	                        Wa3(j) = Diag(j)*Wa1(j)
-//	                    end do
-//	                    pnorm = enorm(n, Wa3)
-	//
-//	                    ! on the first iteration, adjust the initial step bound.
-	//
-//	                    if (iter == 1) delta = min(delta, pnorm)
-	//
-//	                    ! evaluate the function at x + p and calculate its norm.
-	//
-//	                    iflag = 1
-//	                    call fcn(m, n, Wa2, Wa4, Wa3, iflag)
-//	                    Nfev = Nfev + 1
-//	                    if (iflag < 0) exit main
-	//
-//	                    fnorm1 = enorm(m, Wa4)
-	//
-//	                    ! compute the scaled actual reduction.
-	//
-//	                    actred = -one
-//	                    if (p1*fnorm1 < fnorm) actred = one - (fnorm1/fnorm)**2
-	//
-//	                    ! compute the scaled predicted reduction and
-//	                    ! the scaled directional derivative.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = zero
-//	                        l = Ipvt(j)
-//	                        temp = Wa1(l)
-//	                        do i = 1, j
-//	                            Wa3(i) = Wa3(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end do
-//	                    temp1 = enorm(n, Wa3)/fnorm
-//	                    temp2 = (sqrt(par)*pnorm)/fnorm
-//	                    prered = temp1**2 + temp2**2/p5
-//	                    dirder = -(temp1**2 + temp2**2)
-	//
-//	                    ! compute the ratio of the actual to the predicted
-//	                    ! reduction.
-	//
-//	                    ratio = zero
-//	                    if (prered /= zero) ratio = actred/prered
-	//
-//	                    ! update the step bound.
-	//
-//	                    if (ratio <= p25) then
-//	                        if (actred >= zero) temp = p5
-//	                        if (actred < zero) temp = p5*dirder/(dirder + p5*actred)
-//	                        if (p1*fnorm1 >= fnorm .or. temp < p1) temp = p1
-//	                        delta = temp*min(delta, pnorm/p1)
-//	                        par = par/temp
-//	                    elseif (par == zero .or. ratio >= p75) then
-//	                        delta = pnorm/p5
-//	                        par = p5*par
-//	                    end if
-	//
-//	                    ! test for successful iteration.
-	//
-//	                    if (ratio >= p0001) then
-	//
-//	                        ! successful iteration. update x, fvec, and their norms.
-	//
-//	                        do j = 1, n
-//	                            x(j) = Wa2(j)
-//	                            Wa2(j) = Diag(j)*x(j)
-//	                        end do
-//	                        do i = 1, m
-//	                            Fvec(i) = Wa4(i)
-//	                        end do
-//	                        xnorm = enorm(n, Wa2)
-//	                        fnorm = fnorm1
-//	                        iter = iter + 1
-//	                    end if
-	//
-//	                    ! tests for convergence.
-	//
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. &
-//	                        p5*ratio <= one) Info = 1
-//	                    if (delta <= Xtol*xnorm) Info = 2
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. &
-//	                        p5*ratio <= one .and. Info == 2) Info = 3
-//	                    if (Info /= 0) exit main
-	//
-//	                    ! tests for termination and stringent tolerances.
-	//
-//	                    if (Nfev >= Maxfev) Info = 5
-//	                    if (abs(actred) <= epsmch .and. prered <= epsmch .and. &
-//	                        p5*ratio <= one) Info = 6
-//	                    if (delta <= epsmch*xnorm) Info = 7
-//	                    if (gnorm <= epsmch) Info = 8
-//	                    if (Info /= 0) exit main
-	//
-//	                    if (ratio >= p0001) exit inner
-	//
-//	                end do inner ! end of the inner loop. repeat if iteration unsuccessful.
-	//
-	            } //end do outer ! end of the outer loop.
-	//
-	        } //end block main
-	//
+	                    iflag = 1;
+	                    wa4 = fcn.evaluate(x); // call fcn(m, n, Wa2, Wa4, Wa3, iflag)
+	                    nfev = nfev + 1;
+	                    if (iflag < 0){
+							/// exit main
+						}
+	                    fnorm1 = enorm(m, wa4);
+	
+//	                    Compute the scaled actual reduction.
+	
+	                    actred = -1;
+	                    if (p1*fnorm1 < fnorm) actred = 1 - (fnorm1/fnorm)*(fnorm1/fnorm);
+	
+//	                    Compute the scaled predicted reduction and
+//	                    the scaled directional derivative.
+	
+	                    for(j = 0;j< n;j++){
+	                        wa3[j] = 0;
+	                        l = ipvt[j];
+	                        temp = wa1[l];
+	                        for(i = 0;i< j;i++){
+	                            wa3[i] = wa3[i] + fjac[i][j]*temp;
+							}
+						}
+	                    temp1 = enorm(n, wa3)/fnorm;
+	                    temp2 = (Math.sqrt(par)*pnorm)/fnorm;
+	                    prered = temp1*temp1 + temp2*temp2/p5;
+	                    dirder = -(temp1*temp1 + temp2*temp2);
+	
+//	                    Compute the ratio of the actual to the predicted
+//	                    reduction.
+	
+	                    ratio = 0;
+	                    if (prered != 0){
+							ratio = actred/prered;
+						}
+//	                    Update the step bound.
+	
+	                    if (ratio <= p25){
+	                        if (actred >= 0){
+								temp = p5;
+							}
+	                        if (actred < 0){
+								temp = p5*dirder/(dirder + p5*actred);
+							}
+	                        if (p1*fnorm1 >= fnorm || temp < p1){
+								temp = p1;
+							}
+							if(delta>pnorm/p1){
+								delta = temp * pnorm/p1;
+							}else{
+								delta = delta * temp;
+							}
+	                        par = par/temp;
+						}else if (par == 0 || ratio >= p75){
+	                        delta = pnorm/p5;
+	                        par = p5*par;
+						}
+	
+//	                    Test for successful iteration.
+	
+	                    if (ratio >= p0001){
+	
+//	                        Successful iteration. update x, fvec, and their norms.
+	
+	                        for(j = 0;j< n;j++){
+	                            x[j] = wa2[j];
+	                            wa2[j] = diag[j]*x[j];
+							}
+	                        for(i = 0;i< m;i++){
+	                            fvec[i] = wa4[i];
+							}
+	                        xnorm = enorm(n, wa2);
+	                        fnorm = fnorm1;
+	                        iter = iter + 1;
+						}
+	
+//	                    Tests for convergence.
+	
+	                    if (Math.abs(actred) <= ftol && prered <= ftol && p5*ratio <= 1) {
+							info = 1;
+						}
+	                    if (delta <= xtol*xnorm) {
+							info = 2;
+						}
+	                    if (Math.abs(actred) <= ftol && prered <= ftol && p5*ratio <= 1 && info == 2){
+							info = 3;
+						}
+	                    if (info != 0){
+							// exit main
+						}	
+	                    // Tests for termination and stringent tolerances.
+	
+	                    if (nfev >= maxfev) {
+							info = 5;
+						}
+	                    if (Math.abs(actred) <= epsmch && prered <= epsmch && p5*ratio <= 1) {
+							info = 6;
+						}
+	                    if (delta <= epsmch*xnorm) {
+							info = 7;
+						}
+	                    if (gnorm <= epsmch) {
+							info = 8;
+						}
+	                    if (info != 0){
+								// exit main
+						}
+	                    if (ratio >= p0001){
+							// exit inner
+						} 
+	
+	                } while(true); // end do inner ! end of the inner loop. repeat if iteration unsuccessful.
+	            }while(true); // //end do outer ! end of the outer loop.
+	        }while(true); // //end block main
 //	        ! termination, either normal or user imposed.
 	//
 //	        if (iflag < 0) Info = iflag
