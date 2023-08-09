@@ -2,11 +2,11 @@ package Minpack;
 
 public class Minpack {
 
-	//Converted from Fortran, then modified slightly. Work in progress to finish the rest 
-//	of the functions as currently, only hybrd1/hybrd is fully functional
-	
-	//Disclaimer from original Minpack:
-	
+//	Converted from Fortran, then modified slightly. Work in progress to finish
+//	the rest of the functions as currently, only hybrd1/hybrd is fully functional
+
+//**********Disclaimer from original Minpack: **********************\\
+
 //	Minpack Copyright Notice (1999) University of Chicago.  All rights reserved
 //
 //	Redistribution and use in source and binary forms, with or
@@ -34,17 +34,17 @@ public class Minpack {
 //	itself, if and wherever such third-party acknowledgments
 //	normally appear.
 //
-//	4. WARRANTY DISCLAIMER. THE SOFTWARE IS SUPPLIED "AS IS"
-//	WITHOUT WARRANTY OF ANY KIND. THE COPYRIGHT HOLDER, THE
+//	4. waRRANTY DISCLAIMER. THE SOFTwaRE IS SUPPLIED "AS IS"
+//	WITHOUT waRRANTY OF ANY KIND. THE COPYRIGHT HOLDER, THE
 //	UNITED STATES, THE UNITED STATES DEPARTMENT OF ENERGY, AND
-//	THEIR EMPLOYEES: (1) DISCLAIM ANY WARRANTIES, EXPRESS OR
-//	IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES
+//	THEIR EMPLOYEES: (1) DISCLAIM ANY waRRANTIES, EXPRESS OR
+//	IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED waRRANTIES
 //	OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE
 //	OR NON-INFRINGEMENT, (2) DO NOT ASSUME ANY LEGAL LIABILITY
 //	OR RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR
-//	USEFULNESS OF THE SOFTWARE, (3) DO NOT REPRESENT THAT USE OF
-//	THE SOFTWARE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS, (4)
-//	DO NOT WARRANT THAT THE SOFTWARE WILL FUNCTION
+//	USEFULNESS OF THE SOFTwaRE, (3) DO NOT REPRESENT THAT USE OF
+//	THE SOFTwaRE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS, (4)
+//	DO NOT waRRANT THAT THE SOFTwaRE WILL FUNCTION
 //	UNINTERRUPTED, THAT IT IS ERROR-FREE OR THAT ANY ERRORS WILL
 //	BE CORRECTED.
 //
@@ -56,28 +56,24 @@ public class Minpack {
 //	PROFITS OR LOSS OF DATA, FOR ANY REASON WHATSOEVER, WHETHER
 //	SUCH LIABILITY IS ASSERTED ON THE BASIS OF CONTRACT, TORT
 //	(INCLUDING NEGLIGENCE OR STRICT LIABILITY), OR OTHERWISE,
-//	EVEN IF ANY OF SAID PARTIES HAS BEEN WARNED OF THE
+//	EVEN IF ANY OF SAID PARTIES HAS BEEN waRNED OF THE
 //	POSSIBILITY OF SUCH LOSS OR DAMAGES.
 
-
-//module minpack_module
-
 	static double n;
-	//static double epsmch = Math.ulp(n); //removing as too much precision causes issues
-	static double epsmch = 0.0000000000000002220446049250313; //Using this instead due to above statement
-	static String[] infoDict = {
-			"Info 0 : Input parameters are incorrect.",
-			"Info 1 : Relative error between two consecutive iterates is at most `xtol`.",
-			"Info 2 : Iterations has exceded maxfev, the max allowed iterations",
-			"Info 3 : xTol is too small. No further improvement in the approximate solution `x` is possible.",
-			"Info 4 : Iteration is not making good progress, measured by the improvement from the last five jacobian evaluations.",
-			"Info 5 : Tteration is not making good progress, as measured by the improvement from the last ten iterations."};
+	// static double epsmch = Math.ulp(n); //removing as too much precision causes issues
+	static double epsmch = 0.0000000000000002220446049250313; // Using this instead due to above statement
+	static String[] infoDict = { "info 0 : Input parameters are incorrect.",
+			"info 1 : Relative error between two consecutive iterates is at most `xTol`.",
+			"info 2 : Iterations has exceded maxFev, the max allowed iterations",
+			"info 3 : xTol is too small. No further improvement in the approximate solution `x` is possible.",
+			"info 4 : Iteration is not making good progress, measured by the improvement from the last five jacobian evaluations.",
+			"info 5 : Tteration is not making good progress, as measured by the improvement from the last ten iterations." };
 
 	/**
 	 * <p>
-	 * NOT TESTED YET
-	 * This subroutine checks the gradients of m nonlinear functions in n variables,
-	 * evaluated at a point x, for consistency with the functions themselves.
+	 * NOT TESTED YET This subroutine checks the gradients of m nonlinear functions
+	 * in n variables, evaluated at a point x, for consistency with the functions
+	 * themselves.
 	 * <p>
 	 * The subroutine does not perform reliably if cancellation or rounding errors
 	 * cause a severe loss of significance in the evaluation of a function.
@@ -91,56 +87,56 @@ public class Minpack {
 	 * @param n      int -> A positive integer variable set to the number of
 	 *               variables.(Length of array x)
 	 *               <p>
-	 * @param ldfjac int -> A positive integer, not less than m, which specifies the
-	 *               leading dimension of the array fjac. (i.e., The number of
-	 *               functions/equations.ldfjac can just be set to m)
+	 * @param ldfJac int -> A positive integer, not less than m, which specifies the
+	 *               leading dimension of the array fJac. (i.e., The number of
+	 *               functions/equations.ldfJac can just be set to m)
 	 *               <p>
 	 * @param mode   int -> An integer input set to 1 on the first call and 2 on the
 	 *               second. The user must call chkder twice,first with mode = 1 and
 	 *               then with mode = 2. mode = 1 -> x must contain the point of
-	 *               evaluation. xp is set to a neighboring point. mode = 2 -> fvec
-	 *               must contain the functions and the rows of fjac must contain
+	 *               evaluation. xp is set to a neighboring point. mode = 2 -> fVec
+	 *               must contain the functions and the rows of fJac must contain
 	 *               the gradients of the respective functions each evaluated at x,
-	 *               and fvecp must contain the functions evaluated at xp. Err
+	 *               and fVecp must contain the functions evaluated at xp. Err
 	 *               contains measures of correctness of the respective gradients.
 	 *               <p>
 	 * @param x      double[n] -> Input array (i.e. The variables)
 	 *               <p>
-	 * @param fvec   double[m] -> An array of length m. When mode = 2, fvec must
+	 * @param fVec   double[m] -> An array of length m. When mode = 2, fVec must
 	 *               contain the functions evaluated at x.
 	 *               <p>
-	 * @param fjac   double[ldfjac][n] -> an m by n array. When mode = 2, the rows
-	 *               of fjac must contain the gradients of the respective functions
+	 * @param fJac   double[ldfJac][n] -> an m by n array. When mode = 2, the rows
+	 *               of fJac must contain the gradients of the respective functions
 	 *               evaluated at x.
 	 *               <p>
 	 * @param xp     double[n] -> An array of length n. When mode = 1, xp is set to
 	 *               a neighboring point of x.
 	 *               <p>
-	 * @param fvecp  double[m] -> An array of length m. When mode = 2, fvecp must
+	 * @param fVecp  double[m] -> An array of length m. When mode = 2, fVecp must
 	 *               contain the functions evaluated at xp.
 	 *               <p>
 	 * @param err    double[m] -> An array of length m. When mode = 2, err contains
 	 *               measures of correctness of the respective gradients. If there
-	 *               is no severe loss of significance, then if err(i) is 1.0 the
-	 *               i-th gradient is correct, while if err(i) is 0.0 the i-th
+	 *               is no severe loss of significance, then if err[i] is 1.0 the
+	 *               i-th gradient is correct, while if err[i] is 0.0 the i-th
 	 *               gradient is incorrect. For values of err between 0.0 and 1.0,
 	 *               the categorization is less certain. In general, a value of
-	 *               err(i) greater than 0.5 indicates that the i-th gradient is
-	 *               probably correct, while a value of err(i) less than 0.5
+	 *               err[i] greater than 0.5 indicates that the i-th gradient is
+	 *               probably correct, while a value of err[i] less than 0.5
 	 *               indicates that the i-th gradient is probably incorrect.
 	 * 
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-	public static void chkder(int m, int n, double[] x, double[] fvec, double[][] fjac, int ldfjac, double[] xp,
-			double[] fvecp, int mode, double[] err) {
-		
-		//NOT TESTED YET
-		
+	public static void chkder(int m, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac, double[] xp,
+			double[] fVecp, int mode, double[] err) {
+
+		// NOT TESTED YET
+
 		int i, j; // Only used for loops, not important.
 		double temp; // Just used as a temp variable
 		double eps = Math.sqrt(epsmch); // sqrt of machine epsilon
-		double factor = 100.0; // Factor, or percent of change that happens.
-		double epsf = factor * epsmch; // Factor of epsmch, or percent of change that will happen.
+		double factor = 100.0; // factor, or percent of change that happens.
+		double epsf = factor * epsmch; // factor of epsmch, or percent of change that will happen.
 		double epslog = Math.log10(epsf); // log 10 of epsf
 
 		if (mode == 2) {
@@ -151,14 +147,14 @@ public class Minpack {
 					temp = 1.0;
 				}
 				for (i = 0; i <= m; i++) {
-					err[i] = err[i] + temp * fjac[i][j];
+					err[i] = err[i] + temp * fJac[i][j];
 				}
 			}
 			for (i = 0; i <= m; i++) {
 				temp = 1.0;
-				if (fvec[i] != 0 && fvecp[i] != 0 && Math.abs(fvecp[i] - fvec[i]) >= epsf * Math.abs(fvec[i])) {
-					temp = eps * Math.abs((fvecp[i] - fvec[i]) / eps - err[i])
-							/ (Math.abs(fvec[i]) + Math.abs(fvecp[i]));
+				if (fVec[i] != 0 && fVecp[i] != 0 && Math.abs(fVecp[i] - fVec[i]) >= epsf * Math.abs(fVec[i])) {
+					temp = eps * Math.abs((fVecp[i] - fVec[i]) / eps - err[i])
+							/ (Math.abs(fVec[i]) + Math.abs(fVecp[i]));
 				}
 				err[i] = 1.0;
 				if (temp > epsmch && temp < eps) {
@@ -228,13 +224,13 @@ public class Minpack {
 			double[] wa1, double[] wa2) {
 
 		int i, j, jj, jp1, k, l; // temporary ints
-		double alpha, bnorm, gnorm, qnorm, sgnorm, sum, temp; // temporary doubles
+		double alpha, bnorm, gNorm, qnorm, sgNorm, sum, temp; // temporary doubles
 //	    First, calculate the gauss-newton direction.
 		jj = (n * (n + 1)) / 2;
 		for (k = 0; k < n; k++) {
-			j = n - (k+1);
+			j = n - (k + 1);
 			jp1 = j + 1;
-			jj = jj - (k+1);
+			jj = jj - (k + 1);
 			l = jj + 1;
 			sum = 0;
 			if (n >= jp1) {
@@ -279,14 +275,14 @@ public class Minpack {
 			}
 //			Calculate the norm of the scaled gradient and test for
 //			the special case in which the scaled gradient is zero.
-			gnorm = enorm(n, wa1);
-			sgnorm = 0;
+			gNorm = enorm(n, wa1);
+			sgNorm = 0;
 			alpha = delta / qnorm;
-			if (gnorm != 0) {
+			if (gNorm != 0) {
 //			Calculate the point along the scaled gradient
 //			at which the quadratic is minimized.
 				for (j = 0; j < n; j++) {
-					wa1[j] = (wa1[j] / gnorm) / diag[j];
+					wa1[j] = (wa1[j] / gNorm) / diag[j];
 				}
 				l = 0;
 				for (j = 0; j < n; j++) {
@@ -298,25 +294,25 @@ public class Minpack {
 					wa2[j] = sum;
 				}
 				temp = enorm(n, wa2);
-				sgnorm = (gnorm / temp) / temp;
+				sgNorm = (gNorm / temp) / temp;
 //				Test whether the scaled gradient direction is acceptable.
 				alpha = 0;
-				if (sgnorm < delta) {
+				if (sgNorm < delta) {
 //				The scaled gradient direction is not acceptable.
 //				Finally, calculate the point along the dogleg
 //				at which the quadratic is minimized.
 					bnorm = enorm(n, qtb);
-					temp = (bnorm / gnorm) * (bnorm / qnorm) * (sgnorm / delta);
-					temp = temp - (delta / qnorm) * ((sgnorm / delta) * (sgnorm / delta))
+					temp = (bnorm / gNorm) * (bnorm / qnorm) * (sgNorm / delta);
+					temp = temp - (delta / qnorm) * ((sgNorm / delta) * (sgNorm / delta))
 							+ Math.sqrt((temp - (delta / qnorm)) * (temp - (delta / qnorm)))
-							+ (1 - ((delta / qnorm) * (delta / qnorm))) * (1 - ((sgnorm / delta) * (sgnorm / delta)));
-					alpha = ((delta / qnorm) * (1 - ((sgnorm / delta) * (sgnorm / delta)))) / temp;
+							+ (1 - ((delta / qnorm) * (delta / qnorm))) * (1 - ((sgNorm / delta) * (sgNorm / delta)));
+					alpha = ((delta / qnorm) * (1 - ((sgNorm / delta) * (sgNorm / delta)))) / temp;
 				}
 			}
 //			Form appropriate convex combination of the gauss-newton
 //			direction and the scaled gradient direction.
-			if (sgnorm < delta) {
-				temp = (1 - alpha) * sgnorm;
+			if (sgNorm < delta) {
+				temp = (1 - alpha) * sgNorm;
 			} else {
 				temp = (1 - alpha) * delta;
 			}
@@ -331,7 +327,7 @@ public class Minpack {
 	 * Given an n-vector x, this function calculates the euclidean norm of x.
 	 * 
 	 * <p>
-	 * The euclidean norm is computed by accumulating the sum of ! squares in three
+	 * The euclidean norm is computed by accumulating the sum of  squares in three
 	 * different sums. The sums of squares for the small and large components are
 	 * scaled so that no overflows occur. Non-destructive underflows are permitted.
 	 * Underflows and overflows do not occur in the computation of the un-scaled sum
@@ -400,7 +396,7 @@ public class Minpack {
 //			
 		return enorm;
 	}
-	
+
 	/**
 	 * 
 	 * <p>
@@ -416,8 +412,8 @@ public class Minpack {
 	 * @param n      int -> A positive integer variable set to the number of
 	 *               functions and variables.
 	 *               <p>
-	 * @param ldfjac int -> A positive integer variable not less than n which
-	 *               specifies the leading dimension of the array fjac. I.e. Number
+	 * @param ldfJac int -> A positive integer variable not less than n which
+	 *               specifies the leading dimension of the array fJac. I.e. Number
 	 *               of functions.
 	 *               <p>
 	 * @param iFlag  int -> An integer variable which can be used to terminate the
@@ -441,10 +437,10 @@ public class Minpack {
 	 *               <p>
 	 * @param x      double[n] -> An array of length n. The variables.
 	 *               <p>
-	 * @param fvec   double[n] -> An array of length n which must contain the
+	 * @param fVec   double[n] -> An array of length n which must contain the
 	 *               functions evaluated at x.
 	 *               <p>
-	 * @param fjac   double[ldfjac][n] -> A n by n array which contains the
+	 * @param fJac   double[ldfJac][n] -> A n by n array which contains the
 	 *               approximation to the jacobian matrix evaluated at x.
 	 *               <p>
 	 * @param wa1    double[n] -> A working array of length n.
@@ -453,15 +449,16 @@ public class Minpack {
 	 *               least n, then the jacobian is considered dense, and wa2 is not
 	 *               referenced.
 	 * @return Nothing is returned, rather the objects themselves are modified.
-	 */       
-	public static void fdjac1(SystemOfEquations fcn, int n, double[] x, double[] fvec, double[][] fjac, int ldfjac,
-			int iflag, int ml, int mu, double epsfcn, double[] wa1, double[] wa2) {
-		
-		int i, j, k, msum; //Temporary variables
-		double eps, h, temp; //Temporary variables
+	 */
+	public static void fdjac1(SystemOfEquations fcn, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac,
+			int iFlag, int ml, int mu, double epsfcn, double[] wa1, double[] wa2) {
 
-		//double epsmch = 0.0000000000000002220446049250313; // Removing this and using the global causes fdjac1 to return too small of a gradient change
-		
+		int i, j, k, msum; // Temporary variables
+		double eps, h, temp; // Temporary variables
+
+		// double epsmch = 0.0000000000000002220446049250313; // Removing this and using
+		// the global causes fdjac1 to return too small of a gradient change
+
 		if (epsfcn > epsmch) {
 			eps = Math.sqrt(epsfcn);
 		} else {
@@ -469,15 +466,15 @@ public class Minpack {
 		}
 		msum = ml + mu + 1;
 		if (msum < n) {
-			// computation of banded approximate jacobian.
-			for (k = 0; k < msum+1; k++) {
+//			Computation of banded approximate jacobian.
+			for (k = 0; k < msum + 1; k++) {
 				for (j = k; j < n; j = +msum) {
 					wa2[j] = x[j];
 					h = eps * Math.abs(wa2[j]);
 					if (h == 0) {
 						h = eps;
 					}
-					x[j] = wa2[j ] + h;
+					x[j] = wa2[j] + h;
 				}
 				wa1 = fcn.evaluate(x); // This part needs to be changed later
 				for (j = k; k < n; k = +msum) {
@@ -487,9 +484,9 @@ public class Minpack {
 						h = eps;
 					}
 					for (i = 0; i < n; i++) {
-						fjac[i][j] = 0;
+						fJac[i][j] = 0;
 						if (i >= j - mu && i <= j + ml) {
-							fjac[i][j] = (wa1[i] - fvec[i]) / h;
+							fJac[i][j] = (wa1[i] - fVec[i]) / h;
 						}
 					}
 				}
@@ -506,214 +503,215 @@ public class Minpack {
 				wa1 = fcn.evaluate(x); // This part needs to be changed later
 				x[j] = temp;
 				for (i = 0; i < n; i++) {
-					fjac[i][j] = (wa1[i] - fvec[i]) / h;
+					fJac[i][j] = (wa1[i] - fVec[i]) / h;
 				}
 			}
 		}
 	}
 
-/**
- * 
- * <p>
- * NOT TESTED YET
- * This subroutine computes a forward-difference approximation to the m by n
- * jacobian matrix associated with a specified problem of m functions in n
- * variables.
- * 
- * procedure(func2) :: fcn !! the user-supplied subroutine which calculates the
- * functions.
- * <p>
- * 
- * @param m      int -> A positive integer variable set to the number of
- *               functions.
- *               <p>
- * @param n      int -> A positive integer variable set to the number of
- *               variables. n must not exceed m.
- *               <p>
- * @param ldfjac int -> A positive integer variable not less than m which
- *               specifies the leading dimension of the array fjac.
- *               <p>
- * @param iFlag  int -> An integer variable which can be used to terminate the
- *               execution of fdjac2.
- *               <p>
- * @param epsfcn double -> An variable used in determining a suitable step
- *               length for the forward-difference approximation. This
- *               approximation assumes that the relative errors in the functions
- *               are of the order of epsfcn. If epsfcn is less than the machine
- *               precision, it is assumed that the relative errors in the
- *               functions are of the order of the machine precision.
- *               <p>
- * @param x      double[n] -> An array of length n.
- *               <p>
- * @param fvec   double[m] -> An array of length m which must contain the
- *               functions evaluated at x.
- *               <p>
- * @param fjac   double[ldfjac, n] -> A m by n array which contains the
- *               approximation to the jacobian matrix evaluated at x.
- *               <p>
- * @param wa     double[m] -> A working array of length m.
- *               <p>
- * @return Nothing is returned, rather the objects themselves are modified.
- */
-	public static void fdjac2(SystemOfEquations fcn,int m,int n,double[] x,double[] fvec,double[][] fjac,int Ldfjac,int iFlag,double epsfcn,double[] wa) {
-		
-		//NOT TESTED YET
-		
-		int i,j; //used for loops
-		double eps, h, temp; //temporary variables
-		
-		if(epsfcn>epsmch) {
+	/**
+	 * 
+	 * <p>
+	 * NOT TESTED YET This subroutine computes a forward-difference approximation to
+	 * the m by n jacobian matrix associated with a specified problem of m functions
+	 * in n variables.
+	 * 
+	 * procedure(func2) :: fcn  the user-supplied subroutine which calculates the
+	 * functions.
+	 * <p>
+	 * 
+	 * @param m      int -> A positive integer variable set to the number of
+	 *               functions.
+	 *               <p>
+	 * @param n      int -> A positive integer variable set to the number of
+	 *               variables. n must not exceed m.
+	 *               <p>
+	 * @param ldfJac int -> A positive integer variable not less than m which
+	 *               specifies the leading dimension of the array fJac.
+	 *               <p>
+	 * @param iFlag  int -> An integer variable which can be used to terminate the
+	 *               execution of fdjac2.
+	 *               <p>
+	 * @param epsfcn double -> An variable used in determining a suitable step
+	 *               length for the forward-difference approximation. This
+	 *               approximation assumes that the relative errors in the functions
+	 *               are of the order of epsfcn. If epsfcn is less than the machine
+	 *               precision, it is assumed that the relative errors in the
+	 *               functions are of the order of the machine precision.
+	 *               <p>
+	 * @param x      double[n] -> An array of length n.
+	 *               <p>
+	 * @param fVec   double[m] -> An array of length m which must contain the
+	 *               functions evaluated at x.
+	 *               <p>
+	 * @param fJac   double[ldfJac, n] -> A m by n array which contains the
+	 *               approximation to the jacobian matrix evaluated at x.
+	 *               <p>
+	 * @param wa     double[m] -> A working array of length m.
+	 *               <p>
+	 * @return Nothing is returned, rather the objects themselves are modified.
+	 */
+	public static void fdjac2(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double[][] fJac,
+			int ldfJac, int iFlag, double epsfcn, double[] wa) {
+
+		// NOT TESTED YET
+
+		int i, j; // used for loops
+		double eps, h, temp; // temporary variables
+
+		if (epsfcn > epsmch) {
 			eps = Math.sqrt(epsfcn);
-		}else {
+		} else {
 			eps = Math.sqrt(epsmch);
 		}
-		for(j = 0;j<n;j++) {
-	            temp = x[j];
-	            h = eps*Math.abs(temp);
-	            if (h == 0) {
-	            	h = eps;
-	            }
-	            x[j] = temp + h;
-	            fcn.evaluate(x);
-	            if (iFlag < 0) {
-	            	throw new IllegalArgumentException("Class method fdjac2, at call to fcn, has returned an iFlag less than 0");
-	            }
-	            x[j] = temp;
-	            for(i = 0;i<m;i++) {
-	                fjac[i][j] = (wa[i] - fvec[i])/h;
-	            }
+		for (j = 0; j < n; j++) {
+			temp = x[j];
+			h = eps * Math.abs(temp);
+			if (h == 0) {
+				h = eps;
+			}
+			x[j] = temp + h;
+			fcn.evaluate(x);
+			if (iFlag < 0) {
+				throw new IllegalArgumentException(
+						"Class method fdjac2, at call to fcn, has returned an iFlag less than 0");
+			}
+			x[j] = temp;
+			for (i = 0; i < m; i++) {
+				fJac[i][j] = (wa[i] - fVec[i]) / h;
+			}
 		}
 	}
-		
-/**
- * <p>The purpose of hybrd is to find a zero of a system of n nonlinear functions
- * in n variables by a modification of the powell hybrid method. the user must
- * provide a subroutine which calculates the functions. The jacobian is then
- * calculated by a forward-difference approximation.
- * 
- * procedure(func) :: fcn !! user-supplied subroutine which calculates the
- * functions
- * 
- * @param n      int -> A positive integer variable set to the number of
- *               functions and variables.
- *               <p>
- * @param maxFev int -> A positive integer variable. Termination occurs
- *               when the number of calls to `fcn` is at least `maxFev` by the
- *               end of an iteration.
- *               <p>
- * @param ml     int -> A nonnegative integer variable which specifies the
- *               number of sub-diagonals within the band of the jacobian matrix.
- *               If the jacobian is not banded, set `ml` to at least `n - 1`.
- *               <p>
- * @param mu     int -> A nonnegative integer variable which specifies the
- *               number of super-diagonals within the band of the jacobian
- *               matrix. If the jacobian is not banded, set `mu` to at least` n
- *               - 1`.
- *               <p>
- * @param mode   int -> If `mode = 1`, the variables will be scaled internally.
- *               If `mode = 2`, the scaling is specified by the input `diag`.
- *               Other values of `mode` are equivalent to `mode = 1`.
- *               <p>
- * @param nPrint int -> An integer variable that enables controlled
- *               printing of iterates if it is positive. In this case, `fcn` is
- *               called with `iFlag = 0` at the beginning of the first iteration
- *               and every `nPrint` iterations thereafter and immediately prior
- *               to return, with `x` and `fvec` available for printing. If
- *               `nPrint` is not positive, no special calls of `fcn` with `iFlag
- *               = 0` are made.
- *               <p>
- * @param info   int -> An integer variable. If the user has terminated
- *               execution, `info` is set to the (negative) value of `iflag`.
- *               see description of `fcn`. Otherwise, `info` is set as follows:
- *               <p>
- *               * ***info = 0*** improper input parameters.
- *               <p>
- *               * ***info = 1*** relative error between two consecutive
- *               iterates is at most `xTol`.
- *               <p>
- *               * ***info = 2*** number of calls to `fcn` has reached or
- *               exceeded `maxFev`.
- *               <p>
- *               * ***info = 3*** `xTol` is too small. no further improvement in
- *               the approximate solution `x` is possible.
- *               <p>
- *               * ***info = 4*** iteration is not making good progress, as
- *               measured by the improvement from the last five jacobian
- *               evaluations.
- *               <p>
- *               * ***info = 5*** iteration is not making good progress, as
- *               measured by the improvement from the last ten iterations.
- *               <p>
- * @param nFev   int -> Variable set to the number of calls to `fcn`.
- *               <p>
- * @param ldfjac int -> A positive integer variable not less than `n`
- *               which specifies the leading dimension of the array `fjac`.
- *               <p>
- * @param lr     int -> A positive integer input variable not less than
- *               `(n*(n+1))/2`.
- *               <p>
- * @param xTol   double -> A nonnegative variable. Termination occurs when
- *               the relative error between two consecutive iterates is at most
- *               `xTol`.
- *               <p>
- * @param epsfcn double -> A variable used in determining a suitable step
- *               length for the forward-difference approximation. This
- *               approximation assumes that the relative errors in the functions
- *               are of the order of `epsfcn`. If `epsfcn` is less than the
- *               machine precision, it is assumed that the relative errors in
- *               the functions are of the order of the machine precision.
- *               <p>
- * @param factor double -> A positive variable used in determining the
- *               initial step bound. This bound is set to the product of
- *               `factor` and the euclidean norm of `diag*x` if nonzero, or else
- *               to `factor` itself. In most cases factor should lie in the
- *               interval (.1,100.). -> (100.0) is a generally recommended value.
- *               <p>
- * @param x      double[n] -> Array of length n. On input `x` must contain an
- *               initial estimate of the solution vector. On output `x` contains
- *               the final estimate of the solution vector.
- *               <p>
- * @param fvec   double[n] -> An output array of length `n` which contains the
- *               functions evaluated at the output `x`.
- *               <p>
- * @param diag   double[n] -> An array of length `n`. If `mode = 1` (see below),
- *               `diag` is internally set. If `mode = 2`, `diag` must contain
- *               positive entries that serve as multiplicative scale factors for
- *               the variables.
- *               <p>
- * @param fjac   double[ldfjac][n] -> Array which contains the orthogonal matrix
- *               `q` produced by the QR factorization of the final approximate
- *               jacobian.
- *               <p>
- * @param r      double[lr] -> An array which contains the upper
- *               triangular matrix produced by the QR factorization of the final
- *               approximate jacobian, stored row-wise.
- *               <p>
- * @param qtf    double[n] -> An output array of length `n` which contains the
- *               vector `(q transpose)*fvec`.
- *               <p>
- * @param wa1    double[n] -> A working array.
- *               <p>
- * @param wa2    double[n] -> A working array.
- *               <p>
- * @param wa3    double[n] -> A working array.
- *               <p>
- * @param wa4    double[n] -> A working array.
- *               <p>
- * 
- * @return Returns a double[] that contains the solved values, x
- * 
- */
-public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] fvec, double xTol, int maxFev, int ml,
-			int mu, double epsfcn, double[] diag, int mode, double factor, int nPrint, int info, int nfev,
-			double[][] fjac, int ldfjac, double[] r, int lr, double[] qtf, double[] wa1, double[] wa2, double[] wa3,
+
+	/**
+	 * <p>
+	 * The purpose of hybrd is to find a zero of a system of n nonlinear functions
+	 * in n variables by a modification of the powell hybrid method. the user must
+	 * provide a subroutine which calculates the functions. The jacobian is then
+	 * calculated by a forward-difference approximation.
+	 * 
+	 * procedure(func) :: fcn  user-supplied subroutine which calculates the
+	 * functions
+	 * 
+	 * @param n      int -> A positive integer variable set to the number of
+	 *               functions and variables.
+	 *               <p>
+	 * @param maxFev int -> A positive integer variable. Termination occurs when the
+	 *               number of calls to `fcn` is at least `maxFev` by the end of an
+	 *               iteration.
+	 *               <p>
+	 * @param ml     int -> A nonnegative integer variable which specifies the
+	 *               number of sub-diagonals within the band of the jacobian matrix.
+	 *               If the jacobian is not banded, set `ml` to at least `n - 1`.
+	 *               <p>
+	 * @param mu     int -> A nonnegative integer variable which specifies the
+	 *               number of super-diagonals within the band of the jacobian
+	 *               matrix. If the jacobian is not banded, set `mu` to at least` n
+	 *               - 1`.
+	 *               <p>
+	 * @param mode   int -> If `mode = 1`, the variables will be scaled internally.
+	 *               If `mode = 2`, the scaling is specified by the input `diag`.
+	 *               Other values of `mode` are equivalent to `mode = 1`.
+	 *               <p>
+	 * @param nPrint int -> An integer variable that enables controlled printing of
+	 *               iterates if it is positive. In this case, `fcn` is called with
+	 *               `iFlag = 0` at the beginning of the first iteration and every
+	 *               `nPrint` iterations thereafter and immediately prior to return,
+	 *               with `x` and `fVec` available for printing. If `nPrint` is not
+	 *               positive, no special calls of `fcn` with `iFlag = 0` are made.
+	 *               <p>
+	 * @param info   int -> An integer variable. If the user has terminated
+	 *               execution, `info` is set to the (negative) value of `iFlag`.
+	 *               see description of `fcn`. Otherwise, `info` is set as follows:
+	 *               <p>
+	 *               * ***info = 0*** improper input parameters.
+	 *               <p>
+	 *               * ***info = 1*** relative error between two consecutive
+	 *               iterates is at most `xTol`.
+	 *               <p>
+	 *               * ***info = 2*** number of calls to `fcn` has reached or
+	 *               exceeded `maxFev`.
+	 *               <p>
+	 *               * ***info = 3*** `xTol` is too small. no further improvement in
+	 *               the approximate solution `x` is possible.
+	 *               <p>
+	 *               * ***info = 4*** iteration is not making good progress, as
+	 *               measured by the improvement from the last five jacobian
+	 *               evaluations.
+	 *               <p>
+	 *               * ***info = 5*** iteration is not making good progress, as
+	 *               measured by the improvement from the last ten iterations.
+	 *               <p>
+	 * @param nFev   int -> Variable set to the number of calls to `fcn`.
+	 *               <p>
+	 * @param ldfJac int -> A positive integer variable not less than `n` which
+	 *               specifies the leading dimension of the array `fJac`.
+	 *               <p>
+	 * @param lr     int -> A positive integer input variable not less than
+	 *               `(n*(n+1))/2`.
+	 *               <p>
+	 * @param xTol   double -> A nonnegative variable. Termination occurs when the
+	 *               relative error between two consecutive iterates is at most
+	 *               `xTol`.
+	 *               <p>
+	 * @param epsfcn double -> A variable used in determining a suitable step length
+	 *               for the forward-difference approximation. This approximation
+	 *               assumes that the relative errors in the functions are of the
+	 *               order of `epsfcn`. If `epsfcn` is less than the machine
+	 *               precision, it is assumed that the relative errors in the
+	 *               functions are of the order of the machine precision.
+	 *               <p>
+	 * @param factor double -> A positive variable used in determining the initial
+	 *               step bound. This bound is set to the product of `factor` and
+	 *               the euclidean norm of `diag*x` if nonzero, or else to `factor`
+	 *               itself. In most cases factor should lie in the interval
+	 *               (.1,100.). -> (100.0) is a generally recommended value.
+	 *               <p>
+	 * @param x      double[n] -> Array of length n. On input `x` must contain an
+	 *               initial estimate of the solution vector. On output `x` contains
+	 *               the final estimate of the solution vector.
+	 *               <p>
+	 * @param fVec   double[n] -> An output array of length `n` which contains the
+	 *               functions evaluated at the output `x`.
+	 *               <p>
+	 * @param diag   double[n] -> An array of length `n`. If `mode = 1` (see below),
+	 *               `diag` is internally set. If `mode = 2`, `diag` must contain
+	 *               positive entries that serve as multiplicative scale factors for
+	 *               the variables.
+	 *               <p>
+	 * @param fJac   double[ldfJac][n] -> Array which contains the orthogonal matrix
+	 *               `q` produced by the QR factorization of the final approximate
+	 *               jacobian.
+	 *               <p>
+	 * @param r      double[lr] -> An array which contains the upper triangular
+	 *               matrix produced by the QR factorization of the final
+	 *               approximate jacobian, stored row-wise.
+	 *               <p>
+	 * @param qtf    double[n] -> An output array of length `n` which contains the
+	 *               vector `(q transpose)*fVec`.
+	 *               <p>
+	 * @param wa1    double[n] -> A working array.
+	 *               <p>
+	 * @param wa2    double[n] -> A working array.
+	 *               <p>
+	 * @param wa3    double[n] -> A working array.
+	 *               <p>
+	 * @param wa4    double[n] -> A working array.
+	 *               <p>
+	 * 
+	 * @return Returns a double[] that contains the solved values, x
+	 * 
+	 */
+	public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] fVec, double xTol, int maxFev,
+			int ml, int mu, double epsfcn, double[] diag, int mode, double factor, int nPrint, int info, int nFev,
+			double[][] fJac, int ldfJac, double[] r, int lr, double[] qtf, double[] wa1, double[] wa2, double[] wa3,
 			double[] wa4) {
 
-		int i, iFlag, iter, j, jm1, l, msum, ncFail, ncSuc, nSlow1, nSlow2; //Temporary Variables
-		int[] iwa = new int[0]; //Temporary Variables
-		boolean jeval, sing; //Temporary Variables
-		double actred, delta = 0, fNorm, fNorm1, pNorm, prered, ratio, sum, temp, xNorm = 0; //Temporary Variables
-		double[][] qtfHold = new double[1][n]; //Used to create a sub-array to pass
+		int i, iFlag, iter, j, jm1, l, msum, ncFail, ncSuc, nSlow1, nSlow2; // Temporary Variables
+		int[] iwa = new int[0]; // Temporary Variables
+		boolean jeval, sing; // Temporary Variables
+		double actred, delta = 0, fNorm, fNorm1, pNorm, prered, ratio, sum, temp, xNorm = 0; // Temporary Variables
+		double[][] qtfHold = new double[1][n]; // Used to create a sub-array to pass
 
 		double p1 = 0.1;
 		double p5 = 0.5;
@@ -722,35 +720,34 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 
 		info = 0;
 		iFlag = 0;
-		nfev = 0;
+		nFev = 0;
 		boolean main = true;
 		boolean inner = true;
 		boolean outer = true;
 
-//			
-//	        main : block
+
 		do { // main loop
-//	        check the input parameters for errors.
-			if (n <= 0 || xTol < 0 || maxFev <= 0 || ml < 0 || mu < 0 || factor <= 0 || ldfjac < n
+//	        Check the input parameters for errors.
+			if (n <= 0 || xTol < 0 || maxFev <= 0 || ml < 0 || mu < 0 || factor <= 0 || ldfJac < n
 					|| lr < (n * (n + 1)) / 2) {
 				throw new IllegalArgumentException("Input parameters do not match as expected");
 			}
 			if (mode == 2) {
 				for (int a = 0; a < n; a++) {
 					if (diag[a] <= 0) {
-						throw new IllegalArgumentException("Diagonal Error at Hybrd");
+						throw new IllegalArgumentException("diagonal Error at Hybrd");
 					}
 				}
 			}
 //	        Evaluate the function at the starting point
 //	        and calculate its norm.
 			iFlag = 1;
-			fvec = fcn.evaluate(x);
-			nfev = 1;
+			fVec = fcn.evaluate(x);
+			nFev = 1;
 			if (iFlag < 0) {
 				throw new IllegalArgumentException("iFlag was returned as negative");
 			}
-			fNorm = enorm(n, fvec);
+			fNorm = enorm(n, fVec);
 //	        Determine the number of calls to fcn needed to compute
 //	        the jacobian matrix.
 			if (ml + mu + 1 < n) {
@@ -765,15 +762,14 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			nSlow1 = 0;
 			nSlow2 = 0;
 
-//	        Beginning of the outer loop.
 			do { // outer loop
 				jeval = true;
 //	            Calculate the jacobian matrix.
 				iFlag = 2;
-				fdjac1(fcn, n, x, fvec, fjac, ldfjac, iFlag, ml, mu, epsfcn, wa1, wa2);
-				nfev = nfev + msum;
+				fdjac1(fcn, n, x, fVec, fJac, ldfJac, iFlag, ml, mu, epsfcn, wa1, wa2);
+				nFev = nFev + msum;
 //	            Compute the qr factorization of the jacobian.
-				qrfac(n, n, fjac, ldfjac, false, iwa, 1, wa1, wa2, wa3);
+				qrfac(n, n, fJac, ldfJac, false, iwa, 1, wa1, wa2, wa3);
 //	            On the first iteration and if mode is 1, scale according
 //	            to the norms of the columns of the initial jacobian.
 				if (iter == 1) {
@@ -789,7 +785,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //					and initialize the step bound delta.
 					for (j = 0; j < n; j++) {
 						wa3[j] = diag[j] * x[j];
-						
+
 					}
 					xNorm = enorm(n, wa3);
 					delta = factor * xNorm;
@@ -797,19 +793,19 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 						delta = factor;
 					}
 				}
-//	            Form (q transpose)*fvec and store in qtf.
+//	            Form (q transpose)*fVec and store in qtf.
 				for (i = 0; i < n; i++) {
-					qtf[i] = fvec[i];
+					qtf[i] = fVec[i];
 				}
 				for (j = 0; j < n; j++) {
-					if (fjac[j][j] != 0) {
+					if (fJac[j][j] != 0) {
 						sum = 0;
 						for (i = j; i < n; i++) {
-							sum = sum + fjac[i][j] * qtf[i];
+							sum = sum + fJac[i][j] * qtf[i];
 						}
-						temp = -sum / fjac[j][j];
+						temp = -sum / fJac[j][j];
 						for (i = j; i < n; i++) {
-							qtf[i] = qtf[i] + fjac[i][j] * temp;
+							qtf[i] = qtf[i] + fJac[i][j] * temp;
 						}
 					}
 				}
@@ -820,7 +816,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					jm1 = j;
 					if (jm1 >= 0) {
 						for (i = 0; i < jm1; i++) {
-							r[l] = fjac[i][j];
+							r[l] = fJac[i][j];
 							l = l + n - 1 - i;
 						}
 					}
@@ -829,8 +825,8 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 						sing = true;
 					}
 				}
-//				Accumulate the orthogonal factor in fjac.
-				qform(n, n, fjac, ldfjac, wa1);
+//				Accumulate the orthogonal factor in fJac.
+				qform(n, n, fJac, ldfJac, wa1);
 //				Re-scale if necessary.
 				if (mode != 2) {
 					for (j = 0; j < n; j++) {
@@ -846,7 +842,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					if (nPrint > 0) {
 						iFlag = 0;
 						if ((iter - 1 % nPrint) == 0) {
-							// add a method to do the printing
+//							Add a method to do the printing
 						}
 					}
 //					Determine the direction p.
@@ -867,7 +863,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //					Evaluate the function at x + p and calculate its norm.
 					iFlag = 1;
 					wa4 = fcn.evaluate(wa2);
-					nfev = nfev + 1;
+					nFev = nFev + 1;
 					if (iFlag < 0) {
 						throw new IllegalArgumentException("iFlag returned from fcn as a negative");
 					}
@@ -918,11 +914,11 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					}
 //					Test for successful iteration.
 					if (ratio >= p0001) {
-//						Successful iteration. update x, fvec, and their norms.
+//						Successful iteration. update x, fVec, and their norms.
 						for (j = 0; j < n; j++) {
 							x[j] = wa2[j];
 							wa2[j] = diag[j] * x[j];
-							fvec[j] = wa4[j];
+							fVec[j] = wa4[j];
 						}
 						xNorm = enorm(n, wa2);
 						fNorm = fNorm1;
@@ -951,7 +947,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 						throw new IllegalArgumentException(infoDict[info]);
 					}
 //					Tests for termination and stringent tolerances.
-					if (nfev >= maxFev) {
+					if (nFev >= maxFev) {
 						info = 2;
 					}
 					if (p1 * pNorm <= epsmch * xNorm || p1 * (p1 * delta) <= epsmch * xNorm) {
@@ -976,7 +972,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					for (j = 0; j < n; j++) {
 						sum = 0;
 						for (i = 0; i < n; i++) {
-							sum = sum + fjac[i][j] * wa4[i];
+							sum = sum + fJac[i][j] * wa4[i];
 						}
 						wa2[j] = (sum - wa3[j]) / pNorm;
 						wa1[j] = diag[j] * ((diag[j] * wa1[j]) / pNorm);
@@ -986,2452 +982,2205 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					}
 //					Compute the qr factorization of the updated jacobian.
 					r1updt(n, n, r, lr, wa1, wa2, wa3, sing);
-					r1mpyq(n, n, fjac, ldfjac, wa2, wa3); 
+					r1mpyq(n, n, fJac, ldfJac, wa2, wa3);
 					for (int z = 0; z < n; z++) {
-						qtfHold[0][z] = qtf[z]; //Used to pass a smaller array to r1mpyq
+						qtfHold[0][z] = qtf[z]; // Used to pass a smaller array to r1mpyq
 					}
 					qtfHold = r1mpyq(1, n, qtfHold, 1, wa2, wa3);
 					for (int z = 0; z < n; z++) {
-						qtf[z] = qtfHold[0][z]; //Used to pass r1mpyq results back to qtf
+						qtf[z] = qtfHold[0][z]; // Used to pass r1mpyq results back to qtf
 					}
-					jeval = false; 
-				} while (inner); //end of the inner loop.
-			} while (outer); //end of the outer loop.
-		} while (main); //end of main loop		
+					jeval = false;
+				} while (inner); // End of the inner loop.
+			} while (outer); // End of the outer loop.
+		} while (main); // End of main loop
 		return x;
 	}
 
+	/**
+	 * <p>
+	 * The purpose of hybrd is to find a zero of a system of n nonlinear functions
+	 * in n variables by a modification of the powell hybrid method. the user must
+	 * provide a subroutine which calculates the functions. The jacobian is then
+	 * calculated by a forward-difference approximation.
+	 * 
+	 * procedure(func) :: fcn  user-supplied subroutine which calculates the
+	 * functions
+	 * @param tol   double -> A nonnegative variable. Termination occurs when the
+	 *               relative error between two consecutive iterates is at most
+	 *               `xTol`.
+	 *               <p>
+	 * @param x      double[n] -> Array of length n. On input `x` must contain an
+	 *               initial estimate of the solution vector. On output `x` contains
+	 *               the final estimate of the solution vector.
+	 *               <p> 
+	 * @return Returns a double[] that contains the solved values, x
+	 * 
+	 */	
 	public static double[] hybrd1(SystemOfEquations fcn, double[] x, double tol) {
-		// !*****************************************************************************************
-		// !>
-
-		// ! the purpose of hybrd1 is to find a zero of a system of
-		// ! n nonlinear functions in n variables by a modification
-		// ! of the powell hybrid method. this is done by using the
-		// ! more general nonlinear equation solver hybrd. the user
-		// ! must provide a subroutine which calculates the functions.
-		// ! the jacobian is then calculated by a forward-difference
-		// ! approximation.
-		//
-//	    subroutine hybrd1(fcn, n, x, Fvec, Tol, Info, Wa, Lwa)
-		//
-//	        implicit none
-		//
-//	        procedure(func)                     :: fcn      !! user-supplied subroutine which calculates the functions
-//	        integer, intent(in)                  :: n        !! a positive integer input variable set to the number
-//	                                                    !! of functions and variables.
-//	        integer, intent(out)                 :: info     !! an integer output variable. if the user has
-//	                                                    !! terminated execution, info is set to the (negative)
-//	                                                    !! value of `iflag`. see description of `fcn`. otherwise,
-//	                                                    !! `info` is set as follows:
-//	                                                    !!
-//	                                                    !!  * ***info = 0*** improper input parameters.
-//	                                                    !!  * ***info = 1*** algorithm estimates that the relative error
-//	                                                    !!  between `x` and the solution is at most `tol`.
-//	                                                    !!  * ***info = 2*** number of calls to `fcn` has reached or exceeded
-//	                                                    !!  `200*(n+1)`.
-//	                                                    !!  * ***info = 3*** `tol` is too small. no further improvement in
-//	                                                    !!  the approximate solution `x` is possible.
-//	                                                    !!  * ***info = 4*** iteration is not making good progress.
-//	        real(wp), intent(in)                 :: tol      !! a nonnegative input variable. termination occurs
-//	                                                    !! when the algorithm estimates that the relative error
-//	                                                    !! between `x` and the solution is at most `tol`.
-//	        real(wp), dimension(n), intent(inout) :: x        !! an array of length `n`. on input `x` must contain
-//	                                                    !! an initial estimate of the solution vector. on output `x`
-//	                                                    !! contains the final estimate of the solution vector.
-//	        real(wp), dimension(n), intent(out)   :: fvec     !! an output array of length `n` which contains
-//	                                                    !! the functions evaluated at the output `x`.
-//	        integer, intent(in) :: Lwa !! a positive integer input variable not less than
-//	                              !! (n*(3*n+13))/2.
-//	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-		//
-//	        integer :: index, j, lr, maxfev, ml, mode, mu, nfev, nprint
-//	        real(wp) :: epsfcn, xtol
-
-		//
-//	        reaL(wp), parameter :: factor = 100.0_wp
-
-		//
-//	        Info = 0
-		//
-//	        ! check the input parameters for errors.
-//				
+		
+//	    Check the input parameters for errors.
+				
 		if (fcn.size() != x.length) {
 			System.out.println("not square, exiting now");
 			System.exit(0);
 		}
 		if (tol <= 0) {
-			tol = 1.490116119384766E-008;// real(wp), intent(in):: tol !! a nonnegative input variable. termination
-									// occurs
-//	          !! when the algorithm estimates that the relative error
-//	          !! between `x` and the solution is at most `tol`.
+			tol = 1.490116119384766E-008;
 		}
 		int info = 0;
-//		        integer, intent(out) :: info : an integer output variable. if the user has
-//	            !! terminated execution, `info` is set to the (negative)
-//	            !! value of `iflag`. see description of `fcn`. otherwise,
-//	            !! `info` is set as follows:
-//	            !!
-//	            !!  * ***info = 0*** improper input parameters.
-//	            !!  * ***info = 1*** relative error between two consecutive iterates
-//	            !!    is at most `xtol`.
-//	            !!  * ***info = 2*** number of calls to `fcn` has reached or exceeded
-//	            !!    `maxfev`.
-//	            !!  * ***info = 3*** `xtol` is too small. no further improvement in
-//	            !!    the approximate solution `x` is possible.
-//	            !!  * ***info = 4*** iteration is not making good progress, as
-//	            !!    measured by the improvement from the last
-//	            !!    five jacobian evaluations.
-//	            !!  * ***info = 5*** iteration is not making good progress, as
-//	            !!    measured by the improvement from the last
-//	            !!    ten iterations.
 		int n = x.length;
-//		        integer, intent(in) :: n : a positive integer input variable set to the number
-//	            !! of functions and variables.
-		int lwa = (n * (3 * n + 13)) / 2;// integer, intent(in) :: Lwa !! a positive integer input variable not less
-											// than (n*(3*n+13))/2.
+		int lwa = (n * (3 * n + 13)) / 2;
 		if (n > 0 & tol >= 0 & lwa >= (n * (3 * n + 13)) / 2) {
-			// ! call hybrd.
-			int maxfev = 200 * (n + 1);
-//		        integer, intent(in) :: maxfev : a positive integer input variable. termination
-//	          !! occurs when the number of calls to `fcn` is at least `maxfev`
-//	          !! by the end of an iteration.
-			double xtol = tol;
-//		        real(wp), intent(in) :: xtol : a nonnegative input variable. termination
-//	          !! occurs when the relative error between two consecutive
-//	          !! iterates is at most `xtol`.
+//			Call hybrd.
+			int maxFev = 200 * (n + 1);
+			double xTol = tol;
 			int ml = n;
-//		        integer, intent(in) :: ml : a nonnegative integer input variable which specifies
-//	          !! the number of subdiagonals within the band of the
-//	          !! jacobian matrix. if the jacobian is not banded, set
-//	          !! `ml` to at least `n - 1`.
 			int mu = n;
-//		        integer, intent(in) :: mu: a nonnegative integer input variable which specifies
-//	          !! the number of superdiagonals within the band of the
-//	          !! jacobian matrix. if the jacobian is not banded, set
-//	          !! `mu` to at least` n - 1`.
 			double epsfcn = 0;
-//	          real(wp), intent(in) :: epsfcn           !! an input variable used in determining a suitable
-//	          !! step length for the forward-difference approximation. this
-//	          !! approximation assumes that the relative errors in the
-//	          !! functions are of the order of `epsfcn`. if `epsfcn` is less
-//	          !! than the machine precision, it is assumed that the relative
-//	          !! errors in the functions are of the order of the machine
-//	          !! precision.
 			int mode = 2;
-			// mode = 1;
-//		        integer, intent(in) :: mode : if `mode = 1`, the
-//	          !! variables will be scaled internally. if `mode = 2`,
-//	          !! the scaling is specified by the input `diag`. other
-//	          !! values of `mode` are equivalent to `mode = 1`.
-
-			int nprint = 0;
-//		        integer, intent(in)  :: nprint : an integer input variable that enables controlled
-//	          !! printing of iterates if it is positive. in this case,
-//	          !! `fcn` is called with `iflag = 0` at the beginning of the first
-//	          !! iteration and every `nprint` iterations thereafter and
-//	          !! immediately prior to return, with `x` and `fvec` available
-//	          !! for printing. if `nprint` is not positive, no special calls
-//	          !! of `fcn` with `iflag = 0` are made.
+			int nPrint = 0;
 			int lr = (n * (n + 1)) / 2;
-//		        integer, intent(in) :: lr : a positive integer input variable not less than `(n*(n+1))/2`.
-			int nfev = 0;
-//		        integer, intent(out) :: nfev :output variable set to the number of calls to `fcn`.
-			double[] fvec = new double[n];
-//		        real(wp), intent(out) :: fvec(n) : an output array of length `n` which contains
-//		                                            !! the functions evaluated at the output `x`.
+			int nFev = 0;
+			double[] fVec = new double[n];
 			double[] diag = new double[n];
-//		        real(wp), intent(inout) :: diag(n)       !! an array of length `n`. if `mode = 1` (see
-//	          !! below), `diag` is internally set. if `mode = 2`, `diag`
-//	          !! must contain positive entries that serve as
-//	          !! multiplicative scale factors for the variables.
-			for (int j = 0; j < n; j++) { // this is for if mode is set to 2
+			for (int j = 0; j < n; j++) {
 				diag[j] = 1;
 			}
-
 			double factor = 100.0;
-//	          	real(wp), intent(in) :: factor : a positive input variable used in determining the
-//	          !! initial step bound. this bound is set to the product of
-//	          !! `factor` and the euclidean norm of `diag*x` if nonzero, or else
-//	          !! to `factor` itself. in most cases factor should lie in the
-//	          !! interval (.1,100.). 100. is a generally recommended value.
-			double[][] fjac = new double[n][n];// array which contains the
-//	          !! orthogonal matrix `q` produced by the QR factorization
-//	          !! of the final approximate jacobian.
-			int ldfjac = n;
-//		        integer, intent(in):: ldfjac : a positive integer input variable not less than `n`
-//	          !! which specifies the leading dimension of the array `fjac`.
-			double[] r = new double[lr]; // an output array which contains the
-//	          !! upper triangular matrix produced by the QR factorization
-//	          !! of the final approximate jacobian, stored rowwise.
-			double[] qtf = new double[n]; // an output array of length `n` which contains the vector `(q
-											// transpose)*fvec`.
+			double[][] fJac = new double[n][n];
+			int ldfJac = n;
+			double[] r = new double[lr];
+			double[] qtf = new double[n];
+			double[] wa1 = new double[n];
+			double[] wa2 = new double[n];
+			double[] wa3 = new double[n];
+			double[] wa4 = new double[n];
 
-			double[] wa1 = new double[n];// real(wp), intent(inout) :: wa1(n) !! work array
-			double[] wa2 = new double[n];// real(wp), intent(inout) :: wa2(n) !! work array
-			double[] wa3 = new double[n];// real(wp), intent(inout) :: wa3(n) !! work array
-			double[] wa4 = new double[n];// real(wp), intent(inout) :: wa4(n) !! work array
-
-			x = hybrd(fcn, n, x, fvec, xtol, maxfev, ml, mu, epsfcn, diag, mode, factor, nprint, info, nfev, fjac,
-					ldfjac, r, lr, qtf, wa1, wa2, wa3, wa4);
-
-//	          hybrd(double[]fcn,int n,double[] x, double[] fvec, double Xtol,int maxfev,int ml,int mu,double epsfcn,double[] diag,int mode,
-//	               double factor,int nprint,int info,int nfev,double[][] fjac,int ldfjac,double[] r,int lr
-//	          	,double[] qtf,double[] wa1, double[]wa2,double[] wa3,double[] wa4)
+			x = hybrd(fcn, n, x, fVec, xTol, maxFev, ml, mu, epsfcn, diag, mode, factor, nPrint, info, nFev, fJac,
+					ldfJac, r, lr, qtf, wa1, wa2, wa3, wa4);
 
 			if (info == 5) {
 				info = 4;
 			}
 		}
-
-//	        if (n > 0 .and. Tol >= zero .and. Lwa >= (n*(3*n + 13))/2) then
-//	            ! call hybrd.
-//	            maxfev = 200*(n + 1)
-//	            xtol = Tol
-//	            ml = n - 1
-//	            mu = n - 1
-//	            epsfcn = zero
-//	            mode = 2
-//	            do j = 1, n
-//	                Wa(j) = one
-//	            end do
-//	            nprint = 0
-//	            lr = (n*(n + 1))/2
-//	            index = 6*n + lr
-//	            call hybrd(fcn, n, x, Fvec, xtol, maxfev, ml, mu, epsfcn, Wa(1), mode, &
-//	                       factor, nprint, Info, nfev, Wa(index + 1), n, Wa(6*n + 1), lr, &
-//	                       Wa(n + 1), Wa(2*n + 1), Wa(3*n + 1), Wa(4*n + 1), Wa(5*n + 1))
-//	            if (Info == 5) Info = 4
-//	        end if
-		//
-//	    end subroutine hybrd1
-		// !*****************************************************************************************
-		//
 		return x;
 	}
 
-/**
-	!>
-	! the purpose of hybrj is to find a zero of a system of
-	! n nonlinear functions in n variables by a modification
-	! of the powell hybrid method. the user must provide a
-	! subroutine which calculates the functions and the jacobian.
-	
-	    subroutine hybrj(fcn, n, x, Fvec, Fjac, Ldfjac, Xtol, Maxfev, Diag, Mode, &
-	                     Factor, Nprint, Info, Nfev, Njev, r, Lr, Qtf, Wa1, Wa2, &
-	                     Wa3, Wa4)
-	
-	        implicit none
-	
-	        procedure(fcn_hybrj) :: fcn !! the user-supplied subroutine which
-	                                !! calculates the functions and the jacobian
-	        integer, intent(in) :: n !! a positive integer input variable set to the number
-	                            !! of functions and variables.
-	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
-	                                    !! which specifies the leading dimension of the array fjac.
-	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
-	                                    !! occurs when the number of calls to fcn with iflag = 1
-	                                    !! has reached maxfev.
-	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
-	                                !! variables will be scaled internally. if mode = 2,
-	                                !! the scaling is specified by the input diag. other
-	                                !! values of mode are equivalent to mode = 1.
-	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
-	                                    !! printing of iterates if it is positive. in this case,
-	                                    !! fcn is called with iflag = 0 at the beginning of the first
-	                                    !! iteration and every nprint iterations thereafter and
-	                                    !! immediately prior to return, with x and fvec available
-	                                    !! for printing. fvec and fjac should not be altered.
-	                                    !! if nprint is not positive, no special calls of fcn
-	                                    !! with iflag = 0 are made.
-	        integer, intent(out) :: Info !! an integer output variable. if the user has
-	                                !! terminated execution, info is set to the (negative)
-	                                !! value of iflag. see description of fcn. otherwise,
-	                                !! info is set as follows:
-	                                !!
-	                                !!  * ***info = 0***   improper input parameters.
-	                                !!  * ***info = 1***   relative error between two consecutive iterates
-	                                !!    is at most xtol.
-	                                !!  * ***info = 2***   number of calls to fcn with iflag = 1 has
-	                                !!    reached maxfev.
-	                                !!  * ***info = 3***   xtol is too small. no further improvement in
-	                                !!    the approximate solution x is possible.
-	                                !!  * ***info = 4***   iteration is not making good progress, as
-	                                !!    measured by the improvement from the last
-	                                !!    five jacobian evaluations.
-	                                !!  * ***info = 5***   iteration is not making good progress, as
-	                                !!    measured by the improvement from the last
-	                                !!    ten iterations.
-	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
-	                                !! calls to fcn with iflag = 1.
-	        integer, intent(out) :: Njev !! an integer output variable set to the number of
-	                                !! calls to fcn with iflag = 2.
-	        integer, intent(in) :: Lr !! a positive integer input variable not less than
-	                                !! (n*(n+1))/2.
-	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
-	                                !! occurs when the relative error between two consecutive
-	                                !! iterates is at most xtol.
-	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
-	                                    !! initial step bound. this bound is set to the product of
-	                                    !! factor and the euclidean norm of diag*x if nonzero, or else
-	                                    !! to factor itself. in most cases factor should lie in the
-	                                    !! interval (.1,100.). 100. is a generally recommended value.
-	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-	                                    !! an initial estimate of the solution vector. on output x
-	                                    !! contains the final estimate of the solution vector.
-	        real(wp), intent(out) :: Fvec(n) !! an output array of length n which contains
-	                                    !! the functions evaluated at the output x.
-	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array which contains the
-	                                            !! orthogonal matrix q produced by the qr factorization
-	                                            !! of the final approximate jacobian.
-	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
-	                                        !! below), diag is internally set. if mode = 2, diag
-	                                        !! must contain positive entries that serve as
-	                                        !! multiplicative scale factors for the variables.
-	        real(wp), intent(out) :: r(Lr) !! an output array of length lr which contains the
-	                                    !! upper triangular matrix produced by the qr factorization
-	                                    !! of the final approximate jacobian, stored rowwise.
-	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
-	                                    !! the vector (q transpose)*fvec.
-	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
-	        real(wp), intent(inout) :: Wa4(n) !! work array of length n.
-*/
+	/**
+	 * The purpose of hybrj is to find a zero of a system of n nonlinear
+	 * functions in n variables by a modification of the powell hybrid method. The
+	 * user must provide a subroutine which calculates the functions and the
+	 * jacobian.
+	 * 
+	 * subroutine hybrj(fcn, n, x, fVec, fJac, ldfJac, xTol, maxFev, diag, mode, &
+	 * factor, nPrint, info, nFev, nJev, r, Lr, qtf, wa1, wa2, & wa3, wa4)
+	 * 
+	 * implicit none
+	 * 
+	 * procedure(fcn_hybrj) :: fcn  the user-supplied subroutine which 
+	 * calculates the functions and the jacobian 
+	 * integer, intent(in) :: n  a
+	 * positive integer input variable set to the number  of functions and
+	 * variables. 
+	 * integer, intent(in) :: ldfJac  a positive integer input variable
+	 * not less than n  which specifies the leading dimension of the array fJac.
+	 * integer, intent(in) :: maxFev  a positive integer input variable.
+	 * termination  occurs when the number of calls to fcn with iFlag = 1  has
+	 * reached maxFev.
+	 *  integer, intent(in) :: mode  an integer input variable. if
+	 * mode = 1, the  variables will be scaled internally. if mode = 2,  the
+	 * scaling is specified by the input diag. other  values of mode are
+	 * equivalent to mode = 1.
+	 *  integer, intent(in) :: nPrint  an integer input
+	 * variable that enables controlled  printing of iterates if it is positive.
+	 * in this case,  fcn is called with iFlag = 0 at the beginning of the first
+	 *  iteration and every nPrint iterations thereafter and  immediately prior
+	 * to return, with x and fVec available  for printing. fVec and fJac should
+	 * not be altered.  if nPrint is not positive, no special calls of fcn  with
+	 * iFlag = 0 are made. integer, intent(out) :: info  an integer output
+	 * variable. if the user has  terminated execution, info is set to the
+	 * (negative)  value of iFlag. see description of fcn. otherwise,  info is
+	 * set as follows:   * ***info = 0*** improper input parameters.  *
+	 * ***info = 1*** relative error between two consecutive iterates  is at most
+	 * xTol.  * ***info = 2*** number of calls to fcn with iFlag = 1 has 
+	 * reached maxFev.  * ***info = 3*** xTol is too small. no further improvement
+	 * in  the approximate solution x is possible.  * ***info = 4*** iteration
+	 * is not making good progress, as  measured by the improvement from the last
+	 *  five jacobian evaluations.  * ***info = 5*** iteration is not making
+	 * good progress, as  measured by the improvement from the last  ten
+	 * iterations. integer, intent(out) :: nFev  an integer output variable set to
+	 * the number of  calls to fcn with iFlag = 1. integer, intent(out) :: nJev 
+	 * an integer output variable set to the number of  calls to fcn with iFlag =
+	 * 2. integer, intent(in) :: Lr  a positive integer input variable not less
+	 * than  (n*(n+1))/2. real(wp), intent(in) :: xTol  a nonnegative input
+	 * variable. termination  occurs when the relative error between two
+	 * consecutive  iterates is at most xTol. real(wp), intent(in) :: factor  a
+	 * positive input variable used in determining the  initial step bound. this
+	 * bound is set to the product of  factor and the euclidean norm of diag*x if
+	 * nonzero, or else  to factor itself. in most cases factor should lie in the
+	 *  interval (.1,100.). 100. is a generally recommended value. real(wp),
+	 * intent(inout) :: x(n)  an array of length n. on input x must contain  an
+	 * initial estimate of the solution vector. on output x  contains the final
+	 * estimate of the solution vector. real(wp), intent(out) :: fVec(n)  an
+	 * output array of length n which contains  the functions evaluated at the
+	 * output x. real(wp), intent(out) :: fJac(ldfJac, n)  an output n by n array
+	 * which contains the  orthogonal matrix q produced by the qr factorization 
+	 * of the final approximate jacobian. real(wp), intent(inout) :: diag(n)  an
+	 * array of length n. if mode = 1 (see  below), diag is internally set. if
+	 * mode = 2, diag  must contain positive entries that serve as 
+	 * multiplicative scale factors for the variables. real(wp), intent(out) ::
+	 * r(Lr)  an output array of length lr which contains the  upper triangular
+	 * matrix produced by the qr factorization  of the final approximate jacobian,
+	 * stored rowwise. real(wp), intent(out) :: qtf(n)  an output array of length
+	 * n which contains  the vector (q transpose)*fVec. real(wp), intent(inout) ::
+	 * wa1(n)  work array of length n. real(wp), intent(inout) :: wa2(n)  work
+	 * array of length n. real(wp), intent(inout) :: wa3(n)  work array of length
+	 * n. real(wp), intent(inout) :: wa4(n)  work array of length n.
+	 */
 
-		public static double[] hybrj(SystemOfEquations fcn, int n, double[] x, double[] fvec,double[][] fjac, int ldfjac,double xTol, int maxfev,
-									double[] diag, int mode, double factor, int nprint, int info,int nfev,int njev, double[] r,
-									 int lr,double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
-		
-		
-			int i, iflag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2=0;
-	        int[] iwa = new int[1]; // need to verify 1 is the correct value
-	        boolean jeval, sing;
-	        double actred=0, delta=0, fnorm=0, fnorm1=0, pnorm=0, prered=0, ratio=0, sum=0, temp=0, xnorm=0;
-			double[][] qtfHold = new double[1][n]; //Used to create a sub-array to pass
+	public static double[] hybrj(SystemOfEquations fcn, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac,
+			double xTol, int maxFev, double[] diag, int mode, double factor, int nPrint, int info, int nFev, int nJev,
+			double[] r, int lr, double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
 
-			double p1 = 1.0e-1;
-	        double p5 = 5.0e-1;
-	        double p001 = 1.0e-3;
-	        double p0001 = 1.0e-4;
-	        info = 0;
-	        iflag = 0;
-	        nfev = 0;
-	        njev = 0;
-	
-			do{ // main : block
+		int i, iFlag, iter, j, jm1, l, ncfail, ncsuc, nslow1, nslow2 = 0;
+		int[] iwa = new int[1]; // need to verify 1 is the correct value
+		boolean jeval, sing;
+		double actred = 0, delta = 0, fNorm = 0, fNorm1 = 0, pnorm = 0, prered = 0, ratio = 0, sum = 0, temp = 0,
+				xnorm = 0;
+		double[][] qtfHold = new double[1][n]; // Used to create a sub-array to pass
+
+		double p1 = 1.0e-1;
+		double p5 = 5.0e-1;
+		double p001 = 1.0e-3;
+		double p0001 = 1.0e-4;
+		info = 0;
+		iFlag = 0;
+		nFev = 0;
+		nJev = 0;
+
+		do { // main : block
 //	            Check the input parameters for errors.
-	            if (n <= 0 || ldfjac < n || xTol < 0 || maxfev <= 0 || 
-	                factor <= 0 || lr < (n*(n + 1))/2){
-						throw new IllegalArgumentException("Input parameters do not match as expected");
+			if (n <= 0 || ldfJac < n || xTol < 0 || maxFev <= 0 || factor <= 0 || lr < (n * (n + 1)) / 2) {
+				throw new IllegalArgumentException("Input parameters do not match as expected");
+				// Add throw error
+			}
+			if (mode == 2) {
+				for (j = 0; j < n; j++) {
+					if (diag[j] <= 0) {
+						throw new IllegalArgumentException("diagonal Error at Hybrd");
 						// Add throw error
-					} 			
-	            if (mode == 2){
-	                for(j = 0;j< n;j++){
-	                    if (diag[j] <= 0){ 
-							throw new IllegalArgumentException("Diagonal Error at Hybrd");
-						//Add throw error
-						}
-	                }
-	            }
+					}
+				}
+			}
 //	            Evaluate the function at the starting point
 //	            and calculate its norm.
-	            iflag = 1;
-	            fcn.evaluate(x); //to update at future date
-	            nfev = 1;
-	            if (iflag < 0) {
-					throw new IllegalArgumentException("iFlag was returned as negative");
-				}
-	            fnorm = enorm(n, fvec);
+			iFlag = 1;
+			fcn.evaluate(x); // to update at future date
+			nFev = 1;
+			if (iFlag < 0) {
+				throw new IllegalArgumentException("iFlag was returned as negative");
+			}
+			fNorm = enorm(n, fVec);
 //	            Initialize iteration counter and monitors.
-	            iter = 1;
-	            ncsuc = 0;
-	            ncfail = 0;
-	            nslow1 = 0;
-	            nslow2 = 0;
+			iter = 1;
+			ncsuc = 0;
+			ncfail = 0;
+			nslow1 = 0;
+			nslow2 = 0;
 //	            Beginning of the outer loop.
-	            do{ //outer : do
-	                jeval = true;
+			do { // outer : do
+				jeval = true;
 //	                Calculate the jacobian matrix.
-	                iflag = 2;
-					fvec = fcn.evaluate(x); //to update at future date
-					fjac = fcn.evaluateJacobian(x); //to update at future date
-	                njev = njev + 1;
-	                if (iflag < 0){
-						// throw error
-					}
+				iFlag = 2;
+				fVec = fcn.evaluate(x); // to update at future date
+				fJac = fcn.evaluateJacobian(x); // to update at future date
+				nJev = nJev + 1;
+				if (iFlag < 0) {
+					// throw error
+				}
 //	                Compute the qr factorization of the jacobian.
-	                qrfac(n, n, fjac, ldfjac, false, iwa, 1, wa1, wa2, wa3); //maybe to do?
+				qrfac(n, n, fJac, ldfJac, false, iwa, 1, wa1, wa2, wa3); // maybe to do?
 //	                On the first iteration and if mode is 1, scale according
 //	                to the norms of the columns of the initial jacobian.
-	                if (iter == 1){
-	                    if (mode != 2){
-	                        for(j = 0;j< n;j++){
-	                            diag[j] = wa2[j];
-	                            if (wa2[j] == 0){
-									diag[j] = 1;
-								}
-	                        }
-	                    }
+				if (iter == 1) {
+					if (mode != 2) {
+						for (j = 0; j < n; j++) {
+							diag[j] = wa2[j];
+							if (wa2[j] == 0) {
+								diag[j] = 1;
+							}
+						}
+					}
 //	                    On the first iteration, calculate the norm of the scaled x
 //	                    and initialize the step bound delta.
-	                    for(j = 0;j< n;j++){
-	                        wa3[j] = diag[j]*x[j];
-	                    }
-	                    xnorm = enorm(n, wa3);
-	                    delta = factor*xnorm;
-	                    if (delta == 0){
-							 delta = factor;
-							}
-	                }
-//	                Form (q transpose)*fvec and store in qtf.
-	                for(i = 0;i< n;i++){
-	                    qtf[i] = fvec[i];
-	                }
-	                for(j = 0;j<n;j++){
-	                    if (fjac[j][j] != 0){
-	                        sum = 0;
-	                        for(i = j;i< n;i++){
-	                            sum = sum + fjac[i][j]*qtf[i];
-	                        }
-	                        temp = -sum/fjac[j][j];
-	                        for(i = j;i< n;i++){
-	                            qtf[i] = qtf[i] + fjac[i][j]*temp;
-	                        }
-	                    }
-	                }
+					for (j = 0; j < n; j++) {
+						wa3[j] = diag[j] * x[j];
+					}
+					xnorm = enorm(n, wa3);
+					delta = factor * xnorm;
+					if (delta == 0) {
+						delta = factor;
+					}
+				}
+//	                Form (q transpose)*fVec and store in qtf.
+				for (i = 0; i < n; i++) {
+					qtf[i] = fVec[i];
+				}
+				for (j = 0; j < n; j++) {
+					if (fJac[j][j] != 0) {
+						sum = 0;
+						for (i = j; i < n; i++) {
+							sum = sum + fJac[i][j] * qtf[i];
+						}
+						temp = -sum / fJac[j][j];
+						for (i = j; i < n; i++) {
+							qtf[i] = qtf[i] + fJac[i][j] * temp;
+						}
+					}
+				}
 //	                Copy the triangular factor of the qr factorization into r.
-	                sing = false;
-	                for(j = 0;j< n;j++){
-	                    l = j;
-	                    jm1 = j - 1;
-	                    if (jm1 >= 0){
-	                        for(i = 0;i<jm1;i++){
-	                            r[l] = fjac[i][j];
-	                            l = l + n - i;
-	                        }
-	                    }
-	                    r[l] = wa1[j];
-	                    if (wa1[j] == 0){
-							 sing = true;
-							}
-	                }
-//	                Accumulate the orthogonal factor in fjac.
-	                qform(n, n, fjac, ldfjac, wa1);
+				sing = false;
+				for (j = 0; j < n; j++) {
+					l = j;
+					jm1 = j - 1;
+					if (jm1 >= 0) {
+						for (i = 0; i < jm1; i++) {
+							r[l] = fJac[i][j];
+							l = l + n - i;
+						}
+					}
+					r[l] = wa1[j];
+					if (wa1[j] == 0) {
+						sing = true;
+					}
+				}
+//	                Accumulate the orthogonal factor in fJac.
+				qform(n, n, fJac, ldfJac, wa1);
 //	                Rescale if necessary.
-	                if (mode != 2) {
-	                    for(j = 0;j< n;j++){
-							if(diag[j]>wa2[j]){
-								diag[j] = diag[j];
-							}else{
-								diag[j] = wa2[j];
-							}
-	                    }
-	                }
+				if (mode != 2) {
+					for (j = 0; j < n; j++) {
+						if (diag[j] > wa2[j]) {
+							diag[j] = diag[j];
+						} else {
+							diag[j] = wa2[j];
+						}
+					}
+				}
 //	                Beginning of the inner loop.
 //	                inner : do
-					do{
+				do {
 //	                    If requested, call fcn to enable printing of iterates.
-	                    if (nprint > 0){
-	                        iflag = 0;
-	                        if ((iter - 1)%nprint == 0){
-	                            fcn.evaluate(x); //ToDo fix
-							}
-	                        if (iflag < 0){
-								//Add Error Handling
-							}
-	                    }
+					if (nPrint > 0) {
+						iFlag = 0;
+						if ((iter - 1) % nPrint == 0) {
+							fcn.evaluate(x); // ToDo fix
+						}
+						if (iFlag < 0) {
+							// Add Error Handling
+						}
+					}
 //	                    Determine the direction p.
-	                    dogleg(n, r, lr, diag, qtf, delta, wa1, wa2, wa3);
+					dogleg(n, r, lr, diag, qtf, delta, wa1, wa2, wa3);
 //	                    Store the direction p and x + p. calculate the norm of p.
-	                    for(j = 0;j< n;j++){
-	                        wa1[j] = -wa1[j];
-	                        wa2[j] = x[j] + wa1[j];
-	                        wa3[j] = diag[j]*wa1[j];
-	                    }
-	                    pnorm = enorm(n, wa3);
+					for (j = 0; j < n; j++) {
+						wa1[j] = -wa1[j];
+						wa2[j] = x[j] + wa1[j];
+						wa3[j] = diag[j] * wa1[j];
+					}
+					pnorm = enorm(n, wa3);
 //	                    On the first iteration, adjust the initial step bound.
-	                    if (iter == 1){
-							if(pnorm<delta){
-								delta=pnorm;
+					if (iter == 1) {
+						if (pnorm < delta) {
+							delta = pnorm;
 						}
 //	                    Evaluate the function at x + p and calculate its norm.
-	                    iflag = 1;
-	                    wa4 = fcn.evaluate(wa2);//(n, wa2, wa4, fjac, ldfjac, iflag); //I think this is right
-	                    nfev = nfev + 1;
-	                    if (iflag < 0){
+						iFlag = 1;
+						wa4 = fcn.evaluate(wa2);// (n, wa2, wa4, fJac, ldfJac, iFlag); //I think this is right
+						nFev = nFev + 1;
+						if (iFlag < 0) {
 							// add error handling
 						}
-	                    fnorm1 = enorm(n, wa4);
+						fNorm1 = enorm(n, wa4);
 //	                    Compute the scaled actual reduction.
-	                    actred = -1;
-	                    if (fnorm1 < fnorm){
-							actred = 1 - (fnorm1/fnorm)*(fnorm1/fnorm);
+						actred = -1;
+						if (fNorm1 < fNorm) {
+							actred = 1 - (fNorm1 / fNorm) * (fNorm1 / fNorm);
 						}
 //	                    Compute the scaled predicted reduction.
-	                    l = 0;
-	                    for(i = 0;i< n;i++){
-	                        sum = 0;
-	                        for( j = i;j< n;j++){
-	                            sum = sum + r[l]*wa1[j];
-	                            l = l + 1;
-	                        }
-	                        wa3[i] = qtf[i] + sum;
-	                    }
-	                    temp = enorm(n, wa3);
-	                    prered = 0;
-	                    if (temp < fnorm){
-							prered = 1 - (temp/fnorm)*(temp/fnorm);
+						l = 0;
+						for (i = 0; i < n; i++) {
+							sum = 0;
+							for (j = i; j < n; j++) {
+								sum = sum + r[l] * wa1[j];
+								l = l + 1;
+							}
+							wa3[i] = qtf[i] + sum;
+						}
+						temp = enorm(n, wa3);
+						prered = 0;
+						if (temp < fNorm) {
+							prered = 1 - (temp / fNorm) * (temp / fNorm);
 						}
 //	                    Compute the ratio of the actual to the predicted
 //	                    reduction.
-	                    ratio = 0;
-	                    if (prered > 0){
-							 ratio = actred/prered;
+						ratio = 0;
+						if (prered > 0) {
+							ratio = actred / prered;
 						}
 //	                    Update the step bound.
-	                    if (ratio >= p1){
-	                        ncfail = 0;
-	                        ncsuc = ncsuc + 1;
-	                        if (ratio >= p5 || ncsuc > 1){
-								if(pnorm/p5>delta){
-									delta = pnorm/p5;
-								}							
-							} 
-	                        if (Math.abs(ratio - 1) <= p1)
-								 delta = pnorm/p5;
+						if (ratio >= p1) {
+							ncfail = 0;
+							ncsuc = ncsuc + 1;
+							if (ratio >= p5 || ncsuc > 1) {
+								if (pnorm / p5 > delta) {
+									delta = pnorm / p5;
+								}
 							}
-	                    }else{
-	                        ncsuc = 0;
-	                        ncfail = ncfail + 1;
-	                        delta = p5*delta;
-	                    }
+							if (Math.abs(ratio - 1) <= p1)
+								delta = pnorm / p5;
+						}
+					} else {
+						ncsuc = 0;
+						ncfail = ncfail + 1;
+						delta = p5 * delta;
+					}
 //	                    Test for successful iteration.
-	                    if (ratio >= p0001){
-	                        // Successful iteration. update x, fvec, and their norms.
-	                        for(j = 1;j< n;j++){
-	                            x[j] = wa2[j];
-	                            wa2[j] = diag[j]*x[j];
-	                            fvec[j] = wa4[j];
-	                        }
-	                        xnorm = enorm(n, wa2);
-	                        fnorm = fnorm1;
-	                        iter = iter + 1;
-	                    }
+					if (ratio >= p0001) {
+						// Successful iteration. update x, fVec, and their norms.
+						for (j = 1; j < n; j++) {
+							x[j] = wa2[j];
+							wa2[j] = diag[j] * x[j];
+							fVec[j] = wa4[j];
+						}
+						xnorm = enorm(n, wa2);
+						fNorm = fNorm1;
+						iter = iter + 1;
+					}
 //	                    Determine the progress of the iteration.
-	                    nslow1 = nslow1 + 1;
-	                    if (actred >= p001) {
-							nslow1 = 0;
-						}
-	                    if (jeval) {
-							nslow2 = nslow2 + 1;
-						}
-	                    if (actred >= p1) {
-							nslow2 = 0;
-						}
+					nslow1 = nslow1 + 1;
+					if (actred >= p001) {
+						nslow1 = 0;
+					}
+					if (jeval) {
+						nslow2 = nslow2 + 1;
+					}
+					if (actred >= p1) {
+						nslow2 = 0;
+					}
 //	                    Test for convergence.
-	                    if (delta <= xTol*xnorm || fnorm == 0) {info = 1;}
-	                    if (info != 0) {
-							return x;
-							// add error handling
-						}
+					if (delta <= xTol * xnorm || fNorm == 0) {
+						info = 1;
+					}
+					if (info != 0) {
+						return x;
+						// add error handling
+					}
 //	                    Tests for termination and stringent tolerances.
-	                    if (nfev >= maxfev) {
-							info = 2;
-						}
-	                    if (p1*Math.max(p1*delta, pnorm) <= epsmch*xnorm) {
-							info = 3;
-						}
-	                    if (nslow2 == 5) {
-							info = 4;
-						}
-	                    if (nslow1 == 10) {
-							info = 5;
-						}
-	                    if (info != 0) {
-							return x;
-							//add error handling
-						}
+					if (nFev >= maxFev) {
+						info = 2;
+					}
+					if (p1 * Math.max(p1 * delta, pnorm) <= epsmch * xnorm) {
+						info = 3;
+					}
+					if (nslow2 == 5) {
+						info = 4;
+					}
+					if (nslow1 == 10) {
+						info = 5;
+					}
+					if (info != 0) {
+						return x;
+						// add error handling
+					}
 //	                    Criterion for recalculating jacobian.
-	                    if (ncfail == 2){
-							break; //Cycles outer loop
-						} 
+					if (ncfail == 2) {
+						break; // Cycles outer loop
+					}
 //	                    Calculate the rank one modification to the jacobian
 //	                    and update qtf if necessary.
-	                    for(j = 0;j< n;j++){
-	                        sum = 0;
-	                        for(i = 0;i< n;i++){
-	                            sum = sum + fjac[i][j]*wa4[i];
-	                        }
-	                        wa2[j] = (sum - wa3[j])/pnorm;
-	                        wa1[j] = diag[j]*((diag[j]*wa1[j])/pnorm);
-	                        if (ratio >= p0001) {
-								qtf[j] = sum;
-							}
-	                    }
+					for (j = 0; j < n; j++) {
+						sum = 0;
+						for (i = 0; i < n; i++) {
+							sum = sum + fJac[i][j] * wa4[i];
+						}
+						wa2[j] = (sum - wa3[j]) / pnorm;
+						wa1[j] = diag[j] * ((diag[j] * wa1[j]) / pnorm);
+						if (ratio >= p0001) {
+							qtf[j] = sum;
+						}
+					}
 //	                    Compute the qr factorization of the updated jacobian.
-	                    r1updt(n, n, r, lr, wa1, wa2, wa3, sing);
-	                    r1mpyq(n, n, fjac, ldfjac, wa2, wa3);
-						for (int z = 0; z < n; z++) {
-						qtfHold[0][z] = qtf[z]; //Used to pass a smaller array to r1mpyq
-						}
-						qtfHold = r1mpyq(1, n, qtfHold, 1, wa2, wa3);
-						for (int z = 0; z < n; z++) {
-							qtf[z] = qtfHold[0][z]; //Used to pass r1mpyq results back to qtf
-						}
+					r1updt(n, n, r, lr, wa1, wa2, wa3, sing);
+					r1mpyq(n, n, fJac, ldfJac, wa2, wa3);
+					for (int z = 0; z < n; z++) {
+						qtfHold[0][z] = qtf[z]; // Used to pass a smaller array to r1mpyq
+					}
+					qtfHold = r1mpyq(1, n, qtfHold, 1, wa2, wa3);
+					for (int z = 0; z < n; z++) {
+						qtf[z] = qtfHold[0][z]; // Used to pass r1mpyq results back to qtf
+					}
 
-	                    jeval = false;
-	                } while(true);//End of the inner loop.
-	            } while(true); // End of the outer loop.
-	        } while(true); //End block main
-}
-
-
-/**	// !*****************************************************************************************
-	//
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of hybrj1 is to find a zero of a system of
-	// ! n nonlinear functions in n variables by a modification
-	// ! of the powell hybrid method. this is done by using the
-	// ! more general nonlinear equation solver hybrj. the user
-	// ! must provide a subroutine which calculates the functions
-	// ! and the jacobian.
-	//
-//	    subroutine hybrj1(fcn, n, x, Fvec, Fjac, Ldfjac, Tol, Info, Wa, Lwa)
-	//
-//	        implicit none
-	//
-//	        procedure(fcn_hybrj) :: fcn !! the user-supplied subroutine which
-//	                                !! calculates the functions and the jacobian
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                            !! of functions and variables.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
-//	                                 !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                !! terminated execution, info is set to the (negative)
-//	                                !! value of iflag. see description of fcn. otherwise,
-//	                                !! info is set as follows:
-//	                                !!
-//	                                !!  * ***info = 0***   improper input parameters.
-//	                                !!  * ***info = 1***   algorithm estimates that the relative error
-//	                                !!    between x and the solution is at most tol.
-//	                                !!  * ***info = 2***   number of calls to fcn with iflag = 1 has
-//	                                !!    reached 100*(n+1).
-//	                                !!  * ***info = 3***   tol is too small. no further improvement in
-//	                                !!    the approximate solution x is possible.
-//	                                !!  * ***info = 4***   iteration is not making good progress.
-//	        integer, intent(in) :: Lwa !! a positive integer input variable not less than
-//	                              !! (n*(n+13))/2.
-//	        real(wp), intent(in) :: Tol !! a nonnegative input variable. termination occurs
-//	                                !! when the algorithm estimates that the relative error
-//	                                !! between x and the solution is at most tol.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                    !! an initial estimate of the solution vector. on output x
-//	                                    !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(n) !! an output array of length n which contains
-//	                                    !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array which contains the
-//	                                            !! orthogonal matrix q produced by the qr factorization
-//	                                            !! of the final approximate jacobian.
-//	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-*/
-	//
-		public static void hyberj1() {
-			
-		
-//	        integer :: j, lr, maxfev, mode, nfev, njev, nprint
-//	        real(wp) :: xtol
-	//
-//	        real(wp), parameter :: factor = 100.0_wp
-	//
-//	        Info = 0
-	//
-//	        ! check the input parameters for errors.
-	//
-//	        if (n > 0 .and. Ldfjac >= n .and. Tol >= zero .and. Lwa >= (n*(n + 13))/2) then
-//	            ! call hybrj.
-//	            maxfev = 100*(n + 1)
-//	            xtol = Tol
-//	            mode = 2
-//	            do j = 1, n
-//	                Wa(j) = one
-//	            end do
-//	            nprint = 0
-//	            lr = (n*(n + 1))/2
-//	            call hybrj(fcn, n, x, Fvec, Fjac, Ldfjac, xtol, maxfev, Wa(1), mode, &
-//	                       factor, nprint, Info, nfev, njev, Wa(6*n + 1), lr, Wa(n + 1), &
-//	                       Wa(2*n + 1), Wa(3*n + 1), Wa(4*n + 1), Wa(5*n + 1))
-//	            if (Info == 5) Info = 4
-//	        end if
-	//
-		}
-/**
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmder is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of
-	// ! the levenberg-marquardt algorithm. the user must provide a
-	// ! subroutine which calculates the functions and the jacobian.
-	//
-//	    subroutine lmder(fcn, m, n, x, Fvec, Fjac, Ldfjac, Ftol, Xtol, Gtol, Maxfev, &
-//	                     Diag, Mode, Factor, Nprint, Info, Nfev, Njev, Ipvt, Qtf, &
-//	                     Wa1, Wa2, Wa3, Wa4)
-	//
-//	        implicit none
-	//
-//	        procedure(fcn_lmder) :: fcn !! the user-supplied subroutine which
-//	                                !! calculates the functions and the jacobian
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                            !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                            !! of variables. n must not exceed m.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than m
-//	                                 !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
-//	                                 !! occurs when the number of calls to fcn with iflag = 1
-//	                                 !! has reached maxfev.
-//	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
-//	                                !! variables will be scaled internally. if mode = 2,
-//	                                !! the scaling is specified by the input diag. other
-//	                                !! values of mode are equivalent to mode = 1.
-//	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
-//	                                 !! printing of iterates if it is positive. in this case,
-//	                                 !! fcn is called with iflag = 0 at the beginning of the first
-//	                                 !! iteration and every nprint iterations thereafter and
-//	                                 !! immediately prior to return, with x, fvec, and fjac
-//	                                 !! available for printing. fvec and fjac should not be
-//	                                 !! altered. if nprint is not positive, no special calls
-//	                                 !! of fcn with iflag = 0 are made.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                !! terminated execution, info is set to the (negative)
-//	                                !! value of iflag. see description of fcn. otherwise,
-//	                                !! info is set as follows:
-//	                                !!
-//	                                !!  * ***info = 0***  improper input parameters.
-//	                                !!  * ***info = 1***  both actual and predicted relative reductions
-//	                                !!    in the sum of squares are at most ftol.
-//	                                !!  * ***info = 2***  relative error between two consecutive iterates
-//	                                !!    is at most xtol.
-//	                                !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                !!  * ***info = 4***  the cosine of the angle between fvec and any
-//	                                !!    column of the jacobian is at most gtol in
-//	                                !!    absolute value.
-//	                                !!  * ***info = 5***  number of calls to fcn with iflag = 1 has
-//	                                !!    reached maxfev.
-//	                                !!  * ***info = 6***  ftol is too small. no further reduction in
-//	                                !!    the sum of squares is possible.
-//	                                !!  * ***info = 7***  xtol is too small. no further improvement in
-//	                                !!    the approximate solution x is possible.
-//	                                !!  * ***info = 8***  gtol is too small. fvec is orthogonal to the
-//	                                !!    columns of the jacobian to machine precision.
-//	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
-//	                                !! calls to fcn with iflag = 1.
-//	        integer, intent(out) :: Njev !! an integer output variable set to the number of
-//	                                !! calls to fcn with iflag = 2.
-//	        integer, intent(out) :: Ipvt(n) !! an integer output array of length n. ipvt
-//	                                   !! defines a permutation matrix p such that jac*p = q*r,
-//	                                   !! where jac is the final calculated jacobian, q is
-//	                                   !! orthogonal (not stored), and r is upper triangular
-//	                                   !! with diagonal elements of nonincreasing magnitude.
-//	                                   !! column j of p is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(in) :: Ftol !! a nonnegative input variable. termination
-//	                                !! occurs when both the actual and predicted relative
-//	                                !! reductions in the sum of squares are at most ftol.
-//	                                !! therefore, ftol measures the relative error desired
-//	                                !! in the sum of squares.
-//	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
-//	                                !! occurs when the relative error between two consecutive
-//	                                !! iterates is at most xtol. therefore, xtol measures the
-//	                                !! relative error desired in the approximate solution.
-//	        real(wp), intent(in) :: Gtol !! a nonnegative input variable. termination
-//	                                !! occurs when the cosine of the angle between fvec and
-//	                                !! any column of the jacobian is at most gtol in absolute
-//	                                !! value. therefore, gtol measures the orthogonality
-//	                                !! desired between the function vector and the columns
-//	                                !! of the jacobian.
-//	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
-//	                                  !! initial step bound. this bound is set to the product of
-//	                                  !! factor and the euclidean norm of diag*x if nonzero, or else
-//	                                  !! to factor itself. in most cases factor should lie in the
-//	                                  !! interval (.1,100.).100. is a generally recommended value.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                   !! an initial estimate of the solution vector. on output x
-//	                                   !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                    !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output m by n array. the upper n by n submatrix
-//	                                            !! of fjac contains an upper triangular matrix r with
-//	                                            !! diagonal elements of nonincreasing magnitude such that
-//	                                            !!```
-//	                                            !!        t     t           t
-//	                                            !!       p *(jac *jac)*p = r *r,
-//	                                            !!```
-//	                                            !! where p is a permutation matrix and jac is the final
-//	                                            !! calculated jacobian. column j of p is column ipvt(j)
-//	                                            !! (see below) of the identity matrix. the lower trapezoidal
-//	                                            !! part of fjac contains information generated during
-//	                                            !! the computation of r.
-//	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
-//	                                      !! below), diag is internally set. if mode = 2, diag
-//	                                      !! must contain positive entries that serve as
-//	                                      !! multiplicative scale factors for the variables.
-//	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
-//	                                   !! the first n elements of the vector (q transpose)*fvec.
-//	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa4(m) !! work array of length m.
-*/
-		public static void lmder() {
-			
-		
-//	        integer :: i, iflag, iter, j, l
-//	        real(wp) :: actred, delta, dirder, fnorm, fnorm1, gnorm, par, &
-//	                    pnorm, prered, ratio, sum, temp, temp1, temp2, xnorm
-	//
-//	        real(wp), parameter :: p1 = 1.0e-1_wp
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p25 = 2.5e-1_wp
-//	        real(wp), parameter :: p75 = 7.5e-1_wp
-//	        real(wp), parameter :: p0001 = 1.0e-4_wp
-	//
-//	        Info = 0
-//	        iflag = 0
-//	        Nfev = 0
-//	        Njev = 0
-	//
-//	        main : block
-	//
-//	            ! check the input parameters for errors.
-	//
-//	            if (n > 0 .and. m >= n .and. Ldfjac >= m .and. Ftol >= zero .and. &
-//	                Xtol >= zero .and. Gtol >= zero .and. Maxfev > 0 .and. &
-//	                Factor > zero) then
-//	                if (Mode == 2) then
-//	                    do j = 1, n
-//	                        if (Diag(j) <= zero) exit main
-//	                    end do
-//	                end if
-//	            else
-//	                exit main
-//	            end if
-	//
-//	            ! evaluate the function at the starting point
-//	            ! and calculate its norm.
-	//
-//	            iflag = 1
-//	            call fcn(m, n, x, Fvec, Fjac, Ldfjac, iflag)
-//	            Nfev = 1
-//	            if (iflag < 0) exit main
-//	            fnorm = enorm(m, Fvec)
-	//
-//	            ! initialize levenberg-marquardt parameter and iteration counter.
-	//
-//	            par = zero
-//	            iter = 1
-	//
-//	            ! beginning of the outer loop.
-	//
-//	            outer : do
-	//
-//	                ! calculate the jacobian matrix.
-	//
-//	                iflag = 2
-//	                call fcn(m, n, x, Fvec, Fjac, Ldfjac, iflag)
-//	                Njev = Njev + 1
-//	                if (iflag < 0) exit main
-	//
-//	                ! if requested, call fcn to enable printing of iterates.
-	//
-//	                if (Nprint > 0) then
-//	                    iflag = 0
-//	                    if (mod(iter - 1, Nprint) == 0) &
-//	                        call fcn(m, n, x, Fvec, Fjac, Ldfjac, iflag)
-//	                    if (iflag < 0) exit main
-//	                end if
-	//
-//	                ! compute the qr factorization of the jacobian.
-	//
-//	                call qrfac(m, n, Fjac, Ldfjac, .true., Ipvt, n, Wa1, Wa2, Wa3)
-	//
-//	                ! on the first iteration and if mode is 1, scale according
-//	                ! to the norms of the columns of the initial jacobian.
-	//
-//	                if (iter == 1) then
-//	                    if (Mode /= 2) then
-//	                        do j = 1, n
-//	                            Diag(j) = Wa2(j)
-//	                            if (Wa2(j) == zero) Diag(j) = one
-//	                        end do
-//	                    end if
-	//
-//	                    ! on the first iteration, calculate the norm of the scaled x
-//	                    ! and initialize the step bound delta.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = Diag(j)*x(j)
-//	                    end do
-//	                    xnorm = enorm(n, Wa3)
-//	                    delta = Factor*xnorm
-//	                    if (delta == zero) delta = Factor
-//	                end if
-	//
-//	                ! form (q transpose)*fvec and store the first n components in
-//	                ! qtf.
-	//
-//	                do i = 1, m
-//	                    Wa4(i) = Fvec(i)
-//	                end do
-//	                do j = 1, n
-//	                    if (Fjac(j, j) /= zero) then
-//	                        sum = zero
-//	                        do i = j, m
-//	                            sum = sum + Fjac(i, j)*Wa4(i)
-//	                        end do
-//	                        temp = -sum/Fjac(j, j)
-//	                        do i = j, m
-//	                            Wa4(i) = Wa4(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end if
-//	                    Fjac(j, j) = Wa1(j)
-//	                    Qtf(j) = Wa4(j)
-//	                end do
-	//
-//	                ! compute the norm of the scaled gradient.
-	//
-//	                gnorm = zero
-//	                if (fnorm /= zero) then
-//	                    do j = 1, n
-//	                        l = Ipvt(j)
-//	                        if (Wa2(l) /= zero) then
-//	                            sum = zero
-//	                            do i = 1, j
-//	                                sum = sum + Fjac(i, j)*(Qtf(i)/fnorm)
-//	                            end do
-//	                            gnorm = max(gnorm, abs(sum/Wa2(l)))
-//	                        end if
-//	                    end do
-//	                end if
-	//
-//	                ! test for convergence of the gradient norm.
-	//
-//	                if (gnorm <= Gtol) Info = 4
-//	                if (Info /= 0) exit main
-	//
-//	                ! rescale if necessary.
-	//
-//	                if (Mode /= 2) then
-//	                    do j = 1, n
-//	                        Diag(j) = max(Diag(j), Wa2(j))
-//	                    end do
-//	                end if
-	//
-//	                ! beginning of the inner loop.
-//	                inner : do
-	//
-//	                    ! determine the levenberg-marquardt parameter.
-	//
-//	                    call lmpar(n, Fjac, Ldfjac, Ipvt, Diag, Qtf, delta, par, Wa1, Wa2, Wa3, Wa4)
-	//
-//	                    ! store the direction p and x + p. calculate the norm of p.
-	//
-//	                    do j = 1, n
-//	                        Wa1(j) = -Wa1(j)
-//	                        Wa2(j) = x(j) + Wa1(j)
-//	                        Wa3(j) = Diag(j)*Wa1(j)
-//	                    end do
-//	                    pnorm = enorm(n, Wa3)
-	//
-//	                    ! on the first iteration, adjust the initial step bound.
-	//
-//	                    if (iter == 1) delta = min(delta, pnorm)
-	//
-//	                    ! evaluate the function at x + p and calculate its norm.
-	//
-//	                    iflag = 1
-//	                    call fcn(m, n, Wa2, Wa4, Fjac, Ldfjac, iflag)
-//	                    Nfev = Nfev + 1
-//	                    if (iflag < 0) exit main
-//	                    fnorm1 = enorm(m, Wa4)
-	//
-//	                    ! compute the scaled actual reduction.
-	//
-//	                    actred = -one
-//	                    if (p1*fnorm1 < fnorm) actred = one - (fnorm1/fnorm)**2
-	//
-//	                    ! compute the scaled predicted reduction and
-//	                    ! the scaled directional derivative.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = zero
-//	                        l = Ipvt(j)
-//	                        temp = Wa1(l)
-//	                        do i = 1, j
-//	                            Wa3(i) = Wa3(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end do
-//	                    temp1 = enorm(n, Wa3)/fnorm
-//	                    temp2 = (sqrt(par)*pnorm)/fnorm
-//	                    prered = temp1**2 + temp2**2/p5
-//	                    dirder = -(temp1**2 + temp2**2)
-	//
-//	                    ! compute the ratio of the actual to the predicted
-//	                    ! reduction.
-	//
-//	                    ratio = zero
-//	                    if (prered /= zero) ratio = actred/prered
-	//
-//	                    ! update the step bound.
-	//
-//	                    if (ratio <= p25) then
-//	                        if (actred >= zero) temp = p5
-//	                        if (actred < zero) temp = p5*dirder/(dirder + p5*actred)
-//	                        if (p1*fnorm1 >= fnorm .or. temp < p1) temp = p1
-//	                        delta = temp*min(delta, pnorm/p1)
-//	                        par = par/temp
-//	                    elseif (par == zero .or. ratio >= p75) then
-//	                        delta = pnorm/p5
-//	                        par = p5*par
-//	                    end if
-	//
-//	                    ! test for successful iteration.
-	//
-//	                    if (ratio >= p0001) then
-//	                        ! successful iteration. update x, fvec, and their norms.
-//	                        do j = 1, n
-//	                            x(j) = Wa2(j)
-//	                            Wa2(j) = Diag(j)*x(j)
-//	                        end do
-//	                        do i = 1, m
-//	                            Fvec(i) = Wa4(i)
-//	                        end do
-//	                        xnorm = enorm(n, Wa2)
-//	                        fnorm = fnorm1
-//	                        iter = iter + 1
-//	                    end if
-	//
-//	                    ! tests for convergence.
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. p5*ratio <= one) Info = 1
-//	                    if (delta <= Xtol*xnorm) Info = 2
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. p5*ratio <= one .and. Info == 2) Info = 3
-//	                    if (Info /= 0) exit main
-	//
-//	                    ! tests for termination and stringent tolerances.
-//	                    if (Nfev >= Maxfev) Info = 5
-//	                    if (abs(actred) <= epsmch .and. prered <= epsmch .and. p5*ratio <= one) Info = 6
-//	                    if (delta <= epsmch*xnorm) Info = 7
-//	                    if (gnorm <= epsmch) Info = 8
-//	                    if (Info /= 0) exit main
-	//
-//	                    if (ratio >= p0001) exit inner
-	//
-//	                end do inner ! end of the inner loop. repeat if iteration unsuccessful.
-	//
-//	            end do outer ! end of the outer loop
-	//
-//	        end block main
-	//
-//	        ! termination, either normal or user imposed.
-	//
-//	        if (iflag < 0) Info = iflag
-//	        iflag = 0
-//	        if (Nprint > 0) call fcn(m, n, x, Fvec, Fjac, Ldfjac, iflag)
-	//
-	}
-
-/**
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmder1 is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of the
-	// ! levenberg-marquardt algorithm. this is done by using the more
-	// ! general least-squares solver lmder. the user must provide a
-	// ! subroutine which calculates the functions and the jacobian.
-	//
-//	    subroutine lmder1(fcn, m, n, x, Fvec, Fjac, Ldfjac, Tol, Info, Ipvt, Wa, Lwa)
-//	        implicit none
-	//
-//	        procedure(fcn_lmder) :: fcn !! user-supplied subroutine which
-//	                                    !! calculates the functions and the jacobian.
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                                !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                                !! of variables. n must not exceed m.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than m
-//	                                     !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                    !! terminated execution, info is set to the (negative)
-//	                                    !! value of iflag. see description of fcn. otherwise,
-//	                                    !! info is set as follows.
-//	                                    !!
-//	                                    !!  * ***info = 0***  improper input parameters.
-//	                                    !!  * ***info = 1***  algorithm estimates that the relative error
-//	                                    !!    in the sum of squares is at most tol.
-//	                                    !!  * ***info = 2***  algorithm estimates that the relative error
-//	                                    !!    between x and the solution is at most tol.
-//	                                    !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                    !!  * ***info = 4***  fvec is orthogonal to the columns of the
-//	                                    !!    jacobian to machine precision.
-//	                                    !!  * ***info = 5***  number of calls to fcn with iflag = 1 has
-//	                                    !!    reached 100*(n+1).
-//	                                    !!  * ***info = 6***  tol is too small. no further reduction in
-//	                                    !!    the sum of squares is possible.
-//	                                    !!  * ***info = 7***  tol is too small. no further improvement in
-//	                                    !!    the approximate solution x is possible.
-//	        integer, intent(in) :: Lwa !! a positive integer input variable not less than 5*n+m.
-//	        integer, intent(out) :: Ipvt(n) !! an integer output array of length n. ipvt
-//	                                       !! defines a permutation matrix p such that jac*p = q*r,
-//	                                       !! where jac is the final calculated jacobian, q is
-//	                                       !! orthogonal (not stored), and r is upper triangular
-//	                                       !! with diagonal elements of nonincreasing magnitude.
-//	                                       !! column j of p is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(in) :: Tol !! a nonnegative input variable. termination occurs
-//	                                   !! when the algorithm estimates either that the relative
-//	                                   !! error in the sum of squares is at most tol or that
-//	                                   !! the relative error between x and the solution is at
-//	                                   !! most tol.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                       !! an initial estimate of the solution vector. on output x
-//	                                       !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                        !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output m by n array. the upper n by n submatrix
-//	                                                !! of fjac contains an upper triangular matrix r with
-//	                                                !! diagonal elements of nonincreasing magnitude such that
-//	                                                !!```
-//	                                                !!        t     t           t
-//	                                                !!       p *(jac *jac)*p = r *r,
-//	                                                !!```
-//	                                                !! where p is a permutation matrix and jac is the final
-//	                                                !! calculated jacobian. column j of p is column ipvt(j)
-//	                                                !! (see below) of the identity matrix. the lower trapezoidal
-//	                                                !! part of fjac contains information generated during
-//	                                                !! the computation of r.
-//	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-	//
-//	        integer :: maxfev, mode, nfev, njev, nprint
-//	        real(wp) :: ftol, gtol, xtol
-	//
-//	        real(wp), parameter :: factor = 100.0_wp
- */
-
-		public static void lmder1() {
-			
-		
-//	        Info = 0
-	//
-			
-//	        ! check the input parameters for errors.
-	//
-//	        if (n > 0 .and. m >= n .and. Ldfjac >= m .and. Tol >= zero .and. &
-//	            Lwa >= 5*n + m) then
-//	            ! call lmder.
-//	            maxfev = 100*(n + 1)
-//	            ftol = Tol
-//	            xtol = Tol
-//	            gtol = zero
-//	            mode = 1
-//	            nprint = 0
-//	            call lmder(fcn, m, n, x, Fvec, Fjac, Ldfjac, ftol, xtol, gtol, maxfev,   &
-//	                     & Wa(1), mode, factor, nprint, Info, nfev, njev, Ipvt, Wa(n + 1)&
-//	                     & , Wa(2*n + 1), Wa(3*n + 1), Wa(4*n + 1), Wa(5*n + 1))
-//	            if (Info == 8) Info = 4
-//	        end if
-	//
-}
-	
-/**
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmdif is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of
-	// ! the levenberg-marquardt algorithm. the user must provide a
-	// ! subroutine which calculates the functions. the jacobian is
-	// ! then calculated by a forward-difference approximation.
-	//
-//	    subroutine lmdif(fcn, m, n, x, Fvec, Ftol, Xtol, Gtol, Maxfev, Epsfcn, Diag, &
-//	                     Mode, Factor, Nprint, Info, Nfev, Fjac, Ldfjac, Ipvt, &
-//	                     Qtf, Wa1, Wa2, Wa3, Wa4)
-//	        implicit none
-	//
-//	        procedure(func2) :: fcn !! the user-supplied subroutine which
-//	                                !! calculates the functions.
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                                !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                                !! of variables. n must not exceed m.
-//	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
-//	                                     !! occurs when the number of calls to fcn is at least
-//	                                     !! maxfev by the end of an iteration.
-//	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
-//	                                   !! variables will be scaled internally. if mode = 2,
-//	                                   !! the scaling is specified by the input diag. other
-//	                                   !! values of mode are equivalent to mode = 1.
-//	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
-//	                                     !! printing of iterates if it is positive. in this case,
-//	                                     !! fcn is called with iflag = 0 at the beginning of the first
-//	                                     !! iteration and every nprint iterations thereafter and
-//	                                     !! immediately prior to return, with x and fvec available
-//	                                     !! for printing. if nprint is not positive, no special calls
-//	                                     !! of fcn with iflag = 0 are made.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                    !! terminated execution, info is set to the (negative)
-//	                                    !! value of iflag. see description of fcn. otherwise,
-//	                                    !! info is set as follows:
-//	                                    !!
-//	                                    !!  * ***info = 0***  improper input parameters.
-//	                                    !!  * ***info = 1***  both actual and predicted relative reductions
-//	                                    !!    in the sum of squares are at most ftol.
-//	                                    !!  * ***info = 2***  relative error between two consecutive iterates
-//	                                    !!    is at most xtol.
-//	                                    !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                    !!  * ***info = 4***  the cosine of the angle between fvec and any
-//	                                    !!    column of the jacobian is at most gtol in
-//	                                    !!    absolute value.
-//	                                    !!  * ***info = 5***  number of calls to fcn has reached or
-//	                                    !!    exceeded maxfev.
-//	                                    !!  * ***info = 6***  ftol is too small. no further reduction in
-//	                                    !!    the sum of squares is possible.
-//	                                    !!  * ***info = 7***  xtol is too small. no further improvement in
-//	                                    !!    the approximate solution x is possible.
-//	                                    !!  * ***info = 8***  gtol is too small. fvec is orthogonal to the
-//	                                    !!    columns of the jacobian to machine precision.
-//	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
-//	                                    !! calls to fcn.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than m
-//	                                     !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(out) :: Ipvt(n) !! an integer output array of length n. ipvt
-//	                                       !! defines a permutation matrix p such that jac*p = q*r,
-//	                                       !! where jac is the final calculated jacobian, q is
-//	                                       !! orthogonal (not stored), and r is upper triangular
-//	                                       !! with diagonal elements of nonincreasing magnitude.
-//	                                       !! column j of p is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(in) :: Ftol !! a nonnegative input variable. termination
-//	                                    !! occurs when both the actual and predicted relative
-//	                                    !! reductions in the sum of squares are at most ftol.
-//	                                    !! therefore, ftol measures the relative error desired
-//	                                    !! in the sum of squares.
-//	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
-//	                                    !! occurs when the relative error between two consecutive
-//	                                    !! iterates is at most xtol. therefore, xtol measures the
-//	                                    !! relative error desired in the approximate solution.
-//	        real(wp), intent(in) :: Gtol !! a nonnegative input variable. termination
-//	                                    !! occurs when the cosine of the angle between fvec and
-//	                                    !! any column of the jacobian is at most gtol in absolute
-//	                                    !! value. therefore, gtol measures the orthogonality
-//	                                    !! desired between the function vector and the columns
-//	                                    !! of the jacobian.
-//	        real(wp), intent(in) :: Epsfcn !! an input variable used in determining a suitable
-//	                                      !! step length for the forward-difference approximation. this
-//	                                      !! approximation assumes that the relative errors in the
-//	                                      !! functions are of the order of epsfcn. if epsfcn is less
-//	                                      !! than the machine precision, it is assumed that the relative
-//	                                      !! errors in the functions are of the order of the machine
-//	                                      !! precision.
-//	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
-//	                                      !! initial step bound. this bound is set to the product of
-//	                                      !! factor and the euclidean norm of diag*x if nonzero, or else
-//	                                      !! to factor itself. in most cases factor should lie in the
-//	                                      !! interval (.1,100.). 100. is a generally recommended value.
-//	        real(wp), intent(inout) :: x(n) !!  an array of length n. on input x must contain
-//	                                       !! an initial estimate of the solution vector. on output x
-//	                                       !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                        !! the functions evaluated at the output x.
-//	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
-//	                                          !! below), diag is internally set. if mode = 2, diag
-//	                                          !! must contain positive entries that serve as
-//	                                          !! multiplicative scale factors for the variables.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output m by n array. the upper n by n submatrix
-//	                                                !! of fjac contains an upper triangular matrix r with
-//	                                                !! diagonal elements of nonincreasing magnitude such that
-//	                                                !!```
-//	                                                !!        t     t           t
-//	                                                !!       p *(jac *jac)*p = r *r,
-//	                                                !!```
-//	                                                !! where p is a permutation matrix and jac is the final
-//	                                                !! calculated jacobian. column j of p is column ipvt(j)
-//	                                                !! (see below) of the identity matrix. the lower trapezoidal
-//	                                                !! part of fjac contains information generated during
-//	                                                !! the computation of r.
-//	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
-//	                                       !! the first n elements of the vector (q transpose)*fvec.
-//	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa4(m) !! work array of length n.
-	//
-//	        integer :: i, iflag, iter, j, l
-//	        real(wp) :: actred, delta, dirder, fnorm, &
-//	                    fnorm1, gnorm, par, pnorm, prered, &
-//	                    ratio, sum, temp, temp1, temp2, xnorm
-	//
-//	        real(wp), parameter :: p1 = 1.0e-1_wp
-//	        real(wp), parameter :: p5 = 5.0e-1_wp
-//	        real(wp), parameter :: p25 = 2.5e-1_wp
-//	        real(wp), parameter :: p75 = 7.5e-1_wp
-//	        real(wp), parameter :: p0001 = 1.0e-4_wp
-*/
-		public static void lmdif() {
-			
-		
-//	        Info = 0
-//	        iflag = 0
-//	        Nfev = 0
-	//
-//	        main : block
-	//
-//	            ! check the input parameters for errors.
-	//
-//	            if (n > 0 .and. m >= n .and. Ldfjac >= m .and. Ftol >= zero .and. &
-//	                Xtol >= zero .and. Gtol >= zero .and. Maxfev > 0 .and. &
-//	                Factor > zero) then
-//	                if (Mode == 2) then
-//	                    do j = 1, n
-//	                        if (Diag(j) <= zero) exit main
-//	                    end do
-//	                end if
-//	            else
-//	                exit main
-//	            end if
-	//
-//	            ! evaluate the function at the starting point
-//	            ! and calculate its norm.
-	//
-//	            iflag = 1
-//	            call fcn(m, n, x, Fvec, iflag)
-//	            Nfev = 1
-//	            if (iflag < 0) exit main
-	//
-//	            fnorm = enorm(m, Fvec)
-	//
-//	            ! initialize levenberg-marquardt parameter and iteration counter.
-	//
-//	            par = zero
-//	            iter = 1
-	//
-//	            ! beginning of the outer loop.
-	//
-//	            outer : do
-	//
-//	                ! calculate the jacobian matrix.
-	//
-//	                iflag = 2
-//	                call fdjac2(fcn, m, n, x, Fvec, Fjac, Ldfjac, iflag, Epsfcn, Wa4)
-//	                Nfev = Nfev + n
-//	                if (iflag < 0) exit main
-	//
-//	                ! if requested, call fcn to enable printing of iterates.
-	//
-//	                if (Nprint > 0) then
-//	                    iflag = 0
-//	                    if (mod(iter - 1, Nprint) == 0) &
-//	                        call fcn(m, n, x, Fvec, iflag)
-//	                    if (iflag < 0) exit main
-//	                end if
-	//
-//	                ! compute the qr factorization of the jacobian.
-	//
-//	                call qrfac(m, n, Fjac, Ldfjac, .true., Ipvt, n, Wa1, Wa2, Wa3)
-	//
-//	                ! on the first iteration and if mode is 1, scale according
-//	                ! to the norms of the columns of the initial jacobian.
-	//
-//	                if (iter == 1) then
-//	                    if (Mode /= 2) then
-//	                        do j = 1, n
-//	                            Diag(j) = Wa2(j)
-//	                            if (Wa2(j) == zero) Diag(j) = one
-//	                        end do
-//	                    end if
-	//
-//	                    ! on the first iteration, calculate the norm of the scaled x
-//	                    ! and initialize the step bound delta.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = Diag(j)*x(j)
-//	                    end do
-//	                    xnorm = enorm(n, Wa3)
-//	                    delta = Factor*xnorm
-//	                    if (delta == zero) delta = Factor
-//	                end if
-	//
-//	                ! form (q transpose)*fvec and store the first n components in
-//	                ! qtf.
-	//
-//	                do i = 1, m
-//	                    Wa4(i) = Fvec(i)
-//	                end do
-//	                do j = 1, n
-//	                    if (Fjac(j, j) /= zero) then
-//	                        sum = zero
-//	                        do i = j, m
-//	                            sum = sum + Fjac(i, j)*Wa4(i)
-//	                        end do
-//	                        temp = -sum/Fjac(j, j)
-//	                        do i = j, m
-//	                            Wa4(i) = Wa4(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end if
-//	                    Fjac(j, j) = Wa1(j)
-//	                    Qtf(j) = Wa4(j)
-//	                end do
-	//
-//	                ! compute the norm of the scaled gradient.
-	//
-//	                gnorm = zero
-//	                if (fnorm /= zero) then
-//	                    do j = 1, n
-//	                        l = Ipvt(j)
-//	                        if (Wa2(l) /= zero) then
-//	                            sum = zero
-//	                            do i = 1, j
-//	                                sum = sum + Fjac(i, j)*(Qtf(i)/fnorm)
-//	                            end do
-//	                            gnorm = max(gnorm, abs(sum/Wa2(l)))
-//	                        end if
-//	                    end do
-//	                end if
-	//
-//	                ! test for convergence of the gradient norm.
-	//
-//	                if (gnorm <= Gtol) Info = 4
-//	                if (Info /= 0) exit main
-	//
-//	                ! rescale if necessary.
-	//
-//	                if (Mode /= 2) then
-//	                    do j = 1, n
-//	                        Diag(j) = max(Diag(j), Wa2(j))
-//	                    end do
-//	                end if
-	//
-//	                ! beginning of the inner loop.
-	//
-//	                inner : do
-	//
-//	                    ! determine the levenberg-marquardt parameter.
-	//
-//	                    call lmpar(n, Fjac, Ldfjac, Ipvt, Diag, Qtf, delta, par, Wa1, &
-//	                               Wa2, Wa3, Wa4)
-	//
-//	                    ! store the direction p and x + p. calculate the norm of p.
-	//
-//	                    do j = 1, n
-//	                        Wa1(j) = -Wa1(j)
-//	                        Wa2(j) = x(j) + Wa1(j)
-//	                        Wa3(j) = Diag(j)*Wa1(j)
-//	                    end do
-//	                    pnorm = enorm(n, Wa3)
-	//
-//	                    ! on the first iteration, adjust the initial step bound.
-	//
-//	                    if (iter == 1) delta = min(delta, pnorm)
-	//
-//	                    ! evaluate the function at x + p and calculate its norm.
-	//
-//	                    iflag = 1
-//	                    call fcn(m, n, Wa2, Wa4, iflag)
-//	                    Nfev = Nfev + 1
-//	                    if (iflag < 0) exit main
-	//
-//	                    fnorm1 = enorm(m, Wa4)
-	//
-//	                    ! compute the scaled actual reduction.
-	//
-//	                    actred = -one
-//	                    if (p1*fnorm1 < fnorm) actred = one - (fnorm1/fnorm)**2
-	//
-//	                    ! compute the scaled predicted reduction and
-//	                    ! the scaled directional derivative.
-	//
-//	                    do j = 1, n
-//	                        Wa3(j) = zero
-//	                        l = Ipvt(j)
-//	                        temp = Wa1(l)
-//	                        do i = 1, j
-//	                            Wa3(i) = Wa3(i) + Fjac(i, j)*temp
-//	                        end do
-//	                    end do
-//	                    temp1 = enorm(n, Wa3)/fnorm
-//	                    temp2 = (sqrt(par)*pnorm)/fnorm
-//	                    prered = temp1**2 + temp2**2/p5
-//	                    dirder = -(temp1**2 + temp2**2)
-	//
-//	                    ! compute the ratio of the actual to the predicted
-//	                    ! reduction.
-	//
-//	                    ratio = zero
-//	                    if (prered /= zero) ratio = actred/prered
-	//
-//	                    ! update the step bound.
-	//
-//	                    if (ratio <= p25) then
-//	                        if (actred >= zero) temp = p5
-//	                        if (actred < zero) &
-//	                            temp = p5*dirder/(dirder + p5*actred)
-//	                        if (p1*fnorm1 >= fnorm .or. temp < p1) temp = p1
-//	                        delta = temp*min(delta, pnorm/p1)
-//	                        par = par/temp
-//	                    elseif (par == zero .or. ratio >= p75) then
-//	                        delta = pnorm/p5
-//	                        par = p5*par
-//	                    end if
-	//
-//	                    ! test for successful iteration.
-	//
-//	                    if (ratio >= p0001) then
-	//
-//	                        ! successful iteration. update x, fvec, and their norms.
-	//
-//	                        do j = 1, n
-//	                            x(j) = Wa2(j)
-//	                            Wa2(j) = Diag(j)*x(j)
-//	                        end do
-//	                        do i = 1, m
-//	                            Fvec(i) = Wa4(i)
-//	                        end do
-//	                        xnorm = enorm(n, Wa2)
-//	                        fnorm = fnorm1
-//	                        iter = iter + 1
-//	                    end if
-	//
-//	                    ! tests for convergence.
-	//
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. &
-//	                        p5*ratio <= one) Info = 1
-//	                    if (delta <= Xtol*xnorm) Info = 2
-//	                    if (abs(actred) <= Ftol .and. prered <= Ftol .and. &
-//	                        p5*ratio <= one .and. Info == 2) Info = 3
-//	                    if (Info /= 0) exit main
-	//
-//	                    ! tests for termination and stringent tolerances.
-	//
-//	                    if (Nfev >= Maxfev) Info = 5
-//	                    if (abs(actred) <= epsmch .and. &
-//	                        prered <= epsmch .and. p5*ratio <= one) &
-//	                        Info = 6
-//	                    if (delta <= epsmch*xnorm) Info = 7
-//	                    if (gnorm <= epsmch) Info = 8
-//	                    if (Info /= 0) exit main
-	//
-//	                    if (ratio >= p0001) exit inner
-	//
-//	                end do inner ! end of the inner loop. repeat if iteration unsuccessful.
-	//
-//	            end do outer ! end of the outer loop.
-	//
-//	        end block main
-	//
-//	        ! termination, either normal or user imposed.
-	//
-//	        if (iflag < 0) Info = iflag
-//	        iflag = 0
-//	        if (Nprint > 0) call fcn(m, n, x, Fvec, iflag)
-	//
-	}
-	
-/**	
-	//
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmdif1 is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of the
-	// ! levenberg-marquardt algorithm. this is done by using the more
-	// ! general least-squares solver lmdif. the user must provide a
-	// ! subroutine which calculates the functions. the jacobian is
-	// ! then calculated by a forward-difference approximation.
-	//
-//	    subroutine lmdif1(fcn, m, n, x, Fvec, Tol, Info, Iwa, Wa, Lwa)
-//	        implicit none
-	//
-//	        procedure(func2) :: fcn !! the user-supplied subroutine which
-//	                                !! calculates the functions.
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                                !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                                !! of variables. n must not exceed m.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                    !! terminated execution, info is set to the (negative)
-//	                                    !! value of iflag. see description of fcn. otherwise,
-//	                                    !! info is set as follows:
-//	                                    !!
-//	                                    !!  * ***info = 0***  improper input parameters.
-//	                                    !!  * ***info = 1***  algorithm estimates that the relative error
-//	                                    !!    in the sum of squares is at most tol.
-//	                                    !!  * ***info = 2***  algorithm estimates that the relative error
-//	                                    !!    between x and the solution is at most tol.
-//	                                    !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                    !!  * ***info = 4***  fvec is orthogonal to the columns of the
-//	                                    !!    jacobian to machine precision.
-//	                                    !!  * ***info = 5***  number of calls to fcn has reached or
-//	                                    !!    exceeded 200*(n+1).
-//	                                    !!  * ***info = 6***  tol is too small. no further reduction in
-//	                                    !!    the sum of squares is possible.
-//	                                    !!  * ***info = 7***  tol is too small. no further improvement in
-//	                                    !!    the approximate solution x is possible.
-//	        integer, intent(in) :: Lwa !! a positive integer input variable not less than
-//	                                  !! m*n+5*n+m.
-//	        integer, intent(inout) :: Iwa(n) !! an integer work array of length n.
-//	        real(wp), intent(in) :: Tol !! a nonnegative input variable. termination occurs
-//	                                   !! when the algorithm estimates either that the relative
-//	                                   !! error in the sum of squares is at most tol or that
-//	                                   !! the relative error between x and the solution is at
-//	                                   !! most tol.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                       !! an initial estimate of the solution vector. on output x
-//	                                       !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                        !! the functions evaluated at the output x.
-//	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-	*/
-		public static void lmdif1() {
-			
-		
-//	        integer :: maxfev, mode, mp5n, nfev, nprint
-//	        real(wp) :: epsfcn, ftol, gtol, xtol
-	//
-//	        real(wp), parameter :: factor = 1.0e2_wp
-	//
-//	        Info = 0
-	//
-//	        ! check the input parameters for errors.
-	//
-//	        if (n > 0 .and. m >= n .and. Tol >= zero .and. Lwa >= m*n + 5*n + m) then
-	//
-//	            ! call lmdif.
-	//
-//	            maxfev = 200*(n + 1)
-//	            ftol = Tol
-//	            xtol = Tol
-//	            gtol = zero
-//	            epsfcn = zero
-//	            mode = 1
-//	            nprint = 0
-//	            mp5n = m + 5*n
-//	            call lmdif(fcn, m, n, x, Fvec, ftol, xtol, gtol, maxfev, epsfcn, Wa(1), &
-//	                       mode, factor, nprint, Info, nfev, Wa(mp5n + 1), m, Iwa, &
-//	                       Wa(n + 1), Wa(2*n + 1), Wa(3*n + 1), Wa(4*n + 1), Wa(5*n + 1))
-//	            if (Info == 8) Info = 4
-//	        end if
-	//
+					jeval = false;
+				} while (true);// End of the inner loop.
+			} while (true); // End of the outer loop.
+		} while (true); // End block main
 	}
 
 	/**
-	// !*****************************************************************************************
-	// !>
-	// ! given an m by n matrix a, an n by n nonsingular diagonal
-	// ! matrix d, an m-vector b, and a positive number delta,
-	// ! the problem is to determine a value for the parameter
-	// ! par such that if x solves the system
-	// !```
-	// ! a*x = b , sqrt(par)*d*x = 0 ,
-	// !```
-	// ! in the least squares sense, and dxnorm is the euclidean
-	// ! norm of d*x, then either par is zero and
-	// !```
-	// ! (dxnorm-delta) <= 0.1*delta ,
-	// !```
-	// ! or par is positive and
-	// !```
-	// ! abs(dxnorm-delta) <= 0.1*delta .
-	// !```
-	// ! this subroutine completes the solution of the problem
-	// ! if it is provided with the necessary information from the
-	// ! qr factorization, with column pivoting, of a. that is, if
-	// ! a*p = q*r, where p is a permutation matrix, q has orthogonal
-	// ! columns, and r is an upper triangular matrix with diagonal
-	// ! elements of nonincreasing magnitude, then lmpar expects
-	// ! the full upper triangle of r, the permutation matrix p,
-	// ! and the first n components of (q transpose)*b. on output
-	// ! lmpar also provides an upper triangular matrix s such that
-	// !```
-	// ! t t t
-	// ! p *(a *a + par*d*d)*p = s *s .
-	// !```
-	// ! s is employed within lmpar and may be of separate interest.
-	// !
-	// ! only a few iterations are generally needed for convergence
-	// ! of the algorithm. if, however, the limit of 10 iterations
-	// ! is reached, then the output par will contain the best
-	// ! value obtained so far.
+	 * //
+	 * *****************************************************************************************
+	 * // //
+	 * *****************************************************************************************
+	 * // > //  the purpose of hybrj1 is to find a zero of a system of //  n
+	 * nonlinear functions in n variables by a modification //  of the powell
+	 * hybrid method. this is done by using the //  more general nonlinear equation
+	 * solver hybrj. the user //  must provide a subroutine which calculates the
+	 * functions //  and the jacobian. // // subroutine hybrj1(fcn, n, x, fVec,
+	 * fJac, ldfJac, Tol, info, wa, Lwa) // // implicit none // //
+	 * procedure(fcn_hybrj) :: fcn  the user-supplied subroutine which // 
+	 * calculates the functions and the jacobian // integer, intent(in) :: n  a
+	 * positive integer input variable set to the number //  of functions and
+	 * variables. // integer, intent(in) :: ldfJac  a positive integer input
+	 * variable not less than n //  which specifies the leading dimension of the
+	 * array fJac. // integer, intent(out) :: info  an integer output variable. if
+	 * the user has //  terminated execution, info is set to the (negative) // 
+	 * value of iFlag. see description of fcn. otherwise, //  info is set as
+	 * follows: //  //  * ***info = 0*** improper input parameters. //  *
+	 * ***info = 1*** algorithm estimates that the relative error //  between x
+	 * and the solution is at most tol. //  * ***info = 2*** number of calls to
+	 * fcn with iFlag = 1 has //  reached 100*(n+1). //  * ***info = 3*** tol is
+	 * too small. no further improvement in //  the approximate solution x is
+	 * possible. //  * ***info = 4*** iteration is not making good progress. //
+	 * integer, intent(in) :: Lwa  a positive integer input variable not less than
+	 * //  (n*(n+13))/2. // real(wp), intent(in) :: Tol  a nonnegative input
+	 * variable. termination occurs //  when the algorithm estimates that the
+	 * relative error //  between x and the solution is at most tol. // real(wp),
+	 * intent(inout) :: x(n)  an array of length n. on input x must contain // 
+	 * an initial estimate of the solution vector. on output x //  contains the
+	 * final estimate of the solution vector. // real(wp), intent(out) :: fVec(n) 
+	 * an output array of length n which contains //  the functions evaluated at
+	 * the output x. // real(wp), intent(out) :: fJac(ldfJac, n)  an output n by n
+	 * array which contains the //  orthogonal matrix q produced by the qr
+	 * factorization //  of the final approximate jacobian. // real(wp),
+	 * intent(inout) :: wa(Lwa)  a work array of length lwa.
+	 */
 	//
-//	    subroutine lmpar(n, r, Ldr, Ipvt, Diag, Qtb, Delta, Par, x, Sdiag, Wa1, Wa2)
-//	        implicit none
-	//
-//	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
-//	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
-//	                                  !! which specifies the leading dimension of the array r.
-//	        integer, intent(in) :: Ipvt(n) !! an integer input array of length n which defines the
-//	                                      !! permutation matrix p such that a*p = q*r. column j of p
-//	                                      !! is column ipvt(j) of the identity matrix.
-//	        real(wp) :: Delta !! a positive input variable which specifies an upper
-//	                          !! bound on the euclidean norm of d*x.
-//	        real(wp), intent(inout) :: Par !! a nonnegative variable. on input par contains an
-//	                                      !! initial estimate of the levenberg-marquardt parameter.
-//	                                      !! on output par contains the final estimate.
-//	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the full upper triangle
-//	                                            !! must contain the full upper triangle of the matrix r.
-//	                                            !! on output the full upper triangle is unaltered, and the
-//	                                            !! strict lower triangle contains the strict upper triangle
-//	                                            !! (transposed) of the upper triangular matrix s.
-//	        real(wp), intent(in) :: Diag(n) !! an input array of length n which must contain the
-//	                                       !! diagonal elements of the matrix d.
-//	        real(wp), intent(in) :: Qtb(n) !! an input array of length n which must contain the first
-//	                                      !! n elements of the vector (q transpose)*b.
-//	        real(wp), intent(out) :: x(n) !! an output array of length n which contains the least
-//	                                     !! squares solution of the system a*x = b, sqrt(par)*d*x = 0,
-//	                                     !! for the output par.
-//	        real(wp), intent(out) :: Sdiag(n) !! an output array of length n which contains the
-//	                                         !! diagonal elements of the upper triangular matrix s.
-//	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-	//
-	*/
-		public static void lmpar(int n,double[][] r,int ldr,int[] ipvt,double[] diag,double[] qtb,double delta, double par,
-								 double[] x, double[] sdiag, double[] wa1, double[] wa2) {
-			// lmpar(n, r, Ldr, Ipvt, Diag, Qtb, Delta, Par, x, Sdiag, Wa1, Wa2)
-		
-	        int i, iter, j, jm1, jp1, k, l, nsing;
-	        double dxnorm, fp, gnorm, parc, parl, paru, sum, temp;
-	
-	        double p1 = 1.0e-1;
-	        double p001 = 1.0e-3;
-	        double dwarf = dpmpar[2]; // the smallest positive magnitude
-	
-//	        Compute and store in x the gauss-newton direction. if the
-//	        jacobian is rank-deficient, obtain a least squares solution.
-	
-	        nsing = n;
-	        for(j = 0;j< n;j++){
-	            wa1[j] = qtb[j];
-	            if (r[j][j] == 0 && nsing == n) {
-					nsing = j - 1;//might need fixing
-				}
-	            if (nsing < n) {
-					wa1[j] = 0;
-				}
+	public static void hyberj1(SystemOfEquations fcn, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac,
+			double tol, int info, double[] wa, int lwa) {
+
+//			subroutine hybrj1(fcn, n, x, fVec, fJac, ldfJac, Tol, info, wa, Lwa)
+		int j, lr, maxFev, mode, nFev = 0, nJev = 0, nPrint;
+		double xTol;
+
+		double factor = 100.0;
+		double[] wa1 = new double[n];
+		double[] wa2 = new double[n];
+		double[] wa3 = new double[n];
+		double[] wa4 = new double[n];
+		double[] wa5 = new double[n];
+		double[] r = new double[n];
+
+		info = 0;
+
+//	        Check the input parameters for errors.
+
+		if (n > 0 && ldfJac >= n && tol >= 0 && lwa >= (n * (n + 13)) / 2) {
+//	            Call hybrj.
+			maxFev = 100 * (n + 1);
+			xTol = tol;
+			mode = 2;
+			for (j = 0; j < n; j++) {
+				wa[j] = 1;
 			}
-	        if (nsing >= 1) {
-	            for(k = 0;k< nsing;k++){
-	                j = nsing - k + 1; //might need fixing
-	                wa1[j] = wa1[j]/r[j][j];
-	                temp = wa1[j];
-	                jm1 = j - 1;
-	                if (jm1 >= 0){
-	                    for(i = 0;i< jm1;i++){
-	                        wa1[i] = wa1[i] - r[i][j]*temp;
+			nPrint = 0;
+			lr = (n * (n + 1)) / 2;
+			hybrj(fcn, n, x, fVec, fJac, ldfJac, xTol, maxFev, wa, mode, factor, nPrint, info, nFev, nJev, r, lr, wa1,
+					wa2, wa3, wa4, wa5);
+			if (info == 5) {
+				info = 4;
+			}
+		}
+	}
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmder is to minimize the sum of the squares of // 
+	 * m nonlinear functions in n variables by a modification of //  the
+	 * levenberg-marquardt algorithm. the user must provide a //  subroutine which
+	 * calculates the functions and the jacobian. // // subroutine lmder(fcn, m, n,
+	 * x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxFev, & // diag, mode, factor,
+	 * nPrint, info, nFev, nJev, ipvt, qtf, & // wa1, wa2, wa3, wa4) // // implicit
+	 * none // // procedure(fcn_lmder) :: fcn  the user-supplied subroutine which
+	 * //  calculates the functions and the jacobian // integer, intent(in) :: m
+	 *  a positive integer input variable set to the number //  of functions. //
+	 * integer, intent(in) :: n  a positive integer input variable set to the
+	 * number //  of variables. n must not exceed m. // integer, intent(in) ::
+	 * ldfJac  a positive integer input variable not less than m //  which
+	 * specifies the leading dimension of the array fJac. // integer, intent(in) ::
+	 * maxFev  a positive integer input variable. termination //  occurs when
+	 * the number of calls to fcn with iFlag = 1 //  has reached maxFev. //
+	 * integer, intent(in) :: mode  an integer input variable. if mode = 1, the //
+	 *  variables will be scaled internally. if mode = 2, //  the scaling is
+	 * specified by the input diag. other //  values of mode are equivalent to
+	 * mode = 1. // integer, intent(in) :: nPrint  an integer input variable that
+	 * enables controlled //  printing of iterates if it is positive. in this
+	 * case, //  fcn is called with iFlag = 0 at the beginning of the first // 
+	 * iteration and every nPrint iterations thereafter and //  immediately prior
+	 * to return, with x, fVec, and fJac //  available for printing. fVec and fJac
+	 * should not be //  altered. if nPrint is not positive, no special calls //
+	 *  of fcn with iFlag = 0 are made. // integer, intent(out) :: info  an
+	 * integer output variable. if the user has //  terminated execution, info is
+	 * set to the (negative) //  value of iFlag. see description of fcn.
+	 * otherwise, //  info is set as follows: //  //  * ***info = 0***
+	 * improper input parameters. //  * ***info = 1*** both actual and predicted
+	 * relative reductions //  in the sum of squares are at most fTol. //  *
+	 * ***info = 2*** relative error between two consecutive iterates //  is at
+	 * most xTol. //  * ***info = 3*** conditions for info = 1 and info = 2 both
+	 * hold. //  * ***info = 4*** the cosine of the angle between fVec and any //
+	 *  column of the jacobian is at most gTol in //  absolute value. //  *
+	 * ***info = 5*** number of calls to fcn with iFlag = 1 has //  reached
+	 * maxFev. //  * ***info = 6*** fTol is too small. no further reduction in //
+	 *  the sum of squares is possible. //  * ***info = 7*** xTol is too small.
+	 * no further improvement in //  the approximate solution x is possible. // 
+	 * * ***info = 8*** gTol is too small. fVec is orthogonal to the //  columns
+	 * of the jacobian to machine precision. // integer, intent(out) :: nFev  an
+	 * integer output variable set to the number of //  calls to fcn with iFlag =
+	 * 1. // integer, intent(out) :: nJev  an integer output variable set to the
+	 * number of //  calls to fcn with iFlag = 2. // integer, intent(out) ::
+	 * ipvt(n)  an integer output array of length n. ipvt //  defines a
+	 * permutation matrix p such that jac*p = q*r, //  where jac is the final
+	 * calculated jacobian, q is //  orthogonal (not stored), and r is upper
+	 * triangular //  with diagonal elements of nonincreasing magnitude. // 
+	 * column j of p is column ipvt[j] of the identity matrix. // real(wp),
+	 * intent(in) :: fTol  a nonnegative input variable. termination //  occurs
+	 * when both the actual and predicted relative //  reductions in the sum of
+	 * squares are at most fTol. //  therefore, fTol measures the relative error
+	 * desired //  in the sum of squares. // real(wp), intent(in) :: xTol  a
+	 * nonnegative input variable. termination //  occurs when the relative error
+	 * between two consecutive //  iterates is at most xTol. therefore, xTol
+	 * measures the //  relative error desired in the approximate solution. //
+	 * real(wp), intent(in) :: gTol  a nonnegative input variable. termination //
+	 *  occurs when the cosine of the angle between fVec and //  any column of
+	 * the jacobian is at most gTol in absolute //  value. therefore, gTol
+	 * measures the orthogonality //  desired between the function vector and the
+	 * columns //  of the jacobian. // real(wp), intent(in) :: factor  a
+	 * positive input variable used in determining the //  initial step bound.
+	 * this bound is set to the product of //  factor and the euclidean norm of
+	 * diag*x if nonzero, or else //  to factor itself. in most cases factor
+	 * should lie in the //  interval (.1,100.).100. is a generally recommended
+	 * value. // real(wp), intent(inout) :: x(n)  an array of length n. on input x
+	 * must contain //  an initial estimate of the solution vector. on output x //
+	 *  contains the final estimate of the solution vector. // real(wp),
+	 * intent(out) :: fVec(m)  an output array of length m which contains // 
+	 * the functions evaluated at the output x. // real(wp), intent(out) ::
+	 * fJac(ldfJac, n)  an output m by n array. the upper n by n submatrix // 
+	 * of fJac contains an upper triangular matrix r with //  diagonal elements of
+	 * nonincreasing magnitude such that // ``` //  t t t //  p *(jac *jac)*p
+	 * = r *r, // ``` //  where p is a permutation matrix and jac is the final
+	 * //  calculated jacobian. column j of p is column ipvt[j] //  (see below)
+	 * of the identity matrix. the lower trapezoidal //  part of fJac contains
+	 * information generated during //  the computation of r. // real(wp),
+	 * intent(inout) :: diag(n)  an array of length n. if mode = 1 (see // 
+	 * below), diag is internally set. if mode = 2, diag //  must contain positive
+	 * entries that serve as //  multiplicative scale factors for the variables.
+	 * // real(wp), intent(out) :: qtf(n)  an output array of length n which
+	 * contains //  the first n elements of the vector (q transpose)*fVec. //
+	 * real(wp), intent(inout) :: wa1(n)  work array of length n. // real(wp),
+	 * intent(inout) :: wa2(n)  work array of length n. // real(wp), intent(inout)
+	 * :: wa3(n)  work array of length n. // real(wp), intent(inout) :: wa4(m) 
+	 * work array of length m.
+	 */
+	public static void lmder(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double[][] fJac,
+			int ldfJac, double fTol, double xTol, double gTol, int maxFev, double[] diag, int mode, double factor,
+			int nPrint, int info, int nFev, int nJev, int[] ipvt, double[] qtf, double[] wa1, double[] wa2,
+			double[] wa3, double[] wa4) {
+
+//			subroutine lmder(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxFev, &
+//                    diag, mode, factor, nPrint, info, nFev, nJev, ipvt, qtf, &
+//                    wa1, wa2, wa3, wa4)
+
+		int i, iFlag, iter, j, l;
+		double actred, delta = 0, dirder, fNorm, fNorm1, gNorm, par, pnorm, prered, ratio, sum, temp = 0, temp1, temp2,
+				xnorm = 0;
+
+		double p1 = 1.0e-1;
+		double p5 = 5.0e-1;
+		double p25 = 2.5e-1;
+		double p75 = 7.5e-1;
+		double p0001 = 1.0e-4;
+
+		info = 0;
+		iFlag = 0;
+		nFev = 0;
+		nJev = 0;
+
+		do { // main : block
+
+//	            Check the input parameters for errors.
+
+			if (n > 0 && m >= n && ldfJac >= m && fTol >= 0 && xTol >= 0 && gTol >= 0 && maxFev > 0 && factor > 0) {
+				if (mode == 2) {
+					for (j = 0; j < n; j++) {
+						if (diag[j] <= 0) {
+							// throw error exit main
 						}
 					}
 				}
+			} else {
+				// throw error exit main
 			}
-	        for(j = 0;j< n;j++){
-	            l = ipvt[j];
-	            x[l] = wa1[j];
+
+//	            Evaluate the function at the starting point
+//	            and calculate its norm.
+
+			iFlag = 1;
+			fVec = fcn.evaluate(x); // (m, n, x, fVec, fJac, ldfJac, iFlag);
+			nFev = 1;
+			if (iFlag < 0) {
+				// throw error exit main
 			}
-	
+			fNorm = enorm(m, fVec);
+
+//	            Initialize levenberg-marquardt parameter and iteration counter.
+
+			par = 0;
+			iter = 1;
+
+//	            Beginning of the outer loop.
+
+			do { // outer : do
+
+//	                Calculate the jacobian matrix.
+
+				iFlag = 2;
+				fVec = fcn.evaluate(x); // fcn(m, n, x, fVec, fJac, ldfJac, iFlag);
+				nJev = nJev + 1;
+				if (iFlag < 0) {
+					// throw error exit main
+				}
+
+//	                If requested, call fcn to enable printing of iterates.
+
+				if (nPrint > 0) {
+					iFlag = 0;
+					if ((iter - 1 % nPrint) == 0) {
+						// fcn(m, n, x, fVec, fJac, ldfJac, iFlag);
+					}
+					if (iFlag < 0) {
+						// throw error exit main
+					}
+				}
+
+//	                Compute the qr factorization of the jacobian.
+
+				qrfac(m, n, fJac, ldfJac, true, ipvt, n, wa1, wa2, wa3);
+
+//	                On the first iteration and if mode is 1, scale according
+//	                to the norms of the columns of the initial jacobian.
+
+				if (iter == 1) {
+					if (mode != 2) {
+						for (j = 0; j < n; j++) {
+							diag[j] = wa2[j];
+							if (wa2[j] == 0) {
+								diag[j] = 1;
+							}
+						}
+					}
+
+//	                    On the first iteration, calculate the norm of the scaled x
+//	                    and initialize the step bound delta.
+
+					for (j = 0; j < n; j++) {
+						wa3[j] = diag[j] * x[j];
+					}
+					xnorm = enorm(n, wa3);
+					delta = factor * xnorm;
+					if (delta == 0) {
+						delta = factor;
+					}
+				}
+
+//	                Form (q transpose)*fVec and store the first n components in
+//	                qtf.
+
+				for (i = 0; i < m; i++) {
+					wa4[i] = fVec[i];
+				}
+				for (j = 0; j < n; j++) {
+					if (fJac[j][j] != 0) {
+						sum = 0;
+						for (i = j; i < m; i++) {
+							sum = sum + fJac[i][j] * wa4[i];
+						}
+						temp = -sum / fJac[j][j];
+						for (i = j; i < m; i++) {
+							wa4[i] = wa4[i] + fJac[i][j] * temp;
+						}
+					}
+					fJac[j][j] = wa1[j];
+					qtf[j] = wa4[j];
+				}
+
+//	                Compute the norm of the scaled gradient.
+
+				gNorm = 0;
+				if (fNorm != 0) {
+					for (j = 0; j < n; j++) {
+						l = ipvt[j];
+						if (wa2[l] != 0) {
+							sum = 0;
+							for (i = 0; i < j; i++) {
+								sum = sum + fJac[i][j] * (qtf[i] / fNorm);
+							}
+							gNorm = Math.max(gNorm, Math.abs(sum / wa2[l]));
+						}
+					}
+				}
+
+//	                Test for convergence of the gradient norm.
+
+				if (gNorm <= gTol) {
+					info = 4;
+				}
+				if (info != 0) {
+					// throw error exit main
+				}
+
+//	                Rescale if necessary.
+
+				if (mode != 2) {
+					for (j = 0; j < n; j++) {
+						diag[j] = Math.max(diag[j], wa2[j]);
+					}
+				}
+
+//	                Beginning of the inner loop.
+				do { // inner : do
+
+//	                    Determine the levenberg-marquardt parameter.
+
+					lmpar(n, fJac, ldfJac, ipvt, diag, qtf, delta, par, wa1, wa2, wa3, wa4);
+
+//	                    Store the direction p and x + p. calculate the norm of p.
+
+					for (j = 0; j < n; j++) {
+						wa1[j] = -wa1[j];
+						wa2[j] = x[j] + wa1[j];
+						wa3[j] = diag[j] * wa1[j];
+					}
+					pnorm = enorm(n, wa3);
+
+//	                    On the first iteration, adjust the initial step bound.
+
+					if (iter == 1) {
+						delta = Math.min(delta, pnorm);
+					}
+
+//	                    Evaluate the function at x + p and calculate its norm.
+
+					iFlag = 1;
+					wa4 = fcn.evaluate(wa2); // fcn(m, n, wa2, wa4, fJac, ldfJac, iFlag);
+					nFev = nFev + 1;
+					if (iFlag < 0) {
+						// throw error exit main
+					}
+					fNorm1 = enorm(m, wa4);
+
+//	                    Compute the scaled actual reduction.
+
+					actred = -1;
+					if (p1 * fNorm1 < fNorm) {
+						actred = 1 - (fNorm1 / fNorm) * (fNorm1 / fNorm);
+					}
+
+//	                    Compute the scaled predicted reduction and
+//	                    the scaled directional derivative.
+
+					for (j = 0; j < n; j++) {
+						wa3[j] = 0;
+						l = ipvt[j];
+						temp = wa1[l];
+						for (i = 0; i < j; i++) {
+							wa3[i] = wa3[i] + fJac[i][j] * temp;
+						}
+					}
+					temp1 = enorm(n, wa3) / fNorm;
+					temp2 = (Math.sqrt(par) * pnorm) / fNorm;
+					prered = temp1 * temp1 + temp2 * temp2 / p5;
+					dirder = -(temp1 * temp1 + temp2 * temp2);
+
+//	                    Compute the ratio of the actual to the predicted
+//	                    reduction.
+
+					ratio = 0;
+					if (prered != 0) {
+						ratio = actred / prered;
+					}
+
+//	                    Update the step bound.
+
+					if (ratio <= p25) {
+						if (actred >= 0) {
+							temp = p5;
+						}
+						if (actred < 0) {
+							temp = p5 * dirder / (dirder + p5 * actred);
+						}
+						if (p1 * fNorm1 >= fNorm || temp < p1) {
+							temp = p1;
+						}
+						delta = temp * Math.min(delta, pnorm / p1);
+						par = par / temp;
+					} else if (par == 0 || ratio >= p75) {
+						delta = pnorm / p5;
+						par = p5 * par;
+					}
+
+//	                    Test for successful iteration.
+
+					if (ratio >= p0001) {
+//	                        Successful iteration. update x, fVec, and their norms.
+						for (j = 0; j < n; j++) {
+							x[j] = wa2[j];
+							wa2[j] = diag[j] * x[j];
+						}
+						for (i = 0; i < m; i++) {
+							fVec[i] = wa4[i];
+						}
+						xnorm = enorm(n, wa2);
+						fNorm = fNorm1;
+						iter = iter + 1;
+					}
+
+//	                    Tests for convergence.
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1) {
+						info = 1;
+					}
+					if (delta <= xTol * xnorm) {
+						info = 2;
+					}
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1 && info == 2) {
+						info = 3;
+					}
+					if (info != 0) {
+						// throw error exit main
+					}
+
+//	                    Tests for termination and stringent tolerances.
+					if (nFev >= maxFev) {
+						info = 5;
+					}
+					if (Math.abs(actred) <= epsmch && prered <= epsmch && p5 * ratio <= 1) {
+						info = 6;
+					}
+					if (delta <= epsmch * xnorm) {
+						info = 7;
+					}
+					if (gNorm <= epsmch) {
+						info = 8;
+					}
+					if (info != 0) {
+						// throw error exit main
+					}
+
+					if (ratio >= p0001) {
+						break; // exit inner
+					}
+
+				} while (true); // inner // End of the inner loop. repeat if iteration unsuccessful.
+
+			} while (true); // outer // End of the outer loop
+
+		} while (true); // end block main
+
+//	        Termination, either normal or user imposed.
+	}
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmder1 is to minimize the sum of the squares of //
+	 *  m nonlinear functions in n variables by a modification of the // 
+	 * levenberg-marquardt algorithm. this is done by using the more //  general
+	 * least-squares solver lmder. the user must provide a //  subroutine which
+	 * calculates the functions and the jacobian. // // subroutine lmder1(fcn, m, n,
+	 * x, fVec, fJac, ldfJac, Tol, info, ipvt, wa, Lwa) // implicit none // //
+	 * procedure(fcn_lmder) :: fcn  user-supplied subroutine which // 
+	 * calculates the functions and the jacobian. // integer, intent(in) :: m  a
+	 * positive integer input variable set to the number //  of functions. //
+	 * integer, intent(in) :: n  a positive integer input variable set to the
+	 * number //  of variables. n must not exceed m. // integer, intent(in) ::
+	 * ldfJac  a positive integer input variable not less than m //  which
+	 * specifies the leading dimension of the array fJac. // integer, intent(out) ::
+	 * info  an integer output variable. if the user has //  terminated
+	 * execution, info is set to the (negative) //  value of iFlag. see
+	 * description of fcn. otherwise, //  info is set as follows. //  //  *
+	 * ***info = 0*** improper input parameters. //  * ***info = 1*** algorithm
+	 * estimates that the relative error //  in the sum of squares is at most tol.
+	 * //  * ***info = 2*** algorithm estimates that the relative error // 
+	 * between x and the solution is at most tol. //  * ***info = 3*** conditions
+	 * for info = 1 and info = 2 both hold. //  * ***info = 4*** fVec is
+	 * orthogonal to the columns of the //  jacobian to machine precision. //  *
+	 * ***info = 5*** number of calls to fcn with iFlag = 1 has //  reached
+	 * 100*(n+1). //  * ***info = 6*** tol is too small. no further reduction in
+	 * //  the sum of squares is possible. //  * ***info = 7*** tol is too
+	 * small. no further improvement in //  the approximate solution x is
+	 * possible. // integer, intent(in) :: Lwa  a positive integer input variable
+	 * not less than 5*n+m. // integer, intent(out) :: ipvt(n)  an integer output
+	 * array of length n. ipvt //  defines a permutation matrix p such that jac*p
+	 * = q*r, //  where jac is the final calculated jacobian, q is // 
+	 * orthogonal (not stored), and r is upper triangular //  with diagonal
+	 * elements of nonincreasing magnitude. //  column j of p is column ipvt[j] of
+	 * the identity matrix. // real(wp), intent(in) :: Tol  a nonnegative input
+	 * variable. termination occurs //  when the algorithm estimates either that
+	 * the relative //  error in the sum of squares is at most tol or that // 
+	 * the relative error between x and the solution is at //  most tol. //
+	 * real(wp), intent(inout) :: x(n)  an array of length n. on input x must
+	 * contain //  an initial estimate of the solution vector. on output x // 
+	 * contains the final estimate of the solution vector. // real(wp), intent(out)
+	 * :: fVec(m)  an output array of length m which contains //  the functions
+	 * evaluated at the output x. // real(wp), intent(out) :: fJac(ldfJac, n)  an
+	 * output m by n array. the upper n by n submatrix //  of fJac contains an
+	 * upper triangular matrix r with //  diagonal elements of nonincreasing
+	 * magnitude such that // ``` //  t t t //  p *(jac *jac)*p = r *r, //
+	 * ``` //  where p is a permutation matrix and jac is the final // 
+	 * calculated jacobian. column j of p is column ipvt[j] //  (see below) of the
+	 * identity matrix. the lower trapezoidal //  part of fJac contains
+	 * information generated during //  the computation of r. // real(wp),
+	 * intent(inout) :: wa(Lwa)  a work array of length lwa. // // integer ::
+	 * maxFev, mode, nFev, nJev, nPrint // real(wp) :: fTol, gTol, xTol // //
+	 * real(wp), parameter :: factor = 100.0_wp
+	 */
+
+	public static void lmder1(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double[][] fJac,
+			int ldfJac, double tol, int info, int[] ipvt, double[] wa, int lwa) {
+//			lmder1(fcn, m, n, x, fVec, fJac, ldfJac, Tol, info, ipvt, wa, Lwa)
+
+		int maxFev, mode, nFev = 0, nJev = 0, nPrint;
+		double fTol, gTol, xTol;
+
+		double factor = 100.0;
+
+		info = 0;
+		double[] wa1 = new double[n];
+		double[] wa2 = new double[n];
+		double[] wa3 = new double[n];
+		double[] wa4 = new double[n];
+		double[] wa5 = new double[n];
+
+//	        Check the input parameters for errors.
+
+		if (n > 0 && m >= n && ldfJac >= m && tol >= 0 && lwa >= 5 * n + m) {
+//	            Call lmder.
+			maxFev = 100 * (n + 1);
+			fTol = tol;
+			xTol = tol;
+			gTol = 0;
+			mode = 1;
+			nPrint = 0;
+			lmder(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxFev, wa, mode, factor, nPrint, info, nFev,
+					nJev, ipvt, wa1, wa2, wa3, wa4, wa5);
+			if (info == 8) {
+				info = 4;
+			}
+		}
+
+	}
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmdif is to minimize the sum of the squares of // 
+	 * m nonlinear functions in n variables by a modification of //  the
+	 * levenberg-marquardt algorithm. the user must provide a //  subroutine which
+	 * calculates the functions. the jacobian is //  then calculated by a
+	 * forward-difference approximation. // // subroutine lmdif(fcn, m, n, x, fVec,
+	 * fTol, xTol, gTol, maxFev, Epsfcn, diag, & // mode, factor, nPrint, info,
+	 * nFev, fJac, ldfJac, ipvt, & // qtf, wa1, wa2, wa3, wa4) // implicit none //
+	 * // procedure(func2) :: fcn  the user-supplied subroutine which // 
+	 * calculates the functions. // integer, intent(in) :: m  a positive integer
+	 * input variable set to the number //  of functions. // integer, intent(in)
+	 * :: n  a positive integer input variable set to the number //  of
+	 * variables. n must not exceed m. // integer, intent(in) :: maxFev  a
+	 * positive integer input variable. termination //  occurs when the number of
+	 * calls to fcn is at least //  maxFev by the end of an iteration. // integer,
+	 * intent(in) :: mode  an integer input variable. if mode = 1, the // 
+	 * variables will be scaled internally. if mode = 2, //  the scaling is
+	 * specified by the input diag. other //  values of mode are equivalent to
+	 * mode = 1. // integer, intent(in) :: nPrint  an integer input variable that
+	 * enables controlled //  printing of iterates if it is positive. in this
+	 * case, //  fcn is called with iFlag = 0 at the beginning of the first // 
+	 * iteration and every nPrint iterations thereafter and //  immediately prior
+	 * to return, with x and fVec available //  for printing. if nPrint is not
+	 * positive, no special calls //  of fcn with iFlag = 0 are made. // integer,
+	 * intent(out) :: info  an integer output variable. if the user has // 
+	 * terminated execution, info is set to the (negative) //  value of iFlag. see
+	 * description of fcn. otherwise, //  info is set as follows: //  //  *
+	 * ***info = 0*** improper input parameters. //  * ***info = 1*** both actual
+	 * and predicted relative reductions //  in the sum of squares are at most
+	 * fTol. //  * ***info = 2*** relative error between two consecutive iterates
+	 * //  is at most xTol. //  * ***info = 3*** conditions for info = 1 and
+	 * info = 2 both hold. //  * ***info = 4*** the cosine of the angle between
+	 * fVec and any //  column of the jacobian is at most gTol in //  absolute
+	 * value. //  * ***info = 5*** number of calls to fcn has reached or // 
+	 * exceeded maxFev. //  * ***info = 6*** fTol is too small. no further
+	 * reduction in //  the sum of squares is possible. //  * ***info = 7***
+	 * xTol is too small. no further improvement in //  the approximate solution x
+	 * is possible. //  * ***info = 8*** gTol is too small. fVec is orthogonal to
+	 * the //  columns of the jacobian to machine precision. // integer,
+	 * intent(out) :: nFev  an integer output variable set to the number of // 
+	 * calls to fcn. // integer, intent(in) :: ldfJac  a positive integer input
+	 * variable not less than m //  which specifies the leading dimension of the
+	 * array fJac. // integer, intent(out) :: ipvt(n)  an integer output array of
+	 * length n. ipvt //  defines a permutation matrix p such that jac*p = q*r, //
+	 *  where jac is the final calculated jacobian, q is //  orthogonal (not
+	 * stored), and r is upper triangular //  with diagonal elements of
+	 * nonincreasing magnitude. //  column j of p is column ipvt[j] of the
+	 * identity matrix. // real(wp), intent(in) :: fTol  a nonnegative input
+	 * variable. termination //  occurs when both the actual and predicted
+	 * relative //  reductions in the sum of squares are at most fTol. // 
+	 * therefore, fTol measures the relative error desired //  in the sum of
+	 * squares. // real(wp), intent(in) :: xTol  a nonnegative input variable.
+	 * termination //  occurs when the relative error between two consecutive //
+	 *  iterates is at most xTol. therefore, xTol measures the //  relative
+	 * error desired in the approximate solution. // real(wp), intent(in) :: gTol 
+	 * a nonnegative input variable. termination //  occurs when the cosine of the
+	 * angle between fVec and //  any column of the jacobian is at most gTol in
+	 * absolute //  value. therefore, gTol measures the orthogonality // 
+	 * desired between the function vector and the columns //  of the jacobian. //
+	 * real(wp), intent(in) :: Epsfcn  an input variable used in determining a
+	 * suitable //  step length for the forward-difference approximation. this //
+	 *  approximation assumes that the relative errors in the //  functions are
+	 * of the order of epsfcn. if epsfcn is less //  than the machine precision,
+	 * it is assumed that the relative //  errors in the functions are of the
+	 * order of the machine //  precision. // real(wp), intent(in) :: factor  a
+	 * positive input variable used in determining the //  initial step bound.
+	 * this bound is set to the product of //  factor and the euclidean norm of
+	 * diag*x if nonzero, or else //  to factor itself. in most cases factor
+	 * should lie in the //  interval (.1,100.). 100. is a generally recommended
+	 * value. // real(wp), intent(inout) :: x(n)  an array of length n. on input x
+	 * must contain //  an initial estimate of the solution vector. on output x //
+	 *  contains the final estimate of the solution vector. // real(wp),
+	 * intent(out) :: fVec(m)  an output array of length m which contains // 
+	 * the functions evaluated at the output x. // real(wp), intent(inout) ::
+	 * diag(n)  an array of length n. if mode = 1 (see //  below), diag is
+	 * internally set. if mode = 2, diag //  must contain positive entries that
+	 * serve as //  multiplicative scale factors for the variables. // real(wp),
+	 * intent(out) :: fJac(ldfJac, n)  an output m by n array. the upper n by n
+	 * submatrix //  of fJac contains an upper triangular matrix r with // 
+	 * diagonal elements of nonincreasing magnitude such that // ``` //  t t t
+	 * //  p *(jac *jac)*p = r *r, // ``` //  where p is a permutation matrix
+	 * and jac is the final //  calculated jacobian. column j of p is column
+	 * ipvt[j] //  (see below) of the identity matrix. the lower trapezoidal // 
+	 * part of fJac contains information generated during //  the computation of
+	 * r. // real(wp), intent(out) :: qtf(n)  an output array of length n which
+	 * contains //  the first n elements of the vector (q transpose)*fVec. //
+	 * real(wp), intent(inout) :: wa1(n)  work array of length n. // real(wp),
+	 * intent(inout) :: wa2(n)  work array of length n. // real(wp), intent(inout)
+	 * :: wa3(n)  work array of length n. // real(wp), intent(inout) :: wa4(m) 
+	 * work array of length n. // // integer :: i, iFlag, iter, j, l // real(wp) ::
+	 * actred, delta, dirder, fNorm, & // fNorm1, gNorm, par, pnorm, prered, & //
+	 * ratio, sum, temp, temp1, temp2, xnorm // // real(wp), parameter :: p1 =
+	 * 1.0e-1_wp // real(wp), parameter :: p5 = 5.0e-1_wp // real(wp), parameter ::
+	 * p25 = 2.5e-1_wp // real(wp), parameter :: p75 = 7.5e-1_wp // real(wp),
+	 * parameter :: p0001 = 1.0e-4_wp
+	 */
+	public static void lmdif(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double fTol, double xTol,
+			double gTol, int maxFev, double epsfcn, double[] diag, int mode, double factor, int nPrint, int info,
+			int nFev, double[][] fJac, int ldfJac, int[] ipvt, double[] qtf, double[] wa1, double[] wa2, double[] wa3,
+			double[] wa4) {
+		// subroutine lmdif(fcn, m, n, x, fVec, fTol, xTol, gTol, maxFev, Epsfcn, diag,
+		// &
+//	                     mode, factor, nPrint, info, nFev, fJac, ldfJac, ipvt, &
+//	                     qtf, wa1, wa2, wa3, wa4)
+		int i, iFlag, iter, j, l;
+		double actred, delta = 0, dirder, fNorm, fNorm1, gNorm, par, pnorm, prered, ratio, sum, temp = 0, temp1, temp2,
+				xnorm = 0;
+
+		double p1 = 1.0e-1;
+		double p5 = 5.0e-1;
+		double p25 = 2.5e-1;
+		double p75 = 7.5e-1;
+		double p0001 = 1.0e-4;
+
+		info = 0;
+		iFlag = 0;
+		nFev = 0;
+		do { // main : block
+//	            Check the input parameters for errors.
+			if (n > 0 && m >= n && ldfJac >= m && fTol >= 0 && xTol >= 0 && gTol >= 0 && maxFev > 0 && factor > 0) {
+				if (mode == 2) {
+					for (j = 0; j < n; j++) {
+						if (diag[j] <= 0) {
+							// throw error exit main
+						}
+					}
+				}
+				// throw error exit main
+			}
+//	            Evaluate the function at the starting point
+//	            and calculate its norm.
+			iFlag = 1;
+			fVec = fcn.evaluate(x);// fcn(m, n, x, fVec, iFlag);
+			nFev = 1;
+			if (iFlag < 0) {
+				// throw error exit main
+			}
+			fNorm = enorm(m, fVec);
+//	            Initialize levenberg-marquardt parameter and iteration counter.
+			par = 0;
+			iter = 1;
+//	            Beginning of the outer loop.
+			do { // outer : do
+//	                Calculate the jacobian matrix.
+				iFlag = 2;
+				fdjac2(fcn, m, n, x, fVec, fJac, ldfJac, iFlag, epsfcn, wa4);
+				nFev = nFev + n;
+				if (iFlag < 0) {
+					// throw error exit main
+				}
+//	                If requested, call fcn to enable printing of iterates.
+				if (nPrint > 0) {
+					iFlag = 0;
+					if (((iter - 1) % nPrint) == 0) {
+						// call fcn(m, n, x, fVec, iFlag);
+					}
+					if (iFlag < 0) {
+						// throw error // throw error exit main
+					}
+				}
+//	                Compute the qr factorization of the jacobian.
+				qrfac(m, n, fJac, ldfJac, true, ipvt, n, wa1, wa2, wa3);
+//	                On the first iteration and if mode is 1, scale according
+//	                to the norms of the columns of the initial jacobian.
+				if (iter == 1) {
+					if (mode != 2) {
+						for (j = 0; j < n; j++) {
+							diag[j] = wa2[j];
+							if (wa2[j] == 0) {
+								diag[j] = 1;
+							}
+						}
+					}
+//	                    On the first iteration, calculate the norm of the scaled x
+//	                    and initialize the step bound delta.
+					for (j = 0; j < n; j++) {
+						wa3[j] = diag[j] * x[j];
+					}
+					xnorm = enorm(n, wa3);
+					delta = factor * xnorm;
+					if (delta == 0) {
+						delta = factor;
+					}
+				}
+//	                Form (q transpose)*fVec and store the first n components in
+//	                qtf.
+				for (i = 0; i < m; i++) {
+					wa4[i] = fVec[i];
+				}
+				for (j = 0; j < n; j++) {
+					if (fJac[j][j] != 0) {
+						sum = 0;
+						for (i = j; i < m; i++) {
+							sum = sum + fJac[i][j] * wa4[i];
+						}
+						temp = -sum / fJac[j][j];
+						for (i = j; i < m; i++) {
+							wa4[i] = wa4[i] + fJac[i][j] * temp;
+						}
+					}
+					fJac[j][j] = wa1[j];
+					qtf[j] = wa4[j];
+				}
+//	                Compute the norm of the scaled gradient.
+				gNorm = 0;
+				if (fNorm != 0) {
+					for (j = 0; j < n; j++) {
+						l = ipvt[j];
+						if (wa2[l] != 0) {
+							sum = 0;
+							for (i = 0; i < j; i++) {
+								sum = sum + fJac[i][j] * (qtf[i] / fNorm);
+							}
+							gNorm = Math.max(gNorm, Math.abs(sum / wa2[l]));
+						}
+					}
+				}
+//	                Test for convergence of the gradient norm.
+				if (gNorm <= gTol) {
+					info = 4;
+				}
+				if (info != 0) {
+					// throw error exit main
+				}
+//	                Rescale if necessary.
+				if (mode != 2) {
+					for (j = 0; j < n; j++) {
+						diag[j] = Math.max(diag[j], wa2[j]);
+					}
+				}
+//	                Beginning of the inner loop.
+				do { // inner : do
+//	                    Determine the levenberg-marquardt parameter.
+					lmpar(n, fJac, ldfJac, ipvt, diag, qtf, delta, par, wa1, wa2, wa3, wa4);
+//	                    Store the direction p and x + p. calculate the norm of p.
+					for (j = 0; j < n; j++) {
+						wa1[j] = -wa1[j];
+						wa2[j] = x[j] + wa1[j];
+						wa3[j] = diag[j] * wa1[j];
+					}
+					pnorm = enorm(n, wa3);
+//	                    On the first iteration, adjust the initial step bound.
+					if (iter == 1) {
+						delta = Math.min(delta, pnorm);
+					}
+//	                    Evaluate the function at x + p and calculate its norm.
+					iFlag = 1;
+					wa4 = fcn.evaluate(wa2); // call fcn(m, n, wa2, wa4, iFlag);
+					nFev = nFev + 1;
+					if (iFlag < 0) {
+						// throw error exit main
+					}
+					fNorm1 = enorm(m, wa4);
+//	                    Compute the scaled actual reduction.
+					actred = -1;
+					if (p1 * fNorm1 < fNorm)
+						actred = 1 - (fNorm1 / fNorm) * (fNorm1 / fNorm);
+//	                    Compute the scaled predicted reduction and
+//	                    the scaled directional derivative.
+					for (j = 0; j < n; j++) {
+						wa3[j] = 0;
+						l = ipvt[j];
+						temp = wa1[l];
+						for (i = 0; i < j; i++) {
+							wa3[i] = wa3[i] + fJac[i][j] * temp;
+						}
+					}
+					temp1 = enorm(n, wa3) / fNorm;
+					temp2 = (Math.sqrt(par) * pnorm) / fNorm;
+					prered = temp1 * temp1 + temp2 * temp2 / p5;
+					dirder = -(temp1 * temp1 + temp2 * temp2);
+//	                    Compute the ratio of the actual to the predicted
+//	                    reduction.
+					ratio = 0;
+					if (prered != 0)
+						ratio = actred / prered;
+//	                    Update the step bound.
+					if (ratio <= p25) {
+						if (actred >= 0) {
+							temp = p5;
+						}
+						if (actred < 0) {
+							temp = p5 * dirder / (dirder + p5 * actred);
+						}
+						if (p1 * fNorm1 >= fNorm || temp < p1) {
+							temp = p1;
+						}
+						if (delta < pnorm / p1) {
+							delta = temp * delta;
+						} else {
+							delta = temp * pnorm / p1;
+						}
+						par = par / temp;
+					} else if (par == 0 || ratio >= p75) {
+						delta = pnorm / p5;
+						par = p5 * par;
+					}
+//	                    Test for successful iteration.
+					if (ratio >= p0001) {
+//	                        Successful iteration. update x, fVec, and their norms.
+						for (j = 0; j < n; j++) {
+							x[j] = wa2[j];
+							wa2[j] = diag[j] * x[j];
+						}
+						for (i = 0; i < m; i++) {
+							fVec[i] = wa4[i];
+						}
+						xnorm = enorm(n, wa2);
+						fNorm = fNorm1;
+						iter = iter + 1;
+					}
+//	                    Tests for convergence.
+
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1) {
+						info = 1;
+					}
+					if (delta <= xTol * xnorm) {
+						info = 2;
+					}
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1 && info == 2) {
+						info = 3;
+					}
+					if (info != 0) // throw error exit main
+//	                    Tests for termination and stringent tolerances.
+						if (nFev >= maxFev) {
+							info = 5;
+						}
+					if (Math.abs(actred) <= epsmch && prered <= epsmch && p5 * ratio <= 1) {
+						info = 6;
+					}
+					if (delta <= epsmch * xnorm) {
+						info = 7;
+					}
+					if (gNorm <= epsmch) {
+						info = 8;
+					}
+					if (info != 0) {
+						// throw error exit main
+					}
+					if (ratio >= p0001) {
+						break; // exit inner
+					}
+				} while (true); // } inner  end of the inner loop. repeat if iteration unsuccessful.
+			} while (true); // } outer  end of the outer loop.
+		} while (true); // end block main
+//	         termination, either normal or user imposed.
+//	        if (iFlag < 0) info = iFlag
+//	        iFlag = 0
+//	        if (nPrint > 0) call fcn(m, n, x, fVec, iFlag)
+		//
+	}
+
+	/**
+	 * // //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmdif1 is to minimize the sum of the squares of //
+	 *  m nonlinear functions in n variables by a modification of the // 
+	 * levenberg-marquardt algorithm. this is done by using the more //  general
+	 * least-squares solver lmdif. the user must provide a //  subroutine which
+	 * calculates the functions. the jacobian is //  then calculated by a
+	 * forward-difference approximation. // // // // procedure(func2) :: fcn  the
+	 * user-supplied subroutine which //  calculates the functions. // integer,
+	 * intent(in) :: m  a positive integer input variable set to the number // 
+	 * of functions. // integer, intent(in) :: n  a positive integer input
+	 * variable set to the number //  of variables. n must not exceed m. //
+	 * integer, intent(out) :: info  an integer output variable. if the user has
+	 * //  terminated execution, info is set to the (negative) //  value of
+	 * iFlag. see description of fcn. otherwise, //  info is set as follows: // 
+	 * //  * ***info = 0*** improper input parameters. //  * ***info = 1***
+	 * algorithm estimates that the relative error //  in the sum of squares is at
+	 * most tol. //  * ***info = 2*** algorithm estimates that the relative error
+	 * //  between x and the solution is at most tol. //  * ***info = 3***
+	 * conditions for info = 1 and info = 2 both hold. //  * ***info = 4*** fVec
+	 * is orthogonal to the columns of the //  jacobian to machine precision. //
+	 *  * ***info = 5*** number of calls to fcn has reached or //  exceeded
+	 * 200*(n+1). //  * ***info = 6*** tol is too small. no further reduction in
+	 * //  the sum of squares is possible. //  * ***info = 7*** tol is too
+	 * small. no further improvement in //  the approximate solution x is
+	 * possible. // integer, intent(in) :: Lwa  a positive integer input variable
+	 * not less than //  m*n+5*n+m. // integer, intent(inout) :: Iwa(n)  an
+	 * integer work array of length n. // real(wp), intent(in) :: Tol  a
+	 * nonnegative input variable. termination occurs //  when the algorithm
+	 * estimates either that the relative //  error in the sum of squares is at
+	 * most tol or that //  the relative error between x and the solution is at //
+	 *  most tol. // real(wp), intent(inout) :: x(n)  an array of length n. on
+	 * input x must contain //  an initial estimate of the solution vector. on
+	 * output x //  contains the final estimate of the solution vector. //
+	 * real(wp), intent(out) :: fVec(m)  an output array of length m which
+	 * contains //  the functions evaluated at the output x. // real(wp),
+	 * intent(inout) :: wa(Lwa)  a work array of length lwa.
+	 */
+	public static void lmdif1(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double tol, int info,
+			int[] iwa, double[] wa, int lwa) {
+		// subroutine lmdif1(fcn, m, n, x, fVec, Tol, info, Iwa, wa, Lwa)
+//	        implicit none
+
+		int maxFev, mode, nFev, nPrint;
+		double epsfcn, fTol, gTol, xTol;
+
+		double factor = 1.0e2;
+		double[] wa1 = new double[n];
+		double[] wa2 = new double[n];
+		double[] wa3 = new double[n];
+		double[] wa4 = new double[n];
+		double[] wa5 = new double[n];
+		double[][] fjac = new double[n][m];
+
+		info = 0;
+
+//	        Check the input parameters for errors.
+
+		if (n > 0 && m >= n && tol >= 0 && lwa >= m * n + 5 * n + m) {
+
+//	            Call lmdif.
+
+			maxFev = 200 * (n + 1);
+			nFev = 0;
+			fTol = tol;
+			xTol = tol;
+			gTol = 0;
+			epsfcn = 0;
+			mode = 1;
+			nPrint = 0;
+			lmdif(fcn, m, n, x, fVec, fTol, xTol, gTol, maxFev, epsfcn, wa, mode, factor, nPrint, info, nFev, fjac, m,
+					iwa, wa1, wa2, wa3, wa4, wa5);
+			if (info == 8) {
+				info = 4;
+			}
+		}
+
+	}
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  given an m by n matrix a, an n by n nonSingular diagonal // 
+	 * matrix d, an m-vector b, and a positive number delta, //  the problem is to
+	 * determine a value for the parameter //  par such that if x solves the system
+	 * // ``` //  a*x = b , sqrt(par)*d*x = 0 , // ``` //  in the least squares
+	 * sense, and dxnorm is the euclidean //  norm of d*x, then either par is zero
+	 * and // ``` //  (dxnorm-delta) <= 0.1*delta , // ``` //  or par is
+	 * positive and // ``` //  abs(dxnorm-delta) <= 0.1*delta . // ``` //  this
+	 * subroutine completes the solution of the problem //  if it is provided with
+	 * the necessary information from the //  qr factorization, with column
+	 * pivoting, of a. that is, if //  a*p = q*r, where p is a permutation matrix,
+	 * q has orthogonal //  columns, and r is an upper triangular matrix with
+	 * diagonal //  elements of nonincreasing magnitude, then lmpar expects // 
+	 * the full upper triangle of r, the permutation matrix p, //  and the first n
+	 * components of (q transpose)*b. on output //  lmpar also provides an upper
+	 * triangular matrix s such that // ``` //  t t t //  p *(a *a + par*d*d)*p =
+	 * s *s . // ``` //  s is employed within lmpar and may be of separate
+	 * interest. //  //  only a few iterations are generally needed for
+	 * convergence //  of the algorithm. if, however, the limit of 10 iterations //
+	 *  is reached, then the output par will contain the best //  value obtained
+	 * so far. // // subroutine lmpar(n, r, Ldr, ipvt, diag, Qtb, Delta, Par, x,
+	 * Sdiag, wa1, wa2) // implicit none // // integer, intent(in) :: n  a
+	 * positive integer input variable set to the order of r. // integer, intent(in)
+	 * :: Ldr  a positive integer input variable not less than n //  which
+	 * specifies the leading dimension of the array r. // integer, intent(in) ::
+	 * ipvt(n)  an integer input array of length n which defines the // 
+	 * permutation matrix p such that a*p = q*r. column j of p //  is column
+	 * ipvt[j] of the identity matrix. // real(wp) :: Delta  a positive input
+	 * variable which specifies an upper //  bound on the euclidean norm of d*x.
+	 * // real(wp), intent(inout) :: Par  a nonnegative variable. on input par
+	 * contains an //  initial estimate of the levenberg-marquardt parameter. //
+	 *  on output par contains the final estimate. // real(wp), intent(inout) ::
+	 * r(Ldr, n)  an n by n array. on input the full upper triangle //  must
+	 * contain the full upper triangle of the matrix r. //  on output the full
+	 * upper triangle is unaltered, and the //  strict lower triangle contains the
+	 * strict upper triangle //  (transposed) of the upper triangular matrix s. //
+	 * real(wp), intent(in) :: diag(n)  an input array of length n which must
+	 * contain the //  diagonal elements of the matrix d. // real(wp), intent(in)
+	 * :: Qtb(n)  an input array of length n which must contain the first //  n
+	 * elements of the vector (q transpose)*b. // real(wp), intent(out) :: x(n) 
+	 * an output array of length n which contains the least //  squares solution
+	 * of the system a*x = b, sqrt(par)*d*x = 0, //  for the output par. //
+	 * real(wp), intent(out) :: Sdiag(n)  an output array of length n which
+	 * contains the //  diagonal elements of the upper triangular matrix s. //
+	 * real(wp), intent(inout) :: wa1(n)  work array of length n. // real(wp),
+	 * intent(inout) :: wa2(n)  work array of length n. //
+	 */
+	public static void lmpar(int n, double[][] r, int ldr, int[] ipvt, double[] diag, double[] qtb, double delta,
+			double par, double[] x, double[] sdiag, double[] wa1, double[] wa2) {
+		// lmpar(n, r, Ldr, ipvt, diag, Qtb, Delta, Par, x, Sdiag, wa1, wa2)
+
+		int i, iter, j, jm1, jp1, k, l, nSing;
+		double dxnorm, fp, gNorm, parc, parl, paru, sum, temp;
+
+		double p1 = 1.0e-1;
+		double p001 = 1.0e-3;
+		double dwarf = 1.0e-20; // This is mostly a guess, may need adjusting //dpmpar[2]; // the smallest
+								// positive magnitude
+
+//	        Compute and store in x the gauss-newton direction. if the
+//	        jacobian is rank-deficient, obtain a least squares solution.
+
+		nSing = n;
+		for (j = 0; j < n; j++) {
+			wa1[j] = qtb[j];
+			if (r[j][j] == 0 && nSing == n) {
+				nSing = j - 1;// might need fixing
+			}
+			if (nSing < n) {
+				wa1[j] = 0;
+			}
+		}
+		if (nSing >= 1) {
+			for (k = 0; k < nSing; k++) {
+				j = nSing - k + 1; // might need fixing
+				wa1[j] = wa1[j] / r[j][j];
+				temp = wa1[j];
+				jm1 = j - 1;
+				if (jm1 >= 0) {
+					for (i = 0; i < jm1; i++) {
+						wa1[i] = wa1[i] - r[i][j] * temp;
+					}
+				}
+			}
+		}
+		for (j = 0; j < n; j++) {
+			l = ipvt[j];
+			x[l] = wa1[j];
+		}
+
 //	        Initialize the iteration counter.
 //	        evaluate the function at the origin, and test
 //	        for acceptance of the gauss-newton direction.
-	
-	        iter = 0;
-	        for(j = 0;j< n;j++){
-	            wa2[j] = diag[j]*x[j];
-			}
-	        dxnorm = enorm(n, wa2);
-	        fp = dxnorm - delta;
-	        if (fp <= p1*delta) {
+
+		iter = 0;
+		for (j = 0; j < n; j++) {
+			wa2[j] = diag[j] * x[j];
+		}
+		dxnorm = enorm(n, wa2);
+		fp = dxnorm - delta;
+		if (fp <= p1 * delta) {
 //	            Termination.
-	            if (iter == 0) {
-					par = 0;
-				}
-			}else{
-	
+			if (iter == 0) {
+				par = 0;
+			}
+		} else {
+
 //	            If the jacobian is not rank deficient, the newton
 //	            step provides a lower bound, parl, for the zero of
 //	            the function. otherwise set this bound to zero.
-	
-	            parl = 0;
-	            if (nsing >= n){
-	                for(j = 0;j< n;j++){
-	                    l = ipvt[j];
-	                    wa1[j] = diag[l]*(wa2[l]/dxnorm);
-					}
-	                for(j = 0;j< n;j++){
-	                    sum = 0;
-	                    jm1 = j - 1;
-	                    if (jm1 >= 0) {
-	                        for(i = 0;i<jm1;i++){
-	                            sum = sum + r[i][j]*wa1[i];
-							}
+
+			parl = 0;
+			if (nSing >= n) {
+				for (j = 0; j < n; j++) {
+					l = ipvt[j];
+					wa1[j] = diag[l] * (wa2[l] / dxnorm);
+				}
+				for (j = 0; j < n; j++) {
+					sum = 0;
+					jm1 = j - 1;
+					if (jm1 >= 0) {
+						for (i = 0; i < jm1; i++) {
+							sum = sum + r[i][j] * wa1[i];
 						}
-	                    wa1[j] = (wa1[j] - sum)/r[j][j];
 					}
-	                temp = enorm(n, wa1);
-	                parl = ((fp/delta)/temp)/temp;
+					wa1[j] = (wa1[j] - sum) / r[j][j];
 				}
-	
+				temp = enorm(n, wa1);
+				parl = ((fp / delta) / temp) / temp;
+			}
+
 //	            Calculate an upper bound, paru, for the zero of the function.
-	
-	            for(j = 0;j< n;j++){
-	                sum = 0;
-	                for(i = 0;i< j;i++){
-	                    sum = sum + r[i][j]*qtb[i];
-					}
-	                l = ipvt[j];
-	                wa1[j] = sum/diag[l];
+
+			for (j = 0; j < n; j++) {
+				sum = 0;
+				for (i = 0; i < j; i++) {
+					sum = sum + r[i][j] * qtb[i];
 				}
-	            gnorm = enorm(n, wa1);
-	            paru = gnorm/delta;
-	            if (paru == 0){
-					if(delta>p1){
-						paru = dwarf/p1;
-					}else{
-						paru = dwarf/delta;
-					}
-				}	
+				l = ipvt[j];
+				wa1[j] = sum / diag[l];
+			}
+			gNorm = enorm(n, wa1);
+			paru = gNorm / delta;
+			if (paru == 0) {
+				if (delta > p1) {
+					paru = dwarf / p1;
+				} else {
+					paru = dwarf / delta;
+				}
+			}
 //	            If the input par lies outside of the interval (parl,paru),
 //	            set par to the closer endpoint.
-				if(parl>par){
-					par=parl;
-				}
-				if(par>paru){
-					par = paru;
-				}
-	            if (par == 0) {
-					par = gnorm/dxnorm;
-				}
-	
+			if (parl > par) {
+				par = parl;
+			}
+			if (par > paru) {
+				par = paru;
+			}
+			if (par == 0) {
+				par = gNorm / dxnorm;
+			}
+
 //	            Beginning of an iteration.
-	            do{
-	
-	                iter = iter + 1;
-	
+			do {
+
+				iter = iter + 1;
+
 //	                Evaluate the function at the current value of par.
-	
-	                if (par == 0){
-						if(dwarf>p001*paru){
-							par = dwarf;
-						}else{
-							par = p001*paru;
-						}
+
+				if (par == 0) {
+					if (dwarf > p001 * paru) {
+						par = dwarf;
+					} else {
+						par = p001 * paru;
 					}
-	                temp = Math.sqrt(par);
-	                for(j = 0;j< n;j++){
-	                    wa1[j] = temp*diag[j];
-					}
-	                qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
-	                for(j = 0;j< n;j++){
-	                    wa2[j] = diag[j]*x[j];
-					}
-	                dxnorm = enorm(n, wa2);
-	                temp = fp;
-	                fp = dxnorm - delta;
-	
+				}
+				temp = Math.sqrt(par);
+				for (j = 0; j < n; j++) {
+					wa1[j] = temp * diag[j];
+				}
+				qrsolv(n, r, ldr, ipvt, wa1, qtb, x, sdiag, wa2);
+				for (j = 0; j < n; j++) {
+					wa2[j] = diag[j] * x[j];
+				}
+				dxnorm = enorm(n, wa2);
+				temp = fp;
+				fp = dxnorm - delta;
+
 //	                If the function is small enough, accept the current value
 //	                of par. also test for the exceptional cases where parl
 //	                is zero or the number of iterations has reached 10.
-	
-	                if (Math.abs(fp) <= p1*delta || parl == 0 && fp <= temp && temp < 0 || iter == 10){
-	                    if (iter == 0) {
-							par = 0;
-	                    	//exit maybe a break or continure?
-					}else{
-	
-//	                    Compute the newton correction.
-	
-	                    for(j = 0;j< n;j++){
-	                        l = ipvt[j];
-	                        wa1[j] = diag[l]*(wa2[l]/dxnorm);
-						}
-	                    for(j = 0;j< n;j++){
-	                        wa1[j] = wa1[j]/sdiag[j]
-	                        temp = wa1[j];
-	                        jp1 = j + 1;
-	                        if (n >= jp1){
-	                            for(i = jp1;i< n;i++){
-	                                wa1[i] = wa1[i] - r[i][j]*temp;
-								}
-							}
-						}
-	                    temp = enorm(n, wa1);
-	                    parc = ((fp/delta)/temp)/temp;
-	
-//	                    ! depending on the sign of the function, update parl or paru.
-	
-	                    if (fp > 0){
-							if(par>parl){
-								parl = par;
-							}
-						}
-	                    if (fp < 0){
-							if(par<paru){
-								paru = par;
-							}
-						}
-//	                    Compute an improved estimate for par.
-						if(parl>par+parc){
-							par = parl;
-						}else{
-							par = par + parc;
-						}
-	
+
+				if (Math.abs(fp) <= p1 * delta || parl == 0 && fp <= temp && temp < 0 || iter == 10) {
+					if (iter == 0) {
+						par = 0;
 					}
-	
-				}while(true); // end of an iteration.
-	
-			}
-	}
+					// exit maybe a break or continue?
+				} else {
 
-	
-/**
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmstr is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of
-	// ! the levenberg-marquardt algorithm which uses minimal storage.
-	// ! the user must provide a subroutine which calculates the
-	// ! functions and the rows of the jacobian.
-	//
-//	    
-//	        implicit none
-	//
-//	        procedure(fcn_lmstr) :: fcn !! user-supplied subroutine which
-//	                                    !! calculates the functions and the rows of the jacobian.
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                                !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                                !! of variables. n must not exceed m.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
-//	                                     !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(in) :: Maxfev !! a positive integer input variable. termination
-//	                                     !! occurs when the number of calls to fcn with iflag = 1
-//	                                     !! has reached maxfev.
-//	        integer, intent(in) :: Mode !! an integer input variable. if mode = 1, the
-//	                                   !! variables will be scaled internally. if mode = 2,
-//	                                   !! the scaling is specified by the input diag. other
-//	                                   !! values of mode are equivalent to mode = 1.
-//	        integer, intent(in) :: Nprint !! an integer input variable that enables controlled
-//	                                     !! printing of iterates if it is positive. in this case,
-//	                                     !! fcn is called with iflag = 0 at the beginning of the first
-//	                                     !! iteration and every nprint iterations thereafter and
-//	                                     !! immediately prior to return, with x and fvec available
-//	                                     !! for printing. if nprint is not positive, no special calls
-//	                                     !! of fcn with iflag = 0 are made.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                    !! terminated execution, info is set to the (negative)
-//	                                    !! value of iflag. see description of fcn. otherwise,
-//	                                    !! info is set as follows:
-//	                                    !!
-//	                                    !!  * ***info = 0***  improper input parameters.
-//	                                    !!  * ***info = 1***  both actual and predicted relative reductions
-//	                                    !!    in the sum of squares are at most ftol.
-//	                                    !!  * ***info = 2***  relative error between two consecutive iterates
-//	                                    !!    is at most xtol.
-//	                                    !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                    !!  * ***info = 4***  the cosine of the angle between fvec and any
-//	                                    !!    column of the jacobian is at most gtol in
-//	                                    !!    absolute value.
-//	                                    !!  * ***info = 5***  number of calls to fcn with iflag = 1 has
-//	                                    !!    reached maxfev.
-//	                                    !!  * ***info = 6***  ftol is too small. no further reduction in
-//	                                    !!    the sum of squares is possible.
-//	                                    !!  * ***info = 7***  xtol is too small. no further improvement in
-//	                                    !!    the approximate solution x is possible.
-//	                                    !!  * ***info = 8***  gtol is too small. fvec is orthogonal to the
-//	                                    !!    columns of the jacobian to machine precision.
-//	        integer, intent(out) :: Nfev !! an integer output variable set to the number of
-//	                                    !! calls to fcn with iflag = 1.
-//	        integer, intent(out) :: Njev !! an integer output variable set to the number of
-//	                                    !! calls to fcn with iflag = 2.
-//	        integer, intent(out) :: Ipvt(n) !! an integer output array of length n. ipvt
-//	                                       !! defines a permutation matrix p such that jac*p = q*r,
-//	                                       !! where jac is the final calculated jacobian, q is
-//	                                       !! orthogonal (not stored), and r is upper triangular.
-//	                                       !! column j of p is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(in) :: Ftol !! a nonnegative input variable. termination
-//	                                    !! occurs when both the actual and predicted relative
-//	                                    !! reductions in the sum of squares are at most ftol.
-//	                                    !! therefore, ftol measures the relative error desired
-//	                                    !! in the sum of squares.
-//	        real(wp), intent(in) :: Xtol !! a nonnegative input variable. termination
-//	                                    !! occurs when the relative error between two consecutive
-//	                                    !! iterates is at most xtol. therefore, xtol measures the
-//	                                    !! relative error desired in the approximate solution.
-//	        real(wp), intent(in) :: Gtol !! a nonnegative input variable. termination
-//	                                    !! occurs when the cosine of the angle between fvec and
-//	                                    !! any column of the jacobian is at most gtol in absolute
-//	                                    !! value. therefore, gtol measures the orthogonality
-//	                                    !! desired between the function vector and the columns
-//	                                    !! of the jacobian.
-//	        real(wp), intent(in) :: Factor !! a positive input variable used in determining the
-//	                                      !! initial step bound. this bound is set to the product of
-//	                                      !! factor and the euclidean norm of diag*x if nonzero, or else
-//	                                      !! to factor itself. in most cases factor should lie in the
-//	                                      !! interval (.1,100.). 100. is a generally recommended value.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                       !! an initial estimate of the solution vector. on output x
-//	                                       !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                        !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array. the upper triangle of fjac
-//	                                                !! contains an upper triangular matrix r such that
-//	                                                !!```
-//	                                                !!        t     t           t
-//	                                                !!       p *(jac *jac)*p = r *r,
-//	                                                !!```
-//	                                                !! where p is a permutation matrix and jac is the final
-//	                                                !! calculated jacobian. column j of p is column ipvt(j)
-//	                                                !! (see below) of the identity matrix. the lower triangular
-//	                                                !! part of fjac contains information generated during
-//	                                                !! the computation of r.
-//	        real(wp), intent(inout) :: Diag(n) !! an array of length n. if mode = 1 (see
-//	                                          !! below), diag is internally set. if mode = 2, diag
-//	                                          !! must contain positive entries that serve as
-//	                                          !! multiplicative scale factors for the variables.
-//	        real(wp), intent(out) :: Qtf(n) !! an output array of length n which contains
-//	                                       !! the first n elements of the vector (q transpose)*fvec.
-//	        real(wp), intent(inout) :: Wa1(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa2(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa3(n) !! work array of length n.
-//	        real(wp), intent(inout) :: Wa4(m) !! work array of length m.
-	//
-*/
-		public static void lmstr(SystemOfEquations fcn, int m, int n, double[] x, double[] fvec, double[][] fjac, int ldfjac,double ftol,
-								 double xtol, double gtol, int maxfev, double[] diag, int mode, double factor, int nprint, int info, int nfev, 
-								 int njev,int[] ipvt, double[] qtf, double[] wa1, double[] wa2, double[] wa3, double[] wa4) {
-			// subroutine lmstr(fcn, m, n, x, Fvec, Fjac, Ldfjac, Ftol, Xtol, Gtol, Maxfev, &
-//	                     Diag, Mode, Factor, Nprint, Info, Nfev, Njev, Ipvt, Qtf, &
-//	                     Wa1, Wa2, Wa3, Wa4)
-		
-	        int i, iflag, iter, j, l;
-	        double actred, delta, dirder, fnorm,
-	                    fnorm1, gnorm, par, pnorm, prered,
-	                    ratio, sum, temp, temp1, temp2, xnorm;
-	        boolean sing;
-	
-	        double p1 = 1.0e-1;
-	        double p5 = 5.0e-1;
-	        double p25 = 2.5e-1;
-	        double p75 = 7.5e-1;
-	        double p0001 = 1.0e-4;
-	
-	        info = 0;
-	        iflag = 0;
-	        nfev = 0;
-	        njev = 0;
+//	                    Compute the Newton correction.
 
-	        do{ //main : block
-	
-//	            Check the input parameters for errors.
-	
-	            if (n <= 0 || m < n || ldfjac < n || ftol < 0 || xtol < 0 || gtol < 0 || maxfev <= 0 || factor <= 0){
-	                // thorw.exception();
-				}
-	            if (mode == 2){
-	                for(j = 0;j< n;j++){
-	                    if (diag[j] <= 0){
-						// throw error
+					for (j = 0; j < n; j++) {
+						l = ipvt[j];
+						wa1[j] = diag[l] * (wa2[l] / dxnorm);
+					}
+					for (j = 0; j < n; j++) {
+						wa1[j] = wa1[j] / sdiag[j];
+						temp = wa1[j];
+						jp1 = j + 1;
+						if (n >= jp1) {
+							for (i = jp1; i < n; i++) {
+								wa1[i] = wa1[i] - r[i][j] * temp;
+							}
 						}
-	                }
-	            }
-	
+					}
+					temp = enorm(n, wa1);
+					parc = ((fp / delta) / temp) / temp;
+
+//	                     depending on the sign of the function, update parl or paru.
+
+					if (fp > 0) {
+						if (par > parl) {
+							parl = par;
+						}
+					}
+					if (fp < 0) {
+						if (par < paru) {
+							paru = par;
+						}
+					}
+//	                    Compute an improved estimate for par.
+					if (parl > par + parc) {
+						par = parl;
+					} else {
+						par = par + parc;
+					}
+
+				}
+
+			} while (true); // end of an iteration.
+
+		}
+		while (true)
+			;
+	}// while(true);
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmstr is to minimize the sum of the squares of // 
+	 * m nonlinear functions in n variables by a modification of //  the
+	 * levenberg-marquardt algorithm which uses minimal storage. //  the user must
+	 * provide a subroutine which calculates the //  functions and the rows of the
+	 * jacobian. // // // implicit none // // procedure(fcn_lmstr) :: fcn 
+	 * user-supplied subroutine which //  calculates the functions and the rows of
+	 * the jacobian. // integer, intent(in) :: m  a positive integer input
+	 * variable set to the number //  of functions. // integer, intent(in) :: n 
+	 * a positive integer input variable set to the number //  of variables. n
+	 * must not exceed m. // integer, intent(in) :: ldfJac  a positive integer
+	 * input variable not less than n //  which specifies the leading dimension of
+	 * the array fJac. // integer, intent(in) :: maxFev  a positive integer input
+	 * variable. termination //  occurs when the number of calls to fcn with iFlag
+	 * = 1 //  has reached maxFev. // integer, intent(in) :: mode  an integer
+	 * input variable. if mode = 1, the //  variables will be scaled internally.
+	 * if mode = 2, //  the scaling is specified by the input diag. other // 
+	 * values of mode are equivalent to mode = 1. // integer, intent(in) :: nPrint
+	 *  an integer input variable that enables controlled //  printing of
+	 * iterates if it is positive. in this case, //  fcn is called with iFlag = 0
+	 * at the beginning of the first //  iteration and every nPrint iterations
+	 * thereafter and //  immediately prior to return, with x and fVec available
+	 * //  for printing. if nPrint is not positive, no special calls //  of fcn
+	 * with iFlag = 0 are made. // integer, intent(out) :: info  an integer output
+	 * variable. if the user has //  terminated execution, info is set to the
+	 * (negative) //  value of iFlag. see description of fcn. otherwise, // 
+	 * info is set as follows: //  //  * ***info = 0*** improper input
+	 * parameters. //  * ***info = 1*** both actual and predicted relative
+	 * reductions //  in the sum of squares are at most fTol. //  * ***info =
+	 * 2*** relative error between two consecutive iterates //  is at most xTol.
+	 * //  * ***info = 3*** conditions for info = 1 and info = 2 both hold. // 
+	 * * ***info = 4*** the cosine of the angle between fVec and any //  column of
+	 * the jacobian is at most gTol in //  absolute value. //  * ***info = 5***
+	 * number of calls to fcn with iFlag = 1 has //  reached maxFev. //  *
+	 * ***info = 6*** fTol is too small. no further reduction in //  the sum of
+	 * squares is possible. //  * ***info = 7*** xTol is too small. no further
+	 * improvement in //  the approximate solution x is possible. //  * ***info
+	 * = 8*** gTol is too small. fVec is orthogonal to the //  columns of the
+	 * jacobian to machine precision. // integer, intent(out) :: nFev  an integer
+	 * output variable set to the number of //  calls to fcn with iFlag = 1. //
+	 * integer, intent(out) :: nJev  an integer output variable set to the number
+	 * of //  calls to fcn with iFlag = 2. // integer, intent(out) :: ipvt(n) 
+	 * an integer output array of length n. ipvt //  defines a permutation matrix
+	 * p such that jac*p = q*r, //  where jac is the final calculated jacobian, q
+	 * is //  orthogonal (not stored), and r is upper triangular. //  column j
+	 * of p is column ipvt[j] of the identity matrix. // real(wp), intent(in) ::
+	 * fTol  a nonnegative input variable. termination //  occurs when both the
+	 * actual and predicted relative //  reductions in the sum of squares are at
+	 * most fTol. //  therefore, fTol measures the relative error desired //  in
+	 * the sum of squares. // real(wp), intent(in) :: xTol  a nonnegative input
+	 * variable. termination //  occurs when the relative error between two
+	 * consecutive //  iterates is at most xTol. therefore, xTol measures the //
+	 *  relative error desired in the approximate solution. // real(wp),
+	 * intent(in) :: gTol  a nonnegative input variable. termination //  occurs
+	 * when the cosine of the angle between fVec and //  any column of the
+	 * jacobian is at most gTol in absolute //  value. therefore, gTol measures
+	 * the orthogonality //  desired between the function vector and the columns
+	 * //  of the jacobian. // real(wp), intent(in) :: factor  a positive input
+	 * variable used in determining the //  initial step bound. this bound is set
+	 * to the product of //  factor and the euclidean norm of diag*x if nonzero,
+	 * or else //  to factor itself. in most cases factor should lie in the // 
+	 * interval (.1,100.). 100. is a generally recommended value. // real(wp),
+	 * intent(inout) :: x(n)  an array of length n. on input x must contain // 
+	 * an initial estimate of the solution vector. on output x //  contains the
+	 * final estimate of the solution vector. // real(wp), intent(out) :: fVec(m) 
+	 * an output array of length m which contains //  the functions evaluated at
+	 * the output x. // real(wp), intent(out) :: fJac(ldfJac, n)  an output n by n
+	 * array. the upper triangle of fJac //  contains an upper triangular matrix r
+	 * such that // ``` //  t t t //  p *(jac *jac)*p = r *r, // ``` // 
+	 * where p is a permutation matrix and jac is the final //  calculated
+	 * jacobian. column j of p is column ipvt[j] //  (see below) of the identity
+	 * matrix. the lower triangular //  part of fJac contains information
+	 * generated during //  the computation of r. // real(wp), intent(inout) ::
+	 * diag(n)  an array of length n. if mode = 1 (see //  below), diag is
+	 * internally set. if mode = 2, diag //  must contain positive entries that
+	 * serve as //  multiplicative scale factors for the variables. // real(wp),
+	 * intent(out) :: qtf(n)  an output array of length n which contains //  the
+	 * first n elements of the vector (q transpose)*fVec. // real(wp), intent(inout)
+	 * :: wa1(n)  work array of length n. // real(wp), intent(inout) :: wa2(n) 
+	 * work array of length n. // real(wp), intent(inout) :: wa3(n)  work array of
+	 * length n. // real(wp), intent(inout) :: wa4(m)  work array of length m. //
+	 */
+	public static void lmstr(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double[][] fJac,
+			int ldfJac, double fTol, double xTol, double gTol, int maxFev, double[] diag, int mode, double factor,
+			int nPrint, int info, int nFev, int nJev, int[] ipvt, double[] qtf, double[] wa1, double[] wa2,
+			double[] wa3, double[] wa4) {
+		// subroutine lmstr(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxFev,
+		// &
+//	                     diag, mode, factor, nPrint, info, nFev, nJev, ipvt, qtf, &
+//	                     wa1, wa2, wa3, wa4)
+
+		int i, iFlag, iter, j, l;
+		double actred, delta = 0, dirder, fNorm, fNorm1, gNorm, par, pnorm, prered, ratio, sum, temp = 0, temp1, temp2,
+				xnorm = 0;
+		boolean sing;
+
+		double p1 = 1.0e-1;
+		double p5 = 5.0e-1;
+		double p25 = 2.5e-1;
+		double p75 = 7.5e-1;
+		double p0001 = 1.0e-4;
+
+		info = 0;
+		iFlag = 0;
+		nFev = 0;
+		nJev = 0;
+
+		do { // main : block
+
+//	            Check the input parameters for errors.
+
+			if (n <= 0 || m < n || ldfJac < n || fTol < 0 || xTol < 0 || gTol < 0 || maxFev <= 0 || factor <= 0) {
+				// thorw.exception();
+			}
+			if (mode == 2) {
+				for (j = 0; j < n; j++) {
+					if (diag[j] <= 0) {
+						// throw error
+					}
+				}
+			}
+
 //	            Evaluate the function at the starting point
 //	            and calculate its norm.
-	
-	            iflag = 1;
-	            fvec = fcn.evaluate(x); // fcn(m, n, x, fvec, wa3, iflag)
-	            nfev = 1;
-	            if (iflag < 0){
-					// throw error exit main
-				}
-	            fnorm = enorm(m, fvec);
-	
+
+			iFlag = 1;
+			fVec = fcn.evaluate(x); // fcn(m, n, x, fVec, wa3, iFlag)
+			nFev = 1;
+			if (iFlag < 0) {
+				// throw error exit main
+			}
+			fNorm = enorm(m, fVec);
+
 //	            Initialize levenberg-marquardt parameter and iteration counter.
-	
-	            par = 0;
-	            iter = 1;
-	
+
+			par = 0;
+			iter = 1;
+
 //	            Beginning of the outer loop.
-	
-	            do{ //outer : do
-	
+
+			do { // outer : do
+
 //	                If requested, call fcn to enable printing of iterates.
-	
-	                if (nprint > 0){
-	                    iflag = 0;
-	                    if (((iter - 1) % nprint) == 0){
-							//  fcn(m, n, x, fvec, wa3, iflag)
-							}
-	                    if (iflag < 0){
+
+				if (nPrint > 0) {
+					iFlag = 0;
+					if (((iter - 1) % nPrint) == 0) {
+						// fcn(m, n, x, fVec, wa3, iFlag)
+					}
+					if (iFlag < 0) {
 						// throw error exit main
-						}
-	                }
-	
+					}
+				}
+
 //	                Compute the qr factorization of the jacobian matrix
 //	                calculated one row at a time, while simultaneously
-//	                forming (q transpose)*fvec and storing the first
+//	                forming (q transpose)*fVec and storing the first
 //	                n components in qtf.
-	                for( j = 0;j< n;j++){
-	                    qtf[j] = 0;
-	                    for(i = 0;i< n;i++){
-	                        fjac[i][j] = 0;
-	                    }
-	                }
-	                iflag = 2;
-	                for(i = 0;i< m;i++){
-	                    fvec = fcn.evaluate(x); // fcn(m, n, x, fvec, wa3, iflag)
-	                    if (iflag < 0){
-							// throw error exit main
-						}
-	                    temp = fvec[i];
-	                    rwupdt(n, fjac, ldfjac, wa3, qtf, temp, wa1, wa2);
-	                    iflag = iflag + 1
-	                }
-	                njev = njev + 1;
-	//
+				for (j = 0; j < n; j++) {
+					qtf[j] = 0;
+					for (i = 0; i < n; i++) {
+						fJac[i][j] = 0;
+					}
+				}
+				iFlag = 2;
+				for (i = 0; i < m; i++) {
+					fVec = fcn.evaluate(x); // fcn(m, n, x, fVec, wa3, iFlag)
+					if (iFlag < 0) {
+						// throw error exit main
+					}
+					temp = fVec[i];
+					rwupdt(n, fJac, ldfJac, wa3, qtf, temp, wa1, wa2);
+					iFlag = iFlag + 1;
+				}
+				nJev = nJev + 1;
+				//
 //	                If the jacobian is rank deficient, call qrfac to
 //	                reorder its columns and update the components of qtf.
-	
-	                sing = false;
-	                for(j = 0;j< n;j++){
-	                    if (fjac[j][j] == 0){
-							 sing =  true;
+
+				sing = false;
+				for (j = 0; j < n; j++) {
+					if (fJac[j][j] == 0) {
+						sing = true;
+					}
+					ipvt[j] = j;
+					double[] fJacTemp = new double[j];
+					for (i = 0; i < j; i++) {
+						fJacTemp[i] = fJac[0][i];
+					}
+					wa2[j] = enorm(j, fJacTemp); // should be correct? Wa2(j) = enorm(j, Fjac(1, j)) originally this,
+													// with the loop starting at 1
+				}
+				if (sing) {
+					qrfac(n, n, fJac, ldfJac, true, ipvt, n, wa1, wa2, wa3);
+					for (j = 0; j < n; j++) {
+						if (fJac[j][j] != 0) {
+							sum = 0;
+							for (i = j; i < n; i++) {
+								sum = sum + fJac[i][j] * qtf[i];
+							}
+							temp = -sum / fJac[j][j];
+							for (i = j; i < n; i++) {
+								qtf[i] = qtf[i] + fJac[i][j] * temp;
+							}
 						}
-	                    ipvt[j] = j;
-	                    wa2[j] = enorm(j, fjac[0][j]); //Needs to be fixed
-	                }
-	                if (sing){
-	                    qrfac(n, n, fjac, ldfjac, true, ipvt, n, wa1, wa2, wa3);
-	                    for(j = 0;j< n;j++){
-	                        if (fjac[j][j] != 0) {
-	                            sum = 0;
-	                            for(i = j;i< n;i++){
-	                                sum = sum + fjac[i][j]*qtf[i];
-	                            }
-	                            temp = -sum/fjac[j][j];
-	                            for(i = j;i< n;i++){
-	                                qtf[i] = qtf[i] + fjac[i][j]*temp;
-	                            }
-	                        }
-	                        fjac[j][j] = wa1[j];
-	                    }
-	                }
-	
+						fJac[j][j] = wa1[j];
+					}
+				}
+
 //	                On the first iteration and if mode is 1, scale according
 //	                to the norms of the columns of the initial jacobian.
-	
-	                if (iter == 1){
-	                    if (mode != 2){
-	                        for(j = 0;j< n;j++){
-	                            diag[j] = wa2[j]
-	                            if (wa2[j] == 0) {
+
+				if (iter == 1) {
+					if (mode != 2) {
+						for (j = 0; j < n; j++) {
+							diag[j] = wa2[j];
+							if (wa2[j] == 0) {
 								diag[j] = 1;
-								}
-	                        }
-	                    }
-	
+							}
+						}
+					}
+
 //	                    On the first iteration, calculate the norm of the scaled x
 //	                    and initialize the step bound delta.
-	
-	                    for(j = 0;j< n;j++){
-	                        wa3[j] = diag[j]*x[j];
-	                    }
-	                    xnorm = enorm(n, wa3);
-	                    delta = factor*xnorm;
-	                    if (delta == 0){
-							 delta = factor;
-						}
-	                }
-	
+
+					for (j = 0; j < n; j++) {
+						wa3[j] = diag[j] * x[j];
+					}
+					xnorm = enorm(n, wa3);
+					delta = factor * xnorm;
+					if (delta == 0) {
+						delta = factor;
+					}
+				}
+
 //	                Compute the norm of the scaled gradient.
-	
-	                gnorm = 0;
-	                if (fnorm != 0){
-	                    for(j = 0;j< n;j++){
-	                        l = ipvt[j];
-	                        if (wa2[l] != 0) {
-	                            sum = 0;
-	                            for(i = 0;i< j;i++){
-	                                sum = sum + fjac[i][j]*(qtf[i]/fnorm);
-	                            }
-								if(Math.abs(sum/wa2[l])>gnorm){
-									gnorm = Math.abs(sum/wa2[l]);
-								}
-	                        }
-	                    }
-	                }
-	
+
+				gNorm = 0;
+				if (fNorm != 0) {
+					for (j = 0; j < n; j++) {
+						l = ipvt[j];
+						if (wa2[l] != 0) {
+							sum = 0;
+							for (i = 0; i < j; i++) {
+								sum = sum + fJac[i][j] * (qtf[i] / fNorm);
+							}
+							if (Math.abs(sum / wa2[l]) > gNorm) {
+								gNorm = Math.abs(sum / wa2[l]);
+							}
+						}
+					}
+				}
+
 //	                Test for convergence of the gradient norm.
-	
-	                if (gnorm <= gtol){
-						info = 4;
-					}
-	                if (info != 0){
-						//throw error exit
-					}
-	
-//	                Rescale if necessary.
-	
-	                if (mode != 2){
-	                    for(j = 0;j< n;j++){
-							if(wa2[j]>diag[j]){
-								diag[j] = wa2[j];
-							}
-	                    }
-	                }
-	
-//	                Beginning of the inner loop.
-	
-	                do{ //inner : do
-	
-//	                    Determine the levenberg-marquardt parameter.
-	//
-	                    lmpar(n, fjac, ldfjac, ipvt, diag, qtf, delta, par, wa1, wa2, wa3, wa4);
-	//
-//	                    Store the direction p and x + p. calculate the norm of p.
-	//
-	                    for(j = 0;j< n;j++){
-	                        wa1[j] = -wa1[j];
-	                        wa2[j] = x[j] + wa1[j];
-	                        wa3[j] = diag[j]*wa1[j];
-	                    }
-	                    pnorm = enorm(n, wa3);
-	
-//	                    On the first iteration, adjust the initial step bound.
-	
-	                    if (iter == 1){ 
-							if(delta>pnorm){
-								delta = pnorm;
-							}
-						}
-//	                    Evaluate the function at x + p and calculate its norm.
-	//
-	                    iflag = 1;
-	                    wa4 = fcn.evaluate(x); // call fcn(m, n, Wa2, Wa4, Wa3, iflag)
-	                    nfev = nfev + 1;
-	                    if (iflag < 0){
-							/// exit main
-						}
-	                    fnorm1 = enorm(m, wa4);
-	
-//	                    Compute the scaled actual reduction.
-	
-	                    actred = -1;
-	                    if (p1*fnorm1 < fnorm) actred = 1 - (fnorm1/fnorm)*(fnorm1/fnorm);
-	
-//	                    Compute the scaled predicted reduction and
-//	                    the scaled directional derivative.
-	
-	                    for(j = 0;j< n;j++){
-	                        wa3[j] = 0;
-	                        l = ipvt[j];
-	                        temp = wa1[l];
-	                        for(i = 0;i< j;i++){
-	                            wa3[i] = wa3[i] + fjac[i][j]*temp;
-							}
-						}
-	                    temp1 = enorm(n, wa3)/fnorm;
-	                    temp2 = (Math.sqrt(par)*pnorm)/fnorm;
-	                    prered = temp1*temp1 + temp2*temp2/p5;
-	                    dirder = -(temp1*temp1 + temp2*temp2);
-	
-//	                    Compute the ratio of the actual to the predicted
-//	                    reduction.
-	
-	                    ratio = 0;
-	                    if (prered != 0){
-							ratio = actred/prered;
-						}
-//	                    Update the step bound.
-	
-	                    if (ratio <= p25){
-	                        if (actred >= 0){
-								temp = p5;
-							}
-	                        if (actred < 0){
-								temp = p5*dirder/(dirder + p5*actred);
-							}
-	                        if (p1*fnorm1 >= fnorm || temp < p1){
-								temp = p1;
-							}
-							if(delta>pnorm/p1){
-								delta = temp * pnorm/p1;
-							}else{
-								delta = delta * temp;
-							}
-	                        par = par/temp;
-						}else if (par == 0 || ratio >= p75){
-	                        delta = pnorm/p5;
-	                        par = p5*par;
-						}
-	
-//	                    Test for successful iteration.
-	
-	                    if (ratio >= p0001){
-	
-//	                        Successful iteration. update x, fvec, and their norms.
-	
-	                        for(j = 0;j< n;j++){
-	                            x[j] = wa2[j];
-	                            wa2[j] = diag[j]*x[j];
-							}
-	                        for(i = 0;i< m;i++){
-	                            fvec[i] = wa4[i];
-							}
-	                        xnorm = enorm(n, wa2);
-	                        fnorm = fnorm1;
-	                        iter = iter + 1;
-						}
-	
-//	                    Tests for convergence.
-	
-	                    if (Math.abs(actred) <= ftol && prered <= ftol && p5*ratio <= 1) {
-							info = 1;
-						}
-	                    if (delta <= xtol*xnorm) {
-							info = 2;
-						}
-	                    if (Math.abs(actred) <= ftol && prered <= ftol && p5*ratio <= 1 && info == 2){
-							info = 3;
-						}
-	                    if (info != 0){
-							// exit main
-						}	
-	                    // Tests for termination and stringent tolerances.
-	
-	                    if (nfev >= maxfev) {
-							info = 5;
-						}
-	                    if (Math.abs(actred) <= epsmch && prered <= epsmch && p5*ratio <= 1) {
-							info = 6;
-						}
-	                    if (delta <= epsmch*xnorm) {
-							info = 7;
-						}
-	                    if (gnorm <= epsmch) {
-							info = 8;
-						}
-	                    if (info != 0){
-								// exit main
-						}
-	                    if (ratio >= p0001){
-							// exit inner
-						} 
-	
-	                } while(true); // end do inner ! end of the inner loop. repeat if iteration unsuccessful.
-	            }while(true); // //end do outer ! end of the outer loop.
-	        }while(true); // //end block main
-//	        ! termination, either normal or user imposed.
-	//
-//	        if (iflag < 0) Info = iflag
-//	        iflag = 0
-//	        if (Nprint > 0) call fcn(m, n, x, Fvec, Wa3, iflag)
-	//
-	}
-/**
-	// !*****************************************************************************************
-	// !>
-	// ! the purpose of lmstr1 is to minimize the sum of the squares of
-	// ! m nonlinear functions in n variables by a modification of
-	// ! the levenberg-marquardt algorithm which uses minimal storage.
-	// ! this is done by using the more general least-squares solver
-	// ! lmstr. the user must provide a subroutine which calculates
-	// ! the functions and the rows of the jacobian.
-	//
-//	    subroutine lmstr1(fcn, m, n, x, Fvec, Fjac, Ldfjac, Tol, Info, Ipvt, Wa, Lwa)
-//	        implicit none
-	//
-//	        procedure(fcn_lmstr) :: fcn !! user-supplied subroutine which
-//	                                    !! calculates the functions and the rows of the jacobian.
-//	        integer, intent(in) :: m !! a positive integer input variable set to the number
-//	                                !! of functions.
-//	        integer, intent(in) :: n !! a positive integer input variable set to the number
-//	                                !! of variables. n must not exceed m.
-//	        integer, intent(in) :: Ldfjac !! a positive integer input variable not less than n
-//	                                     !! which specifies the leading dimension of the array fjac.
-//	        integer, intent(out) :: Info !! an integer output variable. if the user has
-//	                                    !! terminated execution, info is set to the (negative)
-//	                                    !! value of iflag. see description of fcn. otherwise,
-//	                                    !! info is set as follows:
-//	                                    !!
-//	                                    !!  * ***info = 0***  improper input parameters.
-//	                                    !!  * ***info = 1***  algorithm estimates that the relative error
-//	                                    !!           in the sum of squares is at most tol.
-//	                                    !!  * ***info = 2***  algorithm estimates that the relative error
-//	                                    !!           between x and the solution is at most tol.
-//	                                    !!  * ***info = 3***  conditions for info = 1 and info = 2 both hold.
-//	                                    !!  * ***info = 4***  fvec is orthogonal to the columns of the
-//	                                    !!           jacobian to machine precision.
-//	                                    !!  * ***info = 5***  number of calls to fcn with iflag = 1 has
-//	                                    !!           reached 100*(n+1).
-//	                                    !!  * ***info = 6***  tol is too small. no further reduction in
-//	                                    !!           the sum of squares is possible.
-//	                                    !!  * ***info = 7***  tol is too small. no further improvement in
-//	                                    !!           the approximate solution x is possible.
-//	        integer, intent(in) :: Lwa !! a positive integer input variable not less than 5*n+m.
-//	        integer, intent(out) :: Ipvt(n) !! an integer output array of length n. ipvt
-//	                                       !! defines a permutation matrix p such that jac*p = q*r,
-//	                                       !! where jac is the final calculated jacobian, q is
-//	                                       !! orthogonal (not stored), and r is upper triangular.
-//	                                       !! column j of p is column ipvt(j) of the identity matrix.
-//	        real(wp), intent(in) :: Tol !! a nonnegative input variable. termination occurs
-//	                                   !! when the algorithm estimates either that the relative
-//	                                   !! error in the sum of squares is at most tol or that
-//	                                   !! the relative error between x and the solution is at
-//	                                   !! most tol.
-//	        real(wp), intent(inout) :: x(n) !! an array of length n. on input x must contain
-//	                                       !! an initial estimate of the solution vector. on output x
-//	                                       !! contains the final estimate of the solution vector.
-//	        real(wp), intent(out) :: Fvec(m) !! an output array of length m which contains
-//	                                        !! the functions evaluated at the output x.
-//	        real(wp), intent(out) :: Fjac(Ldfjac, n) !! an output n by n array. the upper triangle of fjac
-//	                                                !! contains an upper triangular matrix r such that
-//	                                                !!```
-//	                                                !!        t     t           t
-//	                                                !!       p *(jac *jac)*p = r *r,
-//	                                                !!```
-//	                                                !! where p is a permutation matrix and jac is the final
-//	                                                !! calculated jacobian. column j of p is column ipvt(j)
-//	                                                !! (see below) of the identity matrix. the lower triangular
-//	                                                !! part of fjac contains information generated during
-//	                                                !! the computation of r.
-//	        real(wp), intent(inout) :: Wa(Lwa) !! a work array of length lwa.
-	//
- */
-		public static void lmstr1(SystemOfEquations fcn, int m,int n,double[] x,double[] fVec,double[][] fJac,int ldfJac,double tol,int info,int[] ipvt,double[] wa,int lwa) {
-			
-	        int maxfev, mode, nfev = 0, njev = 0, nprint;
-	        double fTol, gTol, xTol;
-			double[] wa1 = new double[n];// real(wp), intent(inout) :: wa1(n) !! work array
-			double[] wa2 = new double[n];// real(wp), intent(inout) :: wa2(n) !! work array
-			double[] wa3 = new double[n];// real(wp), intent(inout) :: wa3(n) !! work array
-			double[] wa4 = new double[n];// real(wp), intent(inout) :: wa4(n) !! work array
-			double[] wa5 = new double[n];// real(wp), intent(inout) :: wa4(n) !! work array
-	
-	        double factor = 1.0e2;
-	
-	        info = 0;
-	
-	        // check the input parameters for errors.
-	
-	        if (n > 0 & m >= n & ldfJac >= n & tol >= 0 & lwa >= (5*n + m)){
-	            //call lmstr.
-	            maxfev = 100 * (n + 1);
-	            fTol = tol;
-	            xTol = tol;
-	            gTol = 0;
-	            mode = 1;
-	            nprint = 0;
-	            lmstr(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxfev,
-	                       wa, mode, factor, nprint, info, nfev, njev, ipvt, wa1,
-	                       wa2, wa3, wa4, wa5);
-	            if (info == 8){
+
+				if (gNorm <= gTol) {
 					info = 4;
 				}
-	        }
+				if (info != 0) {
+					// throw error exit
+				}
+
+//	                Rescale if necessary.
+
+				if (mode != 2) {
+					for (j = 0; j < n; j++) {
+						if (wa2[j] > diag[j]) {
+							diag[j] = wa2[j];
+						}
+					}
+				}
+
+//	                Beginning of the inner loop.
+
+				do { // inner : do
+
+//	                    Determine the levenberg-marquardt parameter.
+					//
+					lmpar(n, fJac, ldfJac, ipvt, diag, qtf, delta, par, wa1, wa2, wa3, wa4);
+					//
+//	                    Store the direction p and x + p. calculate the norm of p.
+					//
+					for (j = 0; j < n; j++) {
+						wa1[j] = -wa1[j];
+						wa2[j] = x[j] + wa1[j];
+						wa3[j] = diag[j] * wa1[j];
+					}
+					pnorm = enorm(n, wa3);
+
+//	                    On the first iteration, adjust the initial step bound.
+
+					if (iter == 1) {
+						if (delta > pnorm) {
+							delta = pnorm;
+						}
+					}
+//	                    Evaluate the function at x + p and calculate its norm.
+					//
+					iFlag = 1;
+					wa4 = fcn.evaluate(x); // call fcn(m, n, wa2, wa4, wa3, iFlag)
+					nFev = nFev + 1;
+					if (iFlag < 0) {
+						/// exit main
+					}
+					fNorm1 = enorm(m, wa4);
+
+//	                    Compute the scaled actual reduction.
+
+					actred = -1;
+					if (p1 * fNorm1 < fNorm)
+						actred = 1 - (fNorm1 / fNorm) * (fNorm1 / fNorm);
+
+//	                    Compute the scaled predicted reduction and
+//	                    the scaled directional derivative.
+
+					for (j = 0; j < n; j++) {
+						wa3[j] = 0;
+						l = ipvt[j];
+						temp = wa1[l];
+						for (i = 0; i < j; i++) {
+							wa3[i] = wa3[i] + fJac[i][j] * temp;
+						}
+					}
+					temp1 = enorm(n, wa3) / fNorm;
+					temp2 = (Math.sqrt(par) * pnorm) / fNorm;
+					prered = temp1 * temp1 + temp2 * temp2 / p5;
+					dirder = -(temp1 * temp1 + temp2 * temp2);
+
+//	                    Compute the ratio of the actual to the predicted
+//	                    reduction.
+
+					ratio = 0;
+					if (prered != 0) {
+						ratio = actred / prered;
+					}
+//	                    Update the step bound.
+
+					if (ratio <= p25) {
+						if (actred >= 0) {
+							temp = p5;
+						}
+						if (actred < 0) {
+							temp = p5 * dirder / (dirder + p5 * actred);
+						}
+						if (p1 * fNorm1 >= fNorm || temp < p1) {
+							temp = p1;
+						}
+						if (delta > pnorm / p1) {
+							delta = temp * pnorm / p1;
+						} else {
+							delta = delta * temp;
+						}
+						par = par / temp;
+					} else if (par == 0 || ratio >= p75) {
+						delta = pnorm / p5;
+						par = p5 * par;
+					}
+
+//	                    Test for successful iteration.
+
+					if (ratio >= p0001) {
+
+//	                        Successful iteration. update x, fVec, and their norms.
+
+						for (j = 0; j < n; j++) {
+							x[j] = wa2[j];
+							wa2[j] = diag[j] * x[j];
+						}
+						for (i = 0; i < m; i++) {
+							fVec[i] = wa4[i];
+						}
+						xnorm = enorm(n, wa2);
+						fNorm = fNorm1;
+						iter = iter + 1;
+					}
+
+//	                    Tests for convergence.
+
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1) {
+						info = 1;
+					}
+					if (delta <= xTol * xnorm) {
+						info = 2;
+					}
+					if (Math.abs(actred) <= fTol && prered <= fTol && p5 * ratio <= 1 && info == 2) {
+						info = 3;
+					}
+					if (info != 0) {
+						// exit main
+					}
+					// Tests for termination and stringent tolerances.
+
+					if (nFev >= maxFev) {
+						info = 5;
+					}
+					if (Math.abs(actred) <= epsmch && prered <= epsmch && p5 * ratio <= 1) {
+						info = 6;
+					}
+					if (delta <= epsmch * xnorm) {
+						info = 7;
+					}
+					if (gNorm <= epsmch) {
+						info = 8;
+					}
+					if (info != 0) {
+						// exit main
+					}
+					if (ratio >= p0001) {
+						// exit inner
+					}
+
+				} while (true); // } inner  end of the inner loop. repeat if iteration unsuccessful.
+			} while (true); // //} outer  end of the outer loop.
+		} while (true); // //end block main
+//	         termination, either normal or user imposed.
+		//
+//	        if (iFlag < 0) info = iFlag
+//	        iFlag = 0
+//	        if (nPrint > 0) call fcn(m, n, x, fVec, wa3, iFlag)
+		//
+	}
+
+	/**
+	 * //
+	 * *****************************************************************************************
+	 * // > //  the purpose of lmstr1 is to minimize the sum of the squares of //
+	 *  m nonlinear functions in n variables by a modification of //  the
+	 * levenberg-marquardt algorithm which uses minimal storage. //  this is done
+	 * by using the more general least-squares solver //  lmstr. the user must
+	 * provide a subroutine which calculates //  the functions and the rows of the
+	 * jacobian. // // subroutine lmstr1(fcn, m, n, x, fVec, fJac, ldfJac, Tol,
+	 * info, ipvt, wa, Lwa) // implicit none // // procedure(fcn_lmstr) :: fcn 
+	 * user-supplied subroutine which //  calculates the functions and the rows of
+	 * the jacobian. // integer, intent(in) :: m  a positive integer input
+	 * variable set to the number //  of functions. // integer, intent(in) :: n 
+	 * a positive integer input variable set to the number //  of variables. n
+	 * must not exceed m. // integer, intent(in) :: ldfJac  a positive integer
+	 * input variable not less than n //  which specifies the leading dimension of
+	 * the array fJac. // integer, intent(out) :: info  an integer output
+	 * variable. if the user has //  terminated execution, info is set to the
+	 * (negative) //  value of iFlag. see description of fcn. otherwise, // 
+	 * info is set as follows: //  //  * ***info = 0*** improper input
+	 * parameters. //  * ***info = 1*** algorithm estimates that the relative
+	 * error //  in the sum of squares is at most tol. //  * ***info = 2***
+	 * algorithm estimates that the relative error //  between x and the solution
+	 * is at most tol. //  * ***info = 3*** conditions for info = 1 and info = 2
+	 * both hold. //  * ***info = 4*** fVec is orthogonal to the columns of the //
+	 *  jacobian to machine precision. //  * ***info = 5*** number of calls to
+	 * fcn with iFlag = 1 has //  reached 100*(n+1). //  * ***info = 6*** tol is
+	 * too small. no further reduction in //  the sum of squares is possible. //
+	 *  * ***info = 7*** tol is too small. no further improvement in //  the
+	 * approximate solution x is possible. // integer, intent(in) :: Lwa  a
+	 * positive integer input variable not less than 5*n+m. // integer, intent(out)
+	 * :: ipvt(n)  an integer output array of length n. ipvt //  defines a
+	 * permutation matrix p such that jac*p = q*r, //  where jac is the final
+	 * calculated jacobian, q is //  orthogonal (not stored), and r is upper
+	 * triangular. //  column j of p is column ipvt[j] of the identity matrix. //
+	 * real(wp), intent(in) :: Tol  a nonnegative input variable. termination
+	 * occurs //  when the algorithm estimates either that the relative // 
+	 * error in the sum of squares is at most tol or that //  the relative error
+	 * between x and the solution is at //  most tol. // real(wp), intent(inout)
+	 * :: x(n)  an array of length n. on input x must contain //  an initial
+	 * estimate of the solution vector. on output x //  contains the final
+	 * estimate of the solution vector. // real(wp), intent(out) :: fVec(m)  an
+	 * output array of length m which contains //  the functions evaluated at the
+	 * output x. // real(wp), intent(out) :: fJac(ldfJac, n)  an output n by n
+	 * array. the upper triangle of fJac //  contains an upper triangular matrix r
+	 * such that // ``` //  t t t //  p *(jac *jac)*p = r *r, // ``` // 
+	 * where p is a permutation matrix and jac is the final //  calculated
+	 * jacobian. column j of p is column ipvt[j] //  (see below) of the identity
+	 * matrix. the lower triangular //  part of fJac contains information
+	 * generated during //  the computation of r. // real(wp), intent(inout) ::
+	 * wa(Lwa)  a work array of length lwa. //
+	 */
+	public static void lmstr1(SystemOfEquations fcn, int m, int n, double[] x, double[] fVec, double[][] fJac,
+			int ldfJac, double tol, int info, int[] ipvt, double[] wa, int lwa) {
+
+		int maxFev, mode, nFev = 0, nJev = 0, nPrint;
+		double fTol, gTol, xTol;
+		double[] wa1 = new double[n];// real(wp), intent(inout) :: wa1(n)  work array
+		double[] wa2 = new double[n];// real(wp), intent(inout) :: wa2(n)  work array
+		double[] wa3 = new double[n];// real(wp), intent(inout) :: wa3(n)  work array
+		double[] wa4 = new double[n];// real(wp), intent(inout) :: wa4(n)  work array
+		double[] wa5 = new double[n];// real(wp), intent(inout) :: wa4(n)  work array
+
+		double factor = 1.0e2;
+
+		info = 0;
+
+		// check the input parameters for errors.
+
+		if (n > 0 & m >= n & ldfJac >= n & tol >= 0 & lwa >= (5 * n + m)) {
+			// call lmstr.
+			maxFev = 100 * (n + 1);
+			fTol = tol;
+			xTol = tol;
+			gTol = 0;
+			mode = 1;
+			nPrint = 0;
+			lmstr(fcn, m, n, x, fVec, fJac, ldfJac, fTol, xTol, gTol, maxFev, wa, mode, factor, nPrint, info, nFev,
+					nJev, ipvt, wa1, wa2, wa3, wa4, wa5);
+			if (info == 8) {
+				info = 4;
+			}
 		}
+	}
+
 	/**
 	 * <p>
 	 * this subroutine proceeds from the computed qr factorization ofan m by n
@@ -3454,10 +3203,10 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 * 
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-		public static void qform(int m, int n, double[][] q, int ldq, double[] wa) {
-		
-		int i, j, jm1, k, l, minmn, np1; //temporary variables 
-		double sum, temp; //temporary variables 
+	public static void qform(int m, int n, double[][] q, int ldq, double[] wa) {
+
+		int i, j, jm1, k, l, minmn, np1; // temporary variables
+		double sum, temp; // temporary variables
 //	    zero out upper triangle of q in the first min(m,n) columns.
 		if (m < n) {
 			minmn = m;
@@ -3474,8 +3223,8 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		}
 //	    initialize remaining columns to those of the identity matrix.
 		np1 = n + 1;
-		if (m >= np1) { //this portion has not been tested to ensure it works : USE CAUTION:
-			for (j = np1-1; j < m; j++) {
+		if (m >= np1) { // this portion has not been tested to ensure it works : USE CAUTION:
+			for (j = np1 - 1; j < m; j++) {
 				for (i = 0; i < m; i++) {
 					q[i][j] = 0;
 				}
@@ -3484,7 +3233,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 		}
 //	    accumulate q from its factored form.
 		for (l = 0; l < minmn; l++) {
-			k = minmn - (l+1);
+			k = minmn - (l + 1);
 			for (i = k; i < m; i++) {
 				wa[i] = q[i][k];
 				q[i][k] = 0;
@@ -3496,7 +3245,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					for (i = k; i < m; i++) {
 						sum = sum + q[i][j] * wa[i];
 					}
-					temp = sum / wa[k ];
+					temp = sum / wa[k];
 					for (i = k; i < m; i++) {
 						q[i][j] = q[i][j] - temp * wa[i];
 
@@ -3504,71 +3253,72 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 				}
 			}
 		}
-	}	
-/**
- * <p>
- * This subroutine uses householder transformations with column pivoting
- * (optional) to compute a qr factorization of the m by n matrix a. That is,
- * qrfac determines an orthogonal matrix q, a permutation matrix p, and an upper
- * trapezoidal matrix r with diagonal elements of nonincreasing magnitude, such
- * that a*p = q*r. The householder transformation for column k, k =
- * 1,2,...,min(m,n), is of the form {t i - (1/u(k))*u*u} where u has zeros in
- * the first k-1 positions. The form of this transformation and the method of
- * pivoting first appeared in the corresponding linpack subroutine.
- * 
- * 
- * 
- * @param m      int -> A positive integer variable set to the number of rows of
- *               a.
- *               <p>
- * @param n      int -> A positive integer variable set to the number of columns
- *               of a.
- *               <p>
- * @param lda    int -> A positive integer variable not less than m which
- *               specifies the leading dimension of the array a.
- *               <p>
- * @param lipvt  int -> A positive integer variable. If pivot is false, then
- *               lipvt may be as small as 1. If pivot is true, then lipvt must
- *               be at least n.
- *               <p>
- * @param ipvt   int[lipvt] -> An integer array of length lipvt. ipvt defines
- *               the permutation matrix p such that a*p = q*r. Column j of p is
- *               column ipvt(j) of the identity matrix. If pivot is false, ipvt
- *               is not referenced.
- *               <p>
- * @param pivot  boolean -> A logical variable. If pivot is set true, then
- *               column pivoting is enforced. If pivot is set false, then no
- *               column pivoting is done.
- *               <p>
- * @param a      double[lda][n] -> A m by n array. On input a contains the
- *               matrix for which the qr factorization is to be computed. On
- *               output the strict upper trapezoidal part of a contains the
- *               strict upper trapezoidal part of r, and the lower trapezoidal
- *               part of a contains a factored form of q (the non-trivial
- *               elements of the u vectors described above).
- *               <p>
- * @param rDiag  double[n] -> An array of length n which contains the diagonal
- *               elements of r.
- *               <p>
- * @param acNorm double[n] -> An array of length n which contains the norms of
- *               the corresponding columns of the input matrix a. If this
- *               information is not needed, then acnorm can coincide with rdiag.
- *               <p>
- * @param wa     double[n] -> A working array of length n. If pivot is false,
- *               then wa can coincide with rdiag.
- *               <p>
- * @return Nothing is returned, rather the objects themselves are modified.
- * 
- * 
- */				
-	public static void qrfac(int m, int n, double[][] a, int lda, boolean pivot, int[] ipvt, int lipvt,
-			double[] rdiag, double[] acnorm, double[] wa) {
-				
-		int i, j, jp1, k, kmax, minmn, count; //Temporary variables
-		double ajnorm, sum, temp; //Temporary variables
+	}
 
-		double[] subArray = new double[n]; //Used for sending sub arrays to enorm for evaluation
-		double p05 = 0.05; // 0.05, thats it. 
+	/**
+	 * <p>
+	 * This subroutine uses householder transformations with column pivoting
+	 * (optional) to compute a qr factorization of the m by n matrix a. That is,
+	 * qrfac determines an orthogonal matrix q, a permutation matrix p, and an upper
+	 * trapezoidal matrix r with diagonal elements of nonincreasing magnitude, such
+	 * that a*p = q*r. The householder transformation for column k, k =
+	 * 1,2,...,min(m,n), is of the form {t i - (1/u(k))*u*u} where u has zeros in
+	 * the first k-1 positions. The form of this transformation and the method of
+	 * pivoting first appeared in the corresponding linpack subroutine.
+	 * 
+	 * 
+	 * 
+	 * @param m      int -> A positive integer variable set to the number of rows of
+	 *               a.
+	 *               <p>
+	 * @param n      int -> A positive integer variable set to the number of columns
+	 *               of a.
+	 *               <p>
+	 * @param lda    int -> A positive integer variable not less than m which
+	 *               specifies the leading dimension of the array a.
+	 *               <p>
+	 * @param lipvt  int -> A positive integer variable. If pivot is false, then
+	 *               lipvt may be as small as 1. If pivot is true, then lipvt must
+	 *               be at least n.
+	 *               <p>
+	 * @param ipvt   int[lipvt] -> An integer array of length lipvt. ipvt defines
+	 *               the permutation matrix p such that a*p = q*r. Column j of p is
+	 *               column ipvt[j] of the identity matrix. If pivot is false, ipvt
+	 *               is not referenced.
+	 *               <p>
+	 * @param pivot  boolean -> A logical variable. If pivot is set true, then
+	 *               column pivoting is enforced. If pivot is set false, then no
+	 *               column pivoting is done.
+	 *               <p>
+	 * @param a      double[lda][n] -> A m by n array. On input a contains the
+	 *               matrix for which the qr factorization is to be computed. On
+	 *               output the strict upper trapezoidal part of a contains the
+	 *               strict upper trapezoidal part of r, and the lower trapezoidal
+	 *               part of a contains a factored form of q (the non-trivial
+	 *               elements of the u vectors described above).
+	 *               <p>
+	 * @param rdiag  double[n] -> An array of length n which contains the diagonal
+	 *               elements of r.
+	 *               <p>
+	 * @param acNorm double[n] -> An array of length n which contains the norms of
+	 *               the corresponding columns of the input matrix a. If this
+	 *               information is not needed, then acnorm can coincide with rdiag.
+	 *               <p>
+	 * @param wa     double[n] -> A working array of length n. If pivot is false,
+	 *               then wa can coincide with rdiag.
+	 *               <p>
+	 * @return Nothing is returned, rather the objects themselves are modified.
+	 * 
+	 * 
+	 */
+	public static void qrfac(int m, int n, double[][] a, int lda, boolean pivot, int[] ipvt, int lipvt, double[] rdiag,
+			double[] acnorm, double[] wa) {
+
+		int i, j, jp1, k, kmax, minmn, count; // Temporary variables
+		double ajnorm, sum, temp; // Temporary variables
+
+		double[] subArray = new double[n]; // Used for sending sub arrays to enorm for evaluation
+		double p05 = 0.05; // 0.05, thats it.
 //	    Compute the initial column norms and initialize several arrays.
 		for (j = 0; j < n; j++) {
 			subArray = new double[n];
@@ -3616,8 +3366,8 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			subArray = new double[n];
 			count = 0;
 			for (int z = j; z < n; z++) {
-				subArray[count] = a[z][j]; //As the algorithm moves diagonally down the matrix,
-				count++;				//a smaller and smaller subarray is sent to enorm
+				subArray[count] = a[z][j]; // As the algorithm moves diagonally down the matrix,
+				count++; // a smaller and smaller subarray is sent to enorm
 			}
 			ajnorm = enorm(m - j, subArray);
 			if (ajnorm != 0) {
@@ -3638,7 +3388,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 							sum = sum + a[i][j] * a[i][k];
 						}
 						temp = sum / a[j][j];
-						for (i = j; i < m ; i++) {
+						for (i = j; i < m; i++) {
 							a[i][k] = a[i][k] - temp * a[i][j];
 						}
 						if (!(!pivot || rdiag[k] == 0)) {
@@ -3652,7 +3402,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 								subArray = new double[n];
 								count = 0;
 								for (int z = jp1; z < n; z++) {
-									subArray[count] = a[z][k]; 
+									subArray[count] = a[z][k];
 									count++;
 								}
 								ajnorm = enorm(m - j, subArray);
@@ -3666,186 +3416,171 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			rdiag[j] = -ajnorm;
 		}
 	}
-/*	!*****************************************************************************************
-	!>
-	! given an m by n matrix a, an n by n diagonal matrix d,
-	! and an m-vector b, the problem is to determine an x which
-	! solves the system
-	!```
-	! a*x = b , d*x = 0 ,
-	!```
-	! in the least squares sense.
-	!
-	! this subroutine completes the solution of the problem
-	! if it is provided with the necessary information from the
-	! qr factorization, with column pivoting, of a. that is, if
-	! a*p = q*r, where p is a permutation matrix, q has orthogonal
-	! columns, and r is an upper triangular matrix with diagonal
-	! elements of nonincreasing magnitude, then qrsolv expects
-	! the full upper triangle of r, the permutation matrix p,
-	! and the first n components of (q transpose)*b. the system
-	! a*x = b, d*x = 0, is then equivalent to
-	!```
-	! t t
-	! r*z = q *b , p *d*p*z = 0 ,
-	!```
-	! where x = p*z. if this system does not have full rank,
-	! then a least squares solution is obtained. on output qrsolv
-	! also provides an upper triangular matrix s such that
-	!```
-	! t t t
-	! p *(a *a + d*d)*p = s *s .
-	!```
-	! s is computed within qrsolv and may be of separate interest.
-	
-	    subroutine qrsolv(n, r, Ldr, Ipvt, Diag, Qtb, x, Sdiag, Wa)
-	        implicit none
-	
-	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
-	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
-	                                  !! which specifies the leading dimension of the array r.
-	        integer, intent(in) :: Ipvt(n) !! an integer input array of length n which defines the
-	                                      !! permutation matrix p such that a*p = q*r. column j of p
-	                                      !! is column ipvt(j) of the identity matrix.
-	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the full upper triangle
-	                                            !! must contain the full upper triangle of the matrix r.
-	                                            !! on output the full upper triangle is unaltered, and the
-	                                            !! strict lower triangle contains the strict upper triangle
-	                                            !! (transposed) of the upper triangular matrix s.
-	        real(wp), intent(in) :: Diag(n) !! an input array of length n which must contain the
-	                                       !! diagonal elements of the matrix d.
-	        real(wp), intent(in) :: Qtb(n) !! an input array of length n which must contain the first
-	                                      !! n elements of the vector (q transpose)*b.
-	        real(wp), intent(out) :: x(n) !! an output array of length n which contains the least
-	                                     !! squares solution of the system a*x = b, d*x = 0.
-	        real(wp), intent(out) :: Sdiag(n) !! an output array of length n which contains the
-	                                         !! diagonal elements of the upper triangular matrix s.
-	        real(wp), intent(inout) :: Wa(n) !! a work array of length n.
-	*/
-	public static void qrsolv(int n, double[][] r, int ldr, int[] ipvt,double[] diag,double[] qtb, double[] x, double[] sDiag, double[] wa) {
 
-		//!!!!!!!UNTESTED!!!!!!!!!!!!
-	
-	        int i, j, jp1, k, kp1, l, nsing;
-	        double cos, cotan, qtbpj, sin, sum, tan, temp;
-	
-	        double p5 = 5.0e-1;
-	        double p25 = 2.5e-1;
-	
-	        //Copy r and (q transpose)*b to preserve input and initialize s.
-	        //in particular, save the diagonal elements of r in x.
-	
-	        for(j = 0;j<n;j++){
-	            for(i = j;i<n;i++){
-	                r[i][j] = r[j][i];
-	            }
-	            x[j] = r[j][j];
-	            wa[j] = qtb[j];
-	        }
-	
-	        //! eliminate the diagonal matrix d using a givens rotation.
-	
-	        for(j=0;j<n;j++){
-	
-	            // prepare the row of d to be eliminated, locating the
-	            // diagonal element using p from the qr factorization.
-	
-	            l = ipvt[j];
-	            if (diag[l] != 0){
-	                for(k = j;k<n;k++){
-	                    sDiag[k] = 0;
-	                }
-	                sDiag[j] = diag[l];
-	
-	            // the transformations to eliminate the row of d
-	            // modify only a single element of (q transpose)*b
-	            // beyond the first n, which is initially zero.
-	
-	                qtbpj = 0;
-	                for(k = j;k<n;k++){
-	
-	                    // determine a givens rotation which eliminates the
-	                    // appropriate element in the current row of d.
-	
-	                    if (sDiag[k] != 0){
-	                        if (Math.abs(r[k][k]) >= Math.abs(sDiag[k])){
-	                            tan = sDiag[k]/r[k][k];
-	                            cos = p5/Math.sqrt(p25 + p25*tan*tan);
-	                            sin = cos*tan;
-	                        }else{
-	                            cotan = r[k][k]/sDiag[k];
-	                            sin = p5/Math.sqrt(p25 + p25*cotan*cotan);
-	                            cos = sin*cotan;
-	                        }
-	
-	                        // compute the modified diagonal element of r and
-	                        // the modified element of ((q transpose)*b,0).
-	
-	                        r[k][k] = cos*r[k][k] + sin*sDiag[k];
-	                        temp = cos*wa[k] + sin*qtbpj;
-	                        qtbpj = -sin*wa[k] + cos*qtbpj;
-	                        wa[k] = temp;
-	
-	                        // accumulate the tranformation in the row of s.
-	
-	                        kp1 = k + 1;
-	                        if(n >= kp1){
-	                            for(i = kp1;i< n;i++){
-	                                temp = cos*r[i][k] + sin*sDiag[i];
-	                                sDiag[i] = -sin*r[i][k] + cos*sDiag[i];
-	                                r[i][k] = temp;
-	                            }
-	                        }
-	                    }
-	                }
-	            }
-			
-	
-	            // store the diagonal element of s and restore
-	            // the corresponding diagonal element of r.
-	
-	            sDiag[j] = r[j][j];
-	            r[j][j] = x[j];
-	        }
-	
-	        // solve the triangular system for z. if the system is
-	        // singular, then obtain a least squares solution.
-	
-	        nsing = n;
-	        for(j = 0;j< n;j++){
-	            if (sDiag[j] == 0 & nsing == n){
-					 nsing = j - 1;
+	/*
+	 * ****************************************************************************
+	 * ************* >  given an m by n matrix a, an n by n diagonal matrix d, 
+	 * and an m-vector b, the problem is to determine an x which  solves the system
+	 * ```  a*x = b , d*x = 0 , ```  in the least squares sense.   this
+	 * subroutine completes the solution of the problem  if it is provided with the
+	 * necessary information from the  qr factorization, with column pivoting, of
+	 * a. that is, if  a*p = q*r, where p is a permutation matrix, q has orthogonal
+	 *  columns, and r is an upper triangular matrix with diagonal  elements of
+	 * nonincreasing magnitude, then qrsolv expects  the full upper triangle of r,
+	 * the permutation matrix p,  and the first n components of (q transpose)*b.
+	 * the system  a*x = b, d*x = 0, is then equivalent to ```  t t  r*z = q *b
+	 * , p *d*p*z = 0 , ```  where x = p*z. if this system does not have full
+	 * rank,  then a least squares solution is obtained. on output qrsolv  also
+	 * provides an upper triangular matrix s such that ```  t t t  p *(a *a +
+	 * d*d)*p = s *s . ```  s is computed within qrsolv and may be of separate
+	 * interest.
+	 * 
+	 * subroutine qrsolv(n, r, Ldr, ipvt, diag, Qtb, x, Sdiag, wa) implicit none
+	 * 
+	 * integer, intent(in) :: n  a positive integer input variable set to the
+	 * order of r. integer, intent(in) :: Ldr  a positive integer input variable
+	 * not less than n  which specifies the leading dimension of the array r.
+	 * integer, intent(in) :: ipvt(n)  an integer input array of length n which
+	 * defines the  permutation matrix p such that a*p = q*r. column j of p  is
+	 * column ipvt[j] of the identity matrix. real(wp), intent(inout) :: r(Ldr, n)
+	 *  an n by n array. on input the full upper triangle  must contain the full
+	 * upper triangle of the matrix r.  on output the full upper triangle is
+	 * unaltered, and the  strict lower triangle contains the strict upper
+	 * triangle  (transposed) of the upper triangular matrix s. real(wp),
+	 * intent(in) :: diag(n)  an input array of length n which must contain the 
+	 * diagonal elements of the matrix d. real(wp), intent(in) :: Qtb(n)  an input
+	 * array of length n which must contain the first  n elements of the vector (q
+	 * transpose)*b. real(wp), intent(out) :: x(n)  an output array of length n
+	 * which contains the least  squares solution of the system a*x = b, d*x = 0.
+	 * real(wp), intent(out) :: Sdiag(n)  an output array of length n which
+	 * contains the  diagonal elements of the upper triangular matrix s. real(wp),
+	 * intent(inout) :: wa(n)  a work array of length n.
+	 */
+	public static void qrsolv(int n, double[][] r, int ldr, int[] ipvt, double[] diag, double[] qtb, double[] x,
+			double[] sdiag, double[] wa) {
+
+		// !!!!!!!UNTESTED!!!!!!!!!!!!
+
+		int i, j, jp1, k, kp1, l, nSing;
+		double cos, cotan, qtbpj, sin, sum, tan, temp;
+
+		double p5 = 5.0e-1;
+		double p25 = 2.5e-1;
+
+		// Copy r and (q transpose)*b to preserve input and initialize s.
+		// in particular, save the diagonal elements of r in x.
+
+		for (j = 0; j < n; j++) {
+			for (i = j; i < n; i++) {
+				r[i][j] = r[j][i];
+			}
+			x[j] = r[j][j];
+			wa[j] = qtb[j];
+		}
+
+		//  eliminate the diagonal matrix d using a givens rotation.
+
+		for (j = 0; j < n; j++) {
+
+			// prepare the row of d to be eliminated, locating the
+			// diagonal element using p from the qr factorization.
+
+			l = ipvt[j];
+			if (diag[l] != 0) {
+				for (k = j; k < n; k++) {
+					sdiag[k] = 0;
 				}
-	            if (nsing < n){
-					 wa[j] = 0;
+				sdiag[j] = diag[l];
+
+				// the transformations to eliminate the row of d
+				// modify only a single element of (q transpose)*b
+				// beyond the first n, which is initially zero.
+
+				qtbpj = 0;
+				for (k = j; k < n; k++) {
+
+					// determine a givens rotation which eliminates the
+					// appropriate element in the current row of d.
+
+					if (sdiag[k] != 0) {
+						if (Math.abs(r[k][k]) >= Math.abs(sdiag[k])) {
+							tan = sdiag[k] / r[k][k];
+							cos = p5 / Math.sqrt(p25 + p25 * tan * tan);
+							sin = cos * tan;
+						} else {
+							cotan = r[k][k] / sdiag[k];
+							sin = p5 / Math.sqrt(p25 + p25 * cotan * cotan);
+							cos = sin * cotan;
+						}
+
+						// compute the modified diagonal element of r and
+						// the modified element of ((q transpose)*b,0).
+
+						r[k][k] = cos * r[k][k] + sin * sdiag[k];
+						temp = cos * wa[k] + sin * qtbpj;
+						qtbpj = -sin * wa[k] + cos * qtbpj;
+						wa[k] = temp;
+
+						// accumulate the tranformation in the row of s.
+
+						kp1 = k + 1;
+						if (n >= kp1) {
+							for (i = kp1; i < n; i++) {
+								temp = cos * r[i][k] + sin * sdiag[i];
+								sdiag[i] = -sin * r[i][k] + cos * sdiag[i];
+								r[i][k] = temp;
+							}
+						}
+					}
 				}
-	        }
-	        if (nsing >= 1){  //might need to be changed o >= 0
-	            for(k = 0;k<nsing;k++){
-	                j = nsing - k + 1;
-	                sum = 0;
-	                jp1 = j + 1;
-	                if (nsing >= jp1) {
-	                    for(i = jp1;i < nsing;i++){
-	                        sum = sum + r[i][j]*wa[i];
-	                    }
-	                }
-	                wa[j] = (wa[j] - sum)/sDiag[j];
-	            }
-	        }
-	
-	        // permute the components of z back to components of x.
-	
-	        for(j = 0;j< n;j++){
-	            l = ipvt[j];
-	            x[l] = wa[j];
-	        }
+			}
+
+			// store the diagonal element of s and restore
+			// the corresponding diagonal element of r.
+
+			sdiag[j] = r[j][j];
+			r[j][j] = x[j];
+		}
+
+		// solve the triangular system for z. if the system is
+		// singular, then obtain a least squares solution.
+
+		nSing = n;
+		for (j = 0; j < n; j++) {
+			if (sdiag[j] == 0 & nSing == n) {
+				nSing = j - 1;
+			}
+			if (nSing < n) {
+				wa[j] = 0;
+			}
+		}
+		if (nSing >= 1) { // might need to be changed o >= 0
+			for (k = 0; k < nSing; k++) {
+				j = nSing - k + 1;
+				sum = 0;
+				jp1 = j + 1;
+				if (nSing >= jp1) {
+					for (i = jp1; i < nSing; i++) {
+						sum = sum + r[i][j] * wa[i];
+					}
+				}
+				wa[j] = (wa[j] - sum) / sdiag[j];
+			}
+		}
+
+		// permute the components of z back to components of x.
+
+		for (j = 0; j < n; j++) {
+			l = ipvt[j];
+			x[l] = wa[j];
+		}
 	}
+
 	/**
 	 * 
 	 * Given an m by n matrix a, this subroutine computes a*q whereq is the product
 	 * of 2*(n - 1) transformations { gv(n-1)*...*gv(1)*gw(1)*...*gw(n-1) } and
-	 * gv(i), gw(i) are givens rotations in the (i,n) plane which eliminate elements
+	 * gv[i], gw[i] are givens rotations in the (i,n) plane which eliminate elements
 	 * in the i-th and n-th planes, respectively. q itself is not given, rather the
 	 * information to recover the gv, gw rotations is supplied.
 	 * 
@@ -3861,26 +3596,26 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 *            matrix to be postmultiplied by the orthogonal matrix q described
 	 *            above. On output a*q has replaced a.
 	 *            <p>
-	 * @param v   double[n] -> An array of length n. v(i) must contain the
-	 *            information necessary to recover the givens rotation gv(i)
+	 * @param v   double[n] -> An array of length n. v[i] must contain the
+	 *            information necessary to recover the givens rotation gv[i]
 	 *            described above.
 	 *            <p>
-	 * @param w   double[n] -> An array of length n. w(i) must contain the
-	 *            information necessary to recover the givens rotation gw(i)
+	 * @param w   double[n] -> An array of length n. w[i] must contain the
+	 *            information necessary to recover the givens rotation gw[i]
 	 *            described above.
 	 *            <p>
 	 * @return A double[][] array
 	 */
 	public static double[][] r1mpyq(int m, int n, double[][] a, int lda, double[] v, double[] w) {
-		
-		int i, j, nmj, nm1; //Temporary variables
-		double cos = 0, sin = 0, temp; //Temporary variables
+
+		int i, j, nmj, nm1; // Temporary variables
+		double cos = 0, sin = 0, temp; // Temporary variables
 
 //	    Apply the first set of givens rotations to a.
 		nm1 = n;
 		if (nm1 >= 0) {
-			for (nmj = 0; nmj < nm1-1; nmj++) {
-				j = n - (nmj+2);
+			for (nmj = 0; nmj < nm1 - 1; nmj++) {
+				j = n - (nmj + 2);
 				if (Math.abs(v[j]) > 1) {
 					cos = 1 / v[j];
 					sin = Math.sqrt(1 - (cos * cos));
@@ -3889,13 +3624,13 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					cos = Math.sqrt(1 - (sin * sin));
 				}
 				for (i = 0; i < m; i++) {
-					temp = cos * a[i][j] - sin * a[i][n-1];
-					a[i][n-1] = sin * a[i][j] + cos * a[i][n-1];
+					temp = cos * a[i][j] - sin * a[i][n - 1];
+					a[i][n - 1] = sin * a[i][j] + cos * a[i][n - 1];
 					a[i][j] = temp;
 				}
 			}
 //			Apply the second set of givens rotations to a.
-			for (j = 0; j < nm1-1; j++) {
+			for (j = 0; j < nm1 - 1; j++) {
 				if (Math.abs(w[j]) > 1) {
 					cos = 1 / w[j];
 				}
@@ -3909,14 +3644,15 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 					cos = Math.sqrt(1 - (sin * sin));
 				}
 				for (i = 0; i < m; i++) {
-					temp = cos * a[i][j] + sin * a[i][n-1];
-					a[i][n-1] = -sin * a[i][j] + cos * a[i][n-1];
+					temp = cos * a[i][j] + sin * a[i][n - 1];
+					a[i][n - 1] = -sin * a[i][j] + cos * a[i][n - 1];
 					a[i][j] = temp;
 				}
 			}
 		}
 		return a;
 	}
+
 	/**
 	 * <p>
 	 * Given an m by n lower trapezoidal matrix s, an m-vector u, and an n-vector v,
@@ -3924,7 +3660,7 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 * } is again lower trapezoidal.
 	 * <p>
 	 * This subroutine determines q as the product of 2*(n - 1) transformations {
-	 * gv(n-1)*...*gv(1)*gw(1)*...*gw(n-1) } where gv(i), gw(i) are givens rotations
+	 * gv(n-1)*...*gv(1)*gw(1)*...*gw(n-1) } where gv[i], gw[i] are givens rotations
 	 * in the (i,n) plane which eliminate elements in the i-th and n-th planes,
 	 * respectively. q itself is not accumulated, rather the information to recover
 	 * the gv, gw rotations is returned.
@@ -3950,26 +3686,25 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 	 *             u.
 	 *             <p>
 	 * @param v    double[n] -> An array of length n. On input v must contain the
-	 *             vector v. On output v(i) contains the information necessary to
-	 *             recover the givens rotation gv(i) described above.
+	 *             vector v. On output v[i] contains the information necessary to
+	 *             recover the givens rotation gv[i] described above.
 	 *             <p>
-	 * @param w    double[m] -> An array of length m. w(i) contains information
-	 *             necessary to recover the givens rotation gw(i) described above.
+	 * @param w    double[m] -> An array of length m. w[i] contains information
+	 *             necessary to recover the givens rotation gw[i] described above.
 	 *             <p>
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-	public static void r1updt(int m, int n, double[] s, int Ls, double[] u, double[] v, double[] w,
-			boolean sing) {
-		
-		//Being left as is with the array starting at 1 notation fixes.
-		
-		int i, j, jj, l, nmj, nm1; //Temporary variables
-		double cos, cotan, sin, tan, tau, temp; //Temporary variables
-		 
+	public static void r1updt(int m, int n, double[] s, int Ls, double[] u, double[] v, double[] w, boolean sing) {
+
+		// Being left as is with the array starting at 1 notation fixes.
+
+		int i, j, jj, l, nmj, nm1; // Temporary variables
+		double cos, cotan, sin, tan, tau, temp; // Temporary variables
+
 		double p5 = 0.5;
 		double p25 = 0.25;
-		double giant = 1.7976931348623157 * Math.pow(10, 308); //Largest magnitude possible
-		
+		double giant = 1.7976931348623157 * Math.pow(10, 308); // Largest magnitude possible
+
 //	    Initialize the diagonal element pointer.
 		jj = (n * (2 * m - n + 1)) / 2 - (m - n);
 //	    Move the nontrivial part of the last column of s into w.
@@ -4072,46 +3807,39 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 			sing = true;
 		}
 	}
+
 	/*
-	 * !*****************************************************************************************
-		!>
-		! given an n by n upper triangular matrix r, this subroutine
-		! computes the qr decomposition of the matrix formed when a row
-		! is added to r. if the row is specified by the vector w, then
-		! rwupdt determines an orthogonal matrix q such that when the
-		! n+1 by n matrix composed of r augmented by w is premultiplied
-		! by (q transpose), the resulting matrix is upper trapezoidal.
-		! the matrix (q transpose) is the product of n transformations
-		!```
-		! g(n)*g(n-1)* ... *g(1)
-		!```
-		! where g(i) is a givens rotation in the (i,n+1) plane which
-		! eliminates elements in the (n+1)-st plane. rwupdt also
-		! computes the product (q transpose)*c where c is the
-		! (n+1)-vector (b,alpha). q itself is not accumulated, rather
-		! the information to recover the g rotations is supplied.
-		
-		subroutine rwupdt(n, r, Ldr, w, b, Alpha, Cos, Sin)
-	        implicit none
-		
-	        integer, intent(in) :: n !! a positive integer input variable set to the order of r.
-	        integer, intent(in) :: Ldr !! a positive integer input variable not less than n
-	                                  !! which specifies the leading dimension of the array r.
-	        real(wp), intent(inout) :: Alpha !! a variable. on input alpha must contain the
-	                                        !! (n+1)-st element of the vector c. on output alpha contains
-	                                        !! the (n+1)-st element of the vector (q transpose)*c.
-	        real(wp), intent(inout) :: r(Ldr, n) !! an n by n array. on input the upper triangular part of
-	                                            !! r must contain the matrix to be updated. on output r
-	                                            !! contains the updated triangular matrix.
-	        real(wp), intent(in) :: w(n) !! an input array of length n which must contain the row
-	                                    !! vector to be added to r.
-	        real(wp), intent(inout) :: b(n) !! an array of length n. on input b must contain the
-	                                       !! first n elements of the vector c. on output b contains
-	                                       !! the first n elements of the vector (q transpose)*c.
-	        real(wp), intent(out) :: Cos(n) !! an output array of length n which contains the
-	                                       !! cosines of the transforming givens rotations.
-	        real(wp), intent(out) :: Sin(n) !! an output array of length n which contains the
-	                                       !! sines of the transforming givens rotations.
+	 * ****************************************************************************
+	 * ************* >  given an n by n upper triangular matrix r, this subroutine
+	 *  computes the qr decomposition of the matrix formed when a row  is added to
+	 * r. if the row is specified by the vector w, then  rwupdt determines an
+	 * orthogonal matrix q such that when the  n+1 by n matrix composed of r
+	 * augmented by w is premultiplied  by (q transpose), the resulting matrix is
+	 * upper trapezoidal.  the matrix (q transpose) is the product of n
+	 * transformations ```  g(n)*g(n-1)* ... *g(1) ```  where g[i] is a givens
+	 * rotation in the (i,n+1) plane which  eliminates elements in the (n+1)-st
+	 * plane. rwupdt also  computes the product (q transpose)*c where c is the 
+	 * (n+1)-vector (b,alpha). q itself is not accumulated, rather  the information
+	 * to recover the g rotations is supplied.
+	 * 
+	 * subroutine rwupdt(n, r, Ldr, w, b, Alpha, Cos, Sin) implicit none
+	 * 
+	 * integer, intent(in) :: n  a positive integer input variable set to the
+	 * order of r. integer, intent(in) :: Ldr  a positive integer input variable
+	 * not less than n  which specifies the leading dimension of the array r.
+	 * real(wp), intent(inout) :: Alpha  a variable. on input alpha must contain
+	 * the  (n+1)-st element of the vector c. on output alpha contains  the
+	 * (n+1)-st element of the vector (q transpose)*c. real(wp), intent(inout) ::
+	 * r(Ldr, n)  an n by n array. on input the upper triangular part of  r must
+	 * contain the matrix to be updated. on output r  contains the updated
+	 * triangular matrix. real(wp), intent(in) :: w(n)  an input array of length n
+	 * which must contain the row  vector to be added to r. real(wp),
+	 * intent(inout) :: b(n)  an array of length n. on input b must contain the 
+	 * first n elements of the vector c. on output b contains  the first n
+	 * elements of the vector (q transpose)*c. real(wp), intent(out) :: Cos(n)  an
+	 * output array of length n which contains the  cosines of the transforming
+	 * givens rotations. real(wp), intent(out) :: Sin(n)  an output array of
+	 * length n which contains the  sines of the transforming givens rotations.
 	 * 
 	 * 
 	 */
@@ -4120,53 +3848,50 @@ public static double[] hybrd(SystemOfEquations fcn, int n, double[] x, double[] 
 //!!!!!!!!!!!!!! CURRENTLY UNTESTED
 
 			double[] sin) {
-		
-	        int i, j, jm1;
-	        double cotan, rowj, tan, temp; 
 
-	        double p5 = 5.0e-1;
-	        double p25 = 2.5e-1;
-		
-	        for(j=0;j<n;j++){}
-	            rowj = w[j];
-	            jm1 = j - 1;
-		
-	            // Apply the previous transformations to
-	            // r(i,j), i=1,2,...,j-1, and to w(j).
-		
-	            if (jm1 >= 0){
-	                for(i = 0;i<jm1;i++){
-	                    temp = cos[i]*r[i][j] + sin[i]*rowj;
-	                    rowj = -sin[i]*r[i][j] + cos[i]*rowj;
-	                    r[i][j] = temp;
-					}
-				}
-		
-	            // Determine a givens rotation which eliminates w(j).
-		
-	            cos[j] = 1;
-	            sin[j] = 0;
-	            if (rowj != 0){
-	                if (Math.abs(r[j][j]) >= Math.abs(rowj)){
-	                    tan = rowj/r[j][j];
-	                    cos[j] = p5/Math.sqrt(p25 + p25*tan*tan);
-	                    sin[j] = cos[j]*tan;
-					}else{
-	                    cotan = r[j][j]/rowj;
-	                    sin[j] = p5/Math.sqrt(p25 + p25*cotan*cotan);
-	                    cos[j] = sin[j]*cotan;
-					}
-		
-	                // apply the current transformation to r(j,j), b(j), and alpha.
-		
-	                r[j][j] = cos[j]*r[j][j] + sin[j]*rowj;
-	                temp = cos[j]*b[j] + sin[j]*alpha;
-	                alpha = -sin[j] * b[j] + cos[j] * alpha; 
-					b[j] = temp;
-				}
-	        }
-	
-	// !*****************************************************************************************
-	// end module minpack_module
-	// !*****************************************************************************************
+		int i, j, jm1;
+		double cotan, rowj, tan, temp;
+
+		double p5 = 5.0e-1;
+		double p25 = 2.5e-1;
+
+		for (j = 0; j < n; j++) {
+		}
+		rowj = w[j];
+		jm1 = j - 1;
+
+		// Apply the previous transformations to
+		// r(i,j), i=1,2,...,j-1, and to w[j].
+
+		if (jm1 >= 0) {
+			for (i = 0; i < jm1; i++) {
+				temp = cos[i] * r[i][j] + sin[i] * rowj;
+				rowj = -sin[i] * r[i][j] + cos[i] * rowj;
+				r[i][j] = temp;
+			}
+		}
+
+		// Determine a givens rotation which eliminates w[j].
+
+		cos[j] = 1;
+		sin[j] = 0;
+		if (rowj != 0) {
+			if (Math.abs(r[j][j]) >= Math.abs(rowj)) {
+				tan = rowj / r[j][j];
+				cos[j] = p5 / Math.sqrt(p25 + p25 * tan * tan);
+				sin[j] = cos[j] * tan;
+			} else {
+				cotan = r[j][j] / rowj;
+				sin[j] = p5 / Math.sqrt(p25 + p25 * cotan * cotan);
+				cos[j] = sin[j] * cotan;
+			}
+
+			// apply the current transformation to r(j,j), b[j], and alpha.
+
+			r[j][j] = cos[j] * r[j][j] + sin[j] * rowj;
+			temp = cos[j] * b[j] + sin[j] * alpha;
+			alpha = -sin[j] * b[j] + cos[j] * alpha;
+			b[j] = temp;
+		}
+	}
 }
