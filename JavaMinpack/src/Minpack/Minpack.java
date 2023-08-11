@@ -141,20 +141,19 @@ public class Minpack {
 
 		if (mode == 2) {
 			err = new double[m];
-			for (j = 0; j <= n; j++) {
+			for (j = 0; j < n; j++) {
 				temp = Math.abs(x[j]);
 				if (temp == 0) {
 					temp = 1.0;
 				}
-				for (i = 0; i <= m; i++) {
+				for (i = 0; i < m; i++) {
 					err[i] = err[i] + temp * fJac[i][j];
 				}
 			}
-			for (i = 0; i <= m; i++) {
+			for (i = 0; i < m; i++) {
 				temp = 1.0;
 				if (fVec[i] != 0 && fVecp[i] != 0 && Math.abs(fVecp[i] - fVec[i]) >= epsf * Math.abs(fVec[i])) {
-					temp = eps * Math.abs((fVecp[i] - fVec[i]) / eps - err[i])
-							/ (Math.abs(fVec[i]) + Math.abs(fVecp[i]));
+					temp = eps * Math.abs((fVecp[i] - fVec[i]) / eps - err[i])/(Math.abs(fVec[i]) + Math.abs(fVecp[i]));
 				}
 				err[i] = 1.0;
 				if (temp > epsmch && temp < eps) {
@@ -165,7 +164,7 @@ public class Minpack {
 				}
 			}
 		} else if (mode == 1) {
-			for (j = 0; j <= n; j++) {
+			for (j = 0; j < n; j++) {
 				temp = eps * Math.abs(x[j]);
 				if (temp == 0) {
 					temp = eps;
