@@ -17,6 +17,23 @@ public class ChkderTest {
 //	!  required by and received from chkder.
 //
 //	program test_chkder
+		static int ncases = 14;
+		static int[] nprobs  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+		static int[] ns      = {2,4,2,4,3,9,7,10,10,10,10,10,10,10};
+	//
+		static int i, ldfJac, lnp = 0, mode, n, nprob, icase;
+		static double cp;
+		static int[] na = new int[ncases], np = new int[ncases];
+		static double[] errmax = new double[ncases], errmin = new double[ncases];
+		static double[] diff, err, fVec1, fVec2, x1, x2;
+		static double[][] fJac;
+	//
+		static boolean[] a = {false, false, false, true, false, false, false,true, false, false, false, false, true, false};
+		static double one = 1.0;
+		static double tol = 1e-16; //double tol = Math.sqrt(dpmpar(1)); //!! abstol for matching previously generated solutions
+		static double solution_reltol = 1.0e-4; //!! reltol for matching previously generated solutions
+	//
+		static int[] info_original = {1}; //! not used here
 	
 		public static void chkderTest() {
 //
@@ -26,28 +43,12 @@ public class ChkderTest {
 //	    implicit none
 //
 //	    ! originally from file23
-	    int ncases = 14;
-	    int[] nprobs  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-	    int[] ns      = {2,4,2,4,3,9,7,10,10,10,10,10,10,10};
-//
-	    int i, ldfJac, lnp = 0, mode, n, nprob, icase;
-	    double cp;
-	    int[] na = new int[ncases], np = new int[ncases];
-	    double[] errmax = new double[ncases], errmin = new double[ncases];
-	    double[] diff, err, fVec1, fVec2, x1, x2;
-	    double[][] fJac;
-//
-	    boolean[] a = {false, false, false, true, false, false, false,true, false, false, false, false, true, false};
-	    double one = 1.0;
-	    double tol = 1e-16; //double tol = Math.sqrt(dpmpar(1)); //!! abstol for matching previously generated solutions
-	    double solution_reltol = 1.0e-4; //!! reltol for matching previously generated solutions
-//
-	    int[] info_original = {1}; //! not used here
+	    
 //
 	    cp = 1.23e-1;
 //
 	    for( icase = 0;icase< ncases+1;icase++) {
-
+	    	
 	        if (icase == ncases) {
 	            System.out.println ("SUMMARY OF " + lnp + " TESTS OF CHKDER");
 	            System.out.println (" NPROB   N    STATUS     ERRMIN         ERRMAX");
@@ -56,11 +57,12 @@ public class ChkderTest {
 	            }
 	            break; //stop
 	        }else {
+	        	
 	            nprob = nprobs[icase];
 	            n = ns[icase];
 	            ldfJac = n;
 
-	            
+	            System.out.println(">>>   " + nprobs[icase]);
 	            diff = new double[n];
             	err= new double[n];
             	fJac= new double[n][n];
@@ -84,8 +86,9 @@ public class ChkderTest {
 	            errjac(n, x1, fJac, ldfJac, nprob);
 	            vecfcn(n, x2, fVec2, nprob);
 	            Minpack.chkder(n, n, x1, fVec1, fJac, ldfJac, x2, fVec2, mode, err);
-	            errmin[nprob-1] = err[1];
-	            errmax[nprob-1] = err[1];
+//	            
+	            errmin[nprob-1] = err[0];
+	            errmax[nprob-1] = err[0];
 	            for( i = 0;i< n;i++) {
 	                diff[i] = fVec2[i] - fVec1[i];
 	                if (errmin[nprob-1] > err[i]) {
@@ -104,8 +107,7 @@ public class ChkderTest {
 	            compareSolutions(nprob, diff, solution_reltol, tol);
 
 	        }
-
-	    }
+	    	}
 //
 		}
 //	    contains
@@ -255,8 +257,8 @@ public class ChkderTest {
 		                      0.2591637029425442E-06};
 		        return x;
 		        default:
-		        	double[] f = new double[] {10};
-		            return f; //error stop "invalid case"
+		        	x = new double[] {10};
+		            return x; //error stop "invalid case"
 			}
 }
 //	    end function solution
@@ -307,7 +309,7 @@ public class ChkderTest {
 	        double h, prod, sum, sum1, sum2, temp, temp1, temp2,
 	                    temp3, temp4, ti, tj, tk;
 //
-	        fJac = new double[n][n]; // fJac(1:n,1:n) = zero
+//	        fJac = new double[n][n]; // fJac(1:n,1:n) = zero
 	        for(i = 0;i<n;i++) {
 	        	for(j = 0;i<n;i++) {
 	    	    	fJac[i][j]=0;
@@ -389,11 +391,11 @@ public class ChkderTest {
 	                }
 	            }
 	            for(i = 0;i< 29;i++) {
-	                ti = dfloat(i)/c9;
+	                ti = dfloat(i+1)/c9;
 	                sum1 = zero;
 	                temp = one;
 	                for(j = 1;j< n;j++) {
-	                    sum1 = sum1 + dfloat(j - 1)*temp*x[j];
+	                    sum1 = sum1 + dfloat(j)*temp*x[j];
 	                    temp = ti*temp;
 	                }
 	                sum2 = zero;
@@ -409,14 +411,13 @@ public class ChkderTest {
 	                for(k=0;k<n;k++){
 	                    tj = tk;
 	                    for(j=k;j<n;j++){
-	                        fJac[k][j] = fJac[k][j] + tj*((dfloat(k - 1)/ti - temp2)*(dfloat(j - 1)/ti - temp2) - temp1);
+	                        fJac[k][j] = fJac[k][j] + tj*((dfloat(k)/ti - temp2)*(dfloat(j)/ti - temp2) - temp1);
 	                        tj = ti*tj;
 	                    }
 	                    tk = temp*tk;
 	                }
 	            }
-//	            break; //?? dunno why here
-	            fJac[0][0] = fJac[0][0] + six*x[0]*x[1] - two*x[1] + three;
+	            fJac[0][0] = fJac[0][0] + six*x[0]*x[0] - two*x[1] + three;
 	            fJac[0][1] = fJac[0][1] - two*x[0];
 	            fJac[1][1] = fJac[1][1] + one;
 	            for(k=0;k<n;k++){
@@ -474,7 +475,7 @@ public class ChkderTest {
 	            // affecting the jacobian diagonal.
 	            h = one/dfloat(n + 1);
 	            for(k=0;k<n;k++){
-	                temp = three*(x[k] + dfloat(k)*h + one)*(x[k] + dfloat(k)*h + one);
+	                temp = three*(x[k] + dfloat(k+1)*h + one)*(x[k] + dfloat(k+1)*h + one);
 	                for(j=0;j<n;j++){
 	                    fJac[k][j] = zero;
 	                }
@@ -492,9 +493,9 @@ public class ChkderTest {
 	            // the jacobian diagonal.
 	            h = one/dfloat(n + 1);
 	            for(k=0;k<n;k++){
-	                tk = dfloat(k)*h;
+	                tk = dfloat(k+1)*h;
 	                for(j=0;j<n;j++){
-	                    tj = dfloat(j)*h;
+	                    tj = dfloat(j+1)*h;
 	                    temp = three*(x[j] + tj + one)*(x[j] + tj + one);
 	                    fJac[k][j] = h*Math.min(tj*(one - tk), tk*(one - tj))*temp/two;
 	                }
@@ -509,7 +510,7 @@ public class ChkderTest {
 	                for(k=0;k<n;k++){
 	                    fJac[k][j] = -temp;
 	                }
-	                fJac[j][j] = dfloat(j + 1)*temp - Math.cos(x[j]);
+	                fJac[j][j] = dfloat(j + 2)*temp - Math.cos(x[j]);
 	            }
 	        break;
 	        case (12):
@@ -517,12 +518,12 @@ public class ChkderTest {
 //	            // the upper triangular elements of the jacobian.
 	            sum = zero;
 	            for(j=0;j<n;j++){
-	                sum = sum + dfloat(j)*(x[j] - one);
+	                sum = sum + dfloat(j+1)*(x[j] - one);
 	            }
 	            temp = one + six*sum*sum;
 	            for(k=0;k<n;k++){
 	                for(j=k;j<n;j++){
-	                    fJac[k][j] = dfloat(k*j)/temp;
+	                    fJac[k][j] = dfloat((k+1)*(j+1))/temp;
 	                    fJac[j][k] = fJac[k][j];
 	                }
 	                fJac[k][k] = fJac[k][k] + one;
@@ -547,19 +548,19 @@ public class ChkderTest {
 //	            // broyden banded function with sign error affecting the jacobian
 //	            // diagonal.
 	            ml = 5;
-	            mu = 1;
+	            mu = 2;
 	            for(k=0;k<n;k++){
 	                for(j=0;j<n;j++){
 	                    fJac[k][j] = zero;
 	                }
-	                k1 = Math.max(1, k - ml);
+	                k1 = Math.max(0, k - ml);
 	                k2 = Math.min(k + mu, n);
 	                for(j = k1;j< k2;j++) {
 	                    if (j != k) {
 	                    	fJac[k][j] = -(one + two*x[j]);
 	                    }
 	                }
-	                fJac[k][k] = two - fiftn*x[k]*fiftn*x[k];
+	                fJac[k][k] = two - fiftn*x[k]*x[k];
 	             }
 	             break;
 	        default:
@@ -583,7 +584,7 @@ public class ChkderTest {
 //	!  point. for the sixth function the standard starting point is
 //	!  zero, so in this case, if factor is not unity, then the
 //	!  subroutine returns the vector  x(j) = factor, j=1,...,n.
-		public static void initpt(int n, double[] x, int nProb, double factor) {
+		public static double[] initpt(int n, double[] x, int nProb, double factor) {
 //	    subroutine initpt(n, x, Nprob, Factor)
 //	        implicit none
 //
@@ -606,7 +607,7 @@ public class ChkderTest {
 	        double h, tj;
 //
 //	        x(1:n) = zero
-	        x = new double[n];
+//	        x = new double[n];
 	        for(int i = 0;i<n;i++) {
 		    	x[i] = 0;
 		    }
@@ -649,7 +650,7 @@ public class ChkderTest {
 	            // chebyquad function.
 	            h = one/dfloat(n + 1);
 	            for(j=0;j<n;j++){
-	                x[j] = dfloat(j)*h;
+	                x[j] = dfloat(j+1)*h;
 	            }
 	        break;
 	        case (8):
@@ -663,7 +664,7 @@ public class ChkderTest {
 	            // discrete boundary value and integral equation functions.
 	            h = one/dfloat(n + 1);
 	            for(j=0;j<n;j++){
-	                tj = dfloat(j)*h;
+	                tj = dfloat(j+1)*h;
 	                x[j] = tj*(tj - one);
 	            }
 	        break;
@@ -678,7 +679,7 @@ public class ChkderTest {
 	            // variably dimensioned function.
 	            h = one/dfloat(n);
 	            for(j=0;j<n;j++){
-	                x[j] = one - dfloat(j)*h;
+	                x[j] = one - dfloat(j+1)*h;
 	            }
 	        break;
 	        case (13):
@@ -709,7 +710,7 @@ public class ChkderTest {
 	                }
 	            }
 	        }
-	        
+	    return x;
 }
 //	    end subroutine initpt
 //	!*****************************************************************************************
@@ -751,10 +752,10 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	        double tpi = eight*Math.atan(one);
 
 	        int i, iev, j, k, k1, k2, kp1, ml, mu;
-	        double h, prod, sum, sum1, sum2, temp, temp1, temp2, ti, tj, tk;
+	        double h, prod, sum, sum1, sum2, temp, temp1, temp2, ti, tj = 0, tk;
 //
 //	        fVec(1:n) = zero
-	        fVec = new double[n];
+//	        fVec = new double[n];
 	        for(i = 0;i<n;i++) {
 		    	fVec[i]=0;
 		    }
@@ -800,11 +801,11 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	                fVec[k] = zero;
 	            }
 	            for( i = 0;i< 29;i++) {
-	                ti = dfloat(i)/c9;
+	                ti = dfloat(i+1)/c9;
 	                sum1 = zero;
 	                temp = one;
 	                for( j = 1;j< n;j++) {
-	                    sum1 = sum1 + dfloat(j - 1)*temp*x[j];
+	                    sum1 = sum1 + dfloat(j)*temp*x[j];
 	                    temp = ti*temp;
 	                }
 	                sum2 = zero;
@@ -817,7 +818,7 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	                temp2 = two*ti*sum2;
 	                temp = one/ti;
 	                for(k=0;k<n;k++){
-	                    fVec[k] = fVec[k] + temp*(dfloat(k - 1) - temp2)*temp1;
+	                    fVec[k] = fVec[k] + temp*(dfloat(k) - temp2)*temp1;
 	                    temp = ti*temp;
 	                }
 	            }
@@ -846,7 +847,7 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	            for(k=0;k<n;k++){
 	                fVec[k] = tk*fVec[k];
 	                if (iev > 0) {
-	                	fVec[k] = fVec[k] + one/(dfloat(k)*dfloat(k) - one);
+	                	fVec[k] = fVec[k] + one/(dfloat(k+1)*dfloat(k+1) - one);
 	                }
 	                iev = -iev;
 	            }
@@ -868,7 +869,7 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	            // discrete boundary value function.
 	            h = one/dfloat(n + 1);
 	            for(k=0;k<n;k++){
-	                temp = (x[k] + dfloat(k)*h + one)*(x[k] + dfloat(k)*h + one)*(x[k] + dfloat(k)*h + one);
+	                temp = (x[k] + dfloat(k+1)*h + one)*(x[k] + dfloat(k+1)*h + one)*(x[k] + dfloat(k+1)*h + one);
 	                temp1 = zero;
 	                if (k != 0) {
 	                	temp1 = x[k - 1];
@@ -884,18 +885,18 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	            // discrete integral equation function.
 	            h = one/dfloat(n + 1);
 	            for(k=0;k<n;k++){
-	                tk = dfloat(k)*h;
+	                tk = dfloat(k+1)*h;
 	                sum1 = zero;
-	                for( j = 0;j< k;j++){
-	                    tj = dfloat(j)*h;
+	                for( j = 0;j< k+1;j++){
+	                    tj = dfloat(j+1)*h;
 	                    temp = (x[j] + tj + one)*(x[j] + tj + one)*(x[j] + tj + one);
 	                    sum1 = sum1 + tj*temp;
 	                }
 	                sum2 = zero;
 	                kp1 = k + 1;
-	                if (n >= kp1) {
+	                if (n > kp1) {
 	                    for(j = kp1;j< n;j++) {
-	                        tj = dfloat(j)*h;
+	                        tj = dfloat(j+1)*h;
 	                        temp = (x[j] + tj + one)*(x[j] + tj + one)*(x[j] + tj + one);
 	                        sum2 = sum2 + (one - tj)*temp;
 	                    }
@@ -911,18 +912,18 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	                sum = sum + fVec[j];
 	            }
 	            for(k=0;k<n;k++){
-	                fVec[k] = dfloat(n + k) - Math.sin(x[k]) - sum - dfloat(k)*fVec[k];
+	                fVec[k] = dfloat(n + k+1) - Math.sin(x[k]) - sum - dfloat(k+1)*fVec[k];
 	            }
 	            break;
 	        case (12):
 	            // variably dimensioned function.
 	            sum = zero;
 	            for(j=0;j<n;j++){
-	                sum = sum + dfloat(j)*(x[j] - one);
+	                sum = sum + dfloat(j+1)*(x[j] - one);
 	            }
 	            temp = sum*(one + two*sum*sum);
 	            for(k=0;k<n;k++){
-	                fVec[k] = x[k] - one + dfloat(k)*temp;
+	                fVec[k] = x[k] - one + dfloat(k+1)*temp;
 	            }
 	            break;
 	        case (13):
@@ -941,12 +942,12 @@ public static void vecfcn(int n, double[] x, double[] fVec, int nProb) {
 	        case (14):
 	            // broyden banded function.
 	            ml = 5;
-	            mu = 1;
+	            mu = 2;
 	            for(k=0;k<n;k++){
-	                k1 = Math.max(1, k - ml);
+	                k1 = Math.max(0, k - ml);
 	                k2 = Math.min(k + mu, n);
 	                temp = zero;
-	                for( j = k1;j< k2;j++){
+	                for(j = k1;j<k2;j++){
 	                    if (j != k) {
 	        				temp = temp + x[j]*(one + x[j]);
 	        }

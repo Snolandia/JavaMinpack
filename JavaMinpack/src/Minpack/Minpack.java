@@ -127,7 +127,7 @@ public class Minpack {
 	 * 
 	 * @return Nothing is returned, rather the objects themselves are modified.
 	 */
-	public static void chkder(int m, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac, double[] xp,
+	public static double[] chkder(int m, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac, double[] xp,
 			double[] fVecp, int mode, double[] err) {
 
 		// NOT TESTED YET
@@ -137,10 +137,12 @@ public class Minpack {
 		double eps = Math.sqrt(epsmch); // sqrt of machine epsilon
 		double factor = 100.0; // factor, or percent of change that happens.
 		double epsf = factor * epsmch; // factor of epsmch, or percent of change that will happen.
-		double epslog = Math.log10(epsf); // log 10 of epsf
-
+		double epslog = Math.log10(eps); // log 10 of epsf
+		
 		if (mode == 2) {
-			err = new double[m];
+			for(i = 0;i<err.length;i++) {
+				err[i] = 0;
+			}
 			for (j = 0; j < n; j++) {
 				temp = Math.abs(x[j]);
 				if (temp == 0) {
@@ -162,6 +164,7 @@ public class Minpack {
 				if (temp >= eps) {
 					err[i] = 0.0;
 				}
+//				System.out.println(err[i]);
 			}
 		} else if (mode == 1) {
 			for (j = 0; j < n; j++) {
@@ -174,6 +177,7 @@ public class Minpack {
 		} else {
 			throw new IllegalArgumentException("Invalid mode inside the Chkder method");
 		}
+		return x;
 	}
 
 	/**
