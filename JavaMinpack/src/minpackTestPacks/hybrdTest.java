@@ -1,6 +1,6 @@
-//package minpackTestPacks;
+package minpackTestPacks;
 //
-//public class hybrdTest {
+public class hybrdTest {
 //	!*****************************************************************************************
 //	!>
 //	!  This program tests codes for the solution of n nonlinear
@@ -157,6 +157,10 @@
 //	!>
 //	!  Replaced statement function in original code.
 //
+	public static double dfloat(int i) {
+		double f = i;
+		return f;
+	}
 //	    pure elemental function dfloat(i) result(f)
 //	        implicit none
 //	        integer, intent(in) :: i
@@ -702,4 +706,4 @@
 //	!*****************************************************************************************
 //	end program test_hybrd
 //	!*****************************************************************************************
-//}
+}
