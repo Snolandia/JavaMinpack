@@ -17,48 +17,50 @@ public class lmstrTest {
 //	!  forms of calling sequences used by the function and jacobian
 //	!  subroutines in the various nonlinear least-squares solvers.
 //
-//	program test_lmstr
-		public static void lmderTest(){
+	static int ncases = 28;
+	static int[] nProbs  = new int[] {1,1,2,2,3,3,4,5,6,7,8,9,10,11,11,11,12,13,14,15,15,15,15,16,16,16,17,18};
+	static int[] ns      = new int[] {5,5,5,5,5,5,2,3,4,2,3,4,3,6,9,12,3,2,4,1,8,9,10,10,30,40,5,11};
+	static int[] ms      =  new int[] {10,50,10,50,10,50,2,3,4,2,15,11,16,31,31,31,10,10,20,8,8,9,10,10,30,40,33,65};
+	static int[] ntriess =  new int[] {1,1,1,1,1,1,3,3,3,3,3,3,2,3,3,3,1,1,3,3,1,1,1,3,1,1,1,1};
+
+	static int[] info_original =  new int[] {2,3,1,1,1,1,4,2,2,2,2,2,4,4,4,1,1,1,1,1,1,1,1,5,3,5,
+                                                        1,1,1,3,3,2,3,2,3,2,1,1,1,1,4,1,1,1,2,1,2,2,2,2,2,1,1};
+                                                        //original `info` from the original minpack
+
+	static int[] iwa;
+	static double[] wa;
+	static double[][] fjac;
+	static double[] fVec;
+	static double[] x;
+	static int i, ic, info, k, ldfJac, lwa, m, n, nFev, nJev, nProb, ntries, icase;
+	static int[] ma = new int[53] , na =  new int[53] , nf =  new int[53] , nj =  new int[53] , np = new int[53] , nx = new int[53]; 
+	static double[] fnm = new double[53];
+	static double factor, fnorm1, fnorm2;
+
+	static  double one = 1.0;
+	static double ten = 10.0;
+	static double tol = Math.sqrt(1.0e-16);//dpmpar(1))
+	static double solution_abstol = 1.0e-5;    //abstol for matching previously generated solutions
+	static double solution_reltol = 1.0e-4;    //reltol for matching previously generated solutions
+	
+ 
+		public static void testLmstr(){
 //	    use minpack_module, only: wp, dpmpar, enorm, lmstr1
 //	    use iso_fortran_env, only: nwrite => output_unit
 //
 //	    implicit none
 //
 //	    //originally from file22
-	    int ncases = 28;
-	    int[] nProbs  = new int[] {1,1,2,2,3,3,4,5,6,7,8,9,10,11,11,11,12,13,14,15,15,15,15,16,16,16,17,18};
-	   int[] ns      = new int[] {5,5,5,5,5,5,2,3,4,2,3,4,3,6,9,12,3,2,4,1,8,9,10,10,30,40,5,11};
-	    int[] ms      =  new int[] {10,50,10,50,10,50,2,3,4,2,15,11,16,31,31,31,10,10,20,8,8,9,10,10,30,40,33,65};
-	    int[] ntriess =  new int[] {1,1,1,1,1,1,3,3,3,3,3,3,2,3,3,3,1,1,3,3,1,1,1,3,1,1,1,1};
-
-	    int[] info_original =  new int[] {2,3,1,1,1,1,4,2,2,2,2,2,4,4,4,1,1,1,1,1,1,1,1,5,3,5,
-	                                                        1,1,1,3,3,2,3,2,3,2,1,1,1,1,4,1,1,1,2,1,2,2,2,2,2,1,1};
-	                                                        //original `info` from the original minpack
-
-	    int[] iwa;
-	   double[] wa;
-	    double[][] fjac;
-	    double[] fVec;
-	    double[] x;
-	    int i, ic, info, k, ldfJac, lwa, m, n, nFev, nJev, nProb, ntries, icase;
-	    int[] ma = new int[53] , na =  new int[53] , nf =  new int[53] , nj =  new int[53] , np = new int[53] , nx = new int[53]; 
-	    double[] fnm = new double[53];
-	    double factor, fnorm1, fnorm2;
-
-	    double one = 1.0;
-	    double ten = 10.0;
-	    double tol = Math.sqrt(1.0e-16);//dpmpar(1))
-	    double solution_abstol = 1.0e-5;    //abstol for matching previously generated solutions
-	    double solution_reltol = 1.0e-4;    //reltol for matching previously generated solutions
+	    
 
 	    ic = 0;
 	    for(icase = 0;icase< ncases+1;icase++){
 
 	        if (icase == ncases+1) {
-	            //write (nwrite, '(A,I3,A/)') '1SUMMARY OF ', ic, ' CALLS TO LMSTR1'
-	            //write (nwrite, '(A/)')      ' nProb   N    M   nFev  nJev  INFO  FINAL L2 NORM'
+	        	System.out.println("(A,I3,A)" + "1SUMMARY OF " + ic + " CALLS TO LMSTR1");
+	        	System.out.println("(A/)" +    " nProb   N    M   nFev  nJev  INFO  FINAL L2 NORM");
 	            for(i=0;i<ic;i++){ 
-	                //write (nwrite, '(3I5, 3I6, 1X, D15.7)') np[i], na[i], ma[i], nf[i], nj[i], nx[i], fnm[i]
+	                System.out.println("(3I5, 3I6, 1X, D15.7)"+ np[i] + "  " +  na[i] + "  " +  ma[i] + "  " +  nf[i] + "  " +  nj[i] + "  " + nx[i] + "  " + fnm[i]);
 	            }
 	            break; //stop
 	        }else{
@@ -80,7 +82,7 @@ public class lmstrTest {
 	                initpt(n, x, nProb, factor);
 	                ssqfcn(m, n, x, fVec, nProb);
 	                fnorm1 = Minpack.enorm(m, fVec);
-	                //write (nwrite, '(////5X,A,I5,5X,A,2I5,5X//)') ' PROBLEM', nProb, ' DIMENSIONS', n, m
+	                System.out.println( "(////5X,A,I5,5X,A,2I5,5X//)" + " PROBLEM  " + nProb + " DIMENSIONS " + n + " " + m);
 	                nFev = 0;
 	                nJev = 0;
 	                Minpack.lmstr1(fcn, m, n, x, fVec, fjac, ldfJac, tol, info, iwa, wa, lwa);
@@ -93,13 +95,13 @@ public class lmstrTest {
 	                nj[ic] = nJev;
 	                nx[ic] = info;
 	                fnm[ic] = fnorm2;
-//	                write (nwrite, '(5x,a,d15.7//5x,a,d15.7//5x,a,i10//5x,a,i10//5x,a,18x,i10//5x,a//*(5x,5d15.7/))') 
-//	                        ' INITIAL L2 NORM OF THE RESIDUALS', fnorm1, 
-//	                        ' FINAL L2 NORM OF THE RESIDUALS  ', fnorm2, 
-//	                        ' NUMBER OF FUNCTION EVALUATIONS  ', nFev,   
-//	                        ' NUMBER OF JACOBIAN EVALUATIONS  ', nJev,   
-//	                        ' EXIT PARAMETER', info, 
-//	                        ' FINAL APPROXIMATE SOLUTION', x(1:n)
+	                System.out.println("(5x,a,d15.7//5x,a,d15.7//5x,a,i10//5x,a,i10//5x,a,18x,i10//5x,a//*(5x,5d15.7/))" +
+	                        " INITIAL L2 NORM OF THE RESIDUALS"+ fnorm1+
+	                        " FINAL L2 NORM OF THE RESIDUALS  "+ fnorm2+ 
+	                        " NUMBER OF FUNCTION EVALUATIONS  "+ nFev+ 
+	                        " NUMBER OF JACOBIAN EVALUATIONS  "+ nJev+   
+	                        " EXIT PARAMETER " + info + 
+	                        " FINAL APPROXIMATE SOLUTION " + x[1]);
 	                factor = ten*factor;
 	                compareSolutions(ic, x, solution_reltol, solution_abstol);
 	            }
@@ -113,7 +115,7 @@ public class lmstrTest {
 
 				double[] diff = new double[x.length], absDiff = new double[x.length], relDiff = new double[x.length], icF;
 		//
-//			    if (info_original(ic)<5) {//    Ignore any where the original minpack failed
+			    if (info_original[ic]<5) {//    Ignore any where the original minpack failed
 					icF = solution(ic);
 					for(int i =0;i<x.length;i++) {
 						diff[i] = icF[i] - x[i];
@@ -132,6 +134,7 @@ public class lmstrTest {
 							}
 						}
 					}
+			    }
 
 			}
 
@@ -160,7 +163,7 @@ public class lmstrTest {
 //
 	    int ldfJac = 65;
 //
-//	    int j
+	    int j;
 		double[][] temp = new double[ldfJac][40];
 //	    real(wp), save :: temp(ldfJac, 40)
 //	        !//this array is filled when FCN is called with IFLAG=2.
@@ -169,22 +172,22 @@ public class lmstrTest {
 //	        !//TEMP is given the SAVE attribute, which was not done in
 //	        !//the original code.
 //
-	    switch(iFlag){
-	    case(1):
-	        ssqfcn(m, n, x, fVec, nProb);
-	        nFev = nFev + 1;
-	        break;
-	    case(2):
+//	    switch(iFlag){
+//	    case(1):
+//	        ssqfcn(m, n, x, fVec, nProb);
+//	        nFev = nFev + 1;
+//	        break;
+//	    case(2):
 //	        //populate the temp array
-	        ssqjac(m, n, x, temp, ldfJac, nProb);
-	        nJev = nJev + 1;
-		break;
-	    }
+//	        ssqjac(m, n, x, temp, ldfJac, nProb);
+//	        nJev = nJev + 1;
+//		break;
+//	    }
 //
 //	    //for iflag = 2,3,... get the row from temp
-	    for(j=0;j<n;j++){
-	        fJrow[j] = temp(iFlag - 1, j);
-	    }
+//	    for(j=0;j<n;j++){
+//	        fJrow[j] = temp(iFlag - 1, j);
+//	    }
 }
 //	end subroutine fcn
 //	!*****************************************************************************************
@@ -461,7 +464,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	        //LINEAR FUNCTION - RANK 1.
 	        for(j=0;j<n;j++){
 	            for(i=0;i<m;i++){
-	                fJac[i][j] = dfloat(i)*dfloat(j);
+	                fJac[i][j] = dfloat(i+1)*dfloat(j+1);
 	            }
 	        }
 	    break;
@@ -477,7 +480,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	        if (nm1 >= 2) {
 	            for( j = 1;j< nm1;j++){
 	                for( i = 1;i< mm1;i++){
-	                    fJac[i][j] = dfloat(i - 1)*dfloat(j);
+	                    fJac[i][j] = dfloat(i)*dfloat(j+1);
 	                }
 	            }
 	        }
@@ -531,8 +534,8 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (8):
 	        //BARD FUNCTION.
 	        for(i=0;i<15;i++){
-	            tmp1 = dfloat(i);
-	            tmp2 = dfloat(16 - i);
+	            tmp1 = dfloat(i+1);
+	            tmp2 = dfloat(16 - (i+1));
 	            tmp3 = tmp1;
 	            if (i > 8) {tmp3 = tmp2;}
 	            tmp4 = (x[1]*tmp2 + x[2]*tmp3)*(x[1]*tmp2 + x[2]*tmp3);
@@ -555,7 +558,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (10):
 	        //MEYER FUNCTION.
 	        for(i=0;i< 16;i++){
-	            temp = five*dfloat(i) + c45 + x[2];
+	            temp = five*dfloat(i+1) + c45 + x[2];
 	            tmp1 = x[1]/temp;
 	            tmp2 = Math.exp(tmp1);
 	            fJac[i][1] = tmp2;
@@ -566,7 +569,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (11):
 	        //WATSON FUNCTION.
 	        for(i=0;i<29;i++){
-	            div = dfloat(i)/c29;
+	            div = dfloat(i+1)/c29;
 	            s2 = zero;
 	            dx = one;
 	            for(j=0;j<n;j++){
@@ -576,7 +579,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	            temp = two*div*s2;
 	            dx = one/div;
 	            for(j=0;j<n;j++){
-	                fJac[i][j] = dx*(dfloat(j - 1) - temp);
+	                fJac[i][j] = dx*(dfloat(j) - temp);
 	                dx = div*dx;
 	            }
 	        }
@@ -592,7 +595,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (12):
 	        //BOX 3-DIMENSIONAL FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i);
+	            temp = dfloat(i+1);
 	            tmp1 = temp/ten;
 	            fJac[i][1] = -tmp1*Math.exp(-tmp1*x[0]);
 	            fJac[i][2] = tmp1*Math.exp(-tmp1*x[1]);
@@ -602,7 +605,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (13):
 	        //JENNRICH AND SAMPSON FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i);
+	            temp = dfloat(i+1);
 	            fJac[i][1] = -temp*Math.exp(temp*x[0]);
 	            fJac[i][2] = -temp*Math.exp(temp*x[1]);
 	        }
@@ -610,7 +613,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (14):
 	        //BROWN AND DENNIS FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i)/five;
+	            temp = dfloat(i+1)/five;
 	            ti = Math.sin(temp);
 	            tmp1 = x[0] + temp*x[1] - Math.exp(temp);
 	            tmp2 = x[2] + ti*x[3] - Math.cos(temp);
@@ -665,7 +668,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (17):
 	        //OSBORNE 1 FUNCTION.
 	        for(i=0;i< 33;i++){ 
-	            temp = ten*dfloat(i - 1);
+	            temp = ten*dfloat(i);
 	            tmp1 = Math.exp(-x[3]*temp);
 	            tmp2 = Math.exp(-x[4]*temp);
 	            fJac[i][1] = -one;
@@ -678,7 +681,7 @@ public static void ssqjac(int m, int n, double[] x, double[][] fJac, int ldfJac,
 	    case (18):
 	        //OSBORNE 2 FUNCTION.
 	        for(i=0;i< 65;i++){
-	            temp = dfloat(i - 1)/ten;
+	            temp = dfloat(i)/ten;
 	            tmp1 = Math.exp(-x[4]*temp);
 	            tmp2 = Math.exp(-x[5]*(temp - x[8])*x[8]);
 	            tmp3 = Math.exp(-x[6]*(temp - x[9])*x[9]);
@@ -844,7 +847,7 @@ public static void initpt(int n, double[] x, int nProb, double factor) {
 	        //CHEBYQUAD FUNCTION.
 	        h = one/dfloat(n + 1);
 	        for(j=0;j<n;j++){
-	            x[j] = dfloat(j)*h;
+	            x[j] = dfloat(j+1)*h;
 	        }
 	        break;
 	    case (16):
@@ -989,10 +992,10 @@ for(i = 0;i<m;i++) {
 	        //LINEAR FUNCTION - RANK 1.
 	        sum = zero;
 	        for(j=0;j<n;j++){
-	            sum = sum + dfloat(j)*x[j];
+	            sum = sum + dfloat(j+1)*x[j];
 	        }
 	        for(i=0;i<m;i++){
-	            fVec[i] = dfloat(i)*sum - one;
+	            fVec[i] = dfloat(i+1)*sum - one;
 	        }
 	        break;
 	    case (3):
@@ -1001,11 +1004,11 @@ for(i = 0;i<m;i++) {
 	        nm1 = n - 1;
 	        if (nm1 >= 2) {
 	            for(j = 1;j< nm1;j++){
-	                sum = sum + dfloat(j)*x[j];
+	                sum = sum + dfloat(j+1)*x[j];
 	            }
 	        }
 	        for(i=0;i<m;i++){
-	            fVec[i] = dfloat(i - 1)*sum - one;
+	            fVec[i] = dfloat(i)*sum - one;
 	        }
 	        fVec[m] = -one;
 	        break;
@@ -1039,8 +1042,8 @@ for(i = 0;i<m;i++) {
 	    case (8):
 	        //BARD FUNCTION.
 	        for(i=0;i< 15;i++){ 
-	            tmp1 = dfloat(i);
-	            tmp2 = dfloat(16 - i);
+	            tmp1 = dfloat(i+1);
+	            tmp2 = dfloat(16 - (i + 1));
 	            tmp3 = tmp1;
 	            if (i > 8) {tmp3 = tmp2;}
 	            fVec[i] = y1[i] - (x[0] + tmp1/(x[1]*tmp2 + x[2]*tmp3));
@@ -1057,7 +1060,7 @@ for(i = 0;i<m;i++) {
 	    case (10):
 	        //MEYER FUNCTION.
 	        for(i=0;i<16;i++){
-	            temp = five*dfloat(i) + c45 + x[2];
+	            temp = five*dfloat(i+1) + c45 + x[2];
 	            tmp1 = x[1]/temp;
 	            tmp2 = Math.exp(tmp1);
 	            fVec[i] = x[0]*tmp2 - y3[i];
@@ -1066,11 +1069,11 @@ for(i = 0;i<m;i++) {
 	    case (11):
 	        //WATSON FUNCTION.
 	        for(i=0;i<29;i++){ 
-	            div = dfloat(i)/c29;
+	            div = dfloat(i+1)/c29;
 	            s1 = zero;
 	            dx = one;
 	            for(j = 1;j< n;j++){
-	                s1 = s1 + dfloat(j - 1)*dx*x[j];
+	                s1 = s1 + dfloat(j)*dx*x[j];
 	                dx = div*dx;
 	            }
 	            s2 = zero;
@@ -1087,7 +1090,7 @@ for(i = 0;i<m;i++) {
 	    case (12):
 	        //BOX 3-DIMENSIONAL FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i);
+	            temp = dfloat(i+1);
 	            tmp1 = temp/ten;
 	            fVec[i] = Math.exp(-tmp1*x[0]) - Math.exp(-tmp1*x[1]) + (Math.exp(-temp) - Math.exp(-tmp1))*x[2];
 	        }
@@ -1095,14 +1098,14 @@ for(i = 0;i<m;i++) {
 	    case (13):
 	        //JENNRICH AND SAMPSON FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i);
+	            temp = dfloat(i+1);
 	            fVec[i] = two + two*temp - Math.exp(temp*x[0]) - Math.exp(temp*x[1]);
 	        }
 	    break;
 	    case (14):
 	        //BROWN AND DENNIS FUNCTION.
 	        for(i=0;i<m;i++){
-	            temp = dfloat(i)/five;
+	            temp = dfloat(i+1)/five;
 	            tmp1 = x[0] + temp*x[1] - Math.exp(temp);
 	            tmp2 = x[2] + Math.sin(temp)*x[3] - Math.cos(temp);
 	            fVec[i] = tmp1*tmp1 + tmp2*tmp2;
@@ -1128,7 +1131,7 @@ for(i = 0;i<m;i++) {
 	        iev = -1;
 	        for(i=0;i<m;i++){
 	            fVec[i] = dx*fVec[i];
-	            if (iev > 0) fVec[i] = fVec[i] + one/(dfloat(i)*dfloat(i) - one);
+	            if (iev > 0) fVec[i] = fVec[i] + one/(dfloat(i+1)*dfloat(i+1) - one);
 	            iev = -iev;
 	        }
 	        break;
@@ -1148,7 +1151,7 @@ for(i = 0;i<m;i++) {
 	    case (17):
 	        //OSBORNE 1 FUNCTION.
 	        for(i=0;i< 33;i++){
-	            temp = ten*dfloat(i - 1);
+	            temp = ten*dfloat(i);
 	            tmp1 = Math.exp(-x[3]*temp);
 	            tmp2 = Math.exp(-x[4]*temp);
 	            fVec[i] = y4[i] - (x[0] + x[1]*tmp1 + x[2]*tmp2);
@@ -1157,7 +1160,7 @@ for(i = 0;i<m;i++) {
 	    case (18):
 	        //OSBORNE 2 FUNCTION.
 	        for(i=0;i<65 ;i++){ 
-	            temp = dfloat(i - 1)/ten;
+	            temp = dfloat(i)/ten;
 	            tmp1 = Math.exp(-x[4]*temp);
 	            tmp2 = Math.exp(-x[5]*(temp - x[8])*(temp - x[8]));
 	            tmp3 = Math.exp(-x[6]*(temp - x[9])*(temp - x[9]));
