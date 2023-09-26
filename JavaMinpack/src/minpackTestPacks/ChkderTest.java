@@ -30,7 +30,7 @@ public class ChkderTest {
 	//
 		static boolean[] a = {false, false, false, true, false, false, false,true, false, false, false, false, true, false};
 		static double one = 1.0;
-		static double tol = 1e-16; //double tol = Math.sqrt(dpmpar(1)); //!! abstol for matching previously generated solutions
+		static double tol = 1.490116119384766E-008; //double tol = Math.sqrt(dpmpar(1)); //!! abstol for matching previously generated solutions
 		static double solution_reltol = 1.0e-4; //!! reltol for matching previously generated solutions
 	//
 		static int[] info_original = {1}; //! not used here

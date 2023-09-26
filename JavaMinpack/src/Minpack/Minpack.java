@@ -480,6 +480,7 @@ public class Minpack {
 					x[j] = wa2[j] + h;
 				}
 				wa1 = fcn.evaluate(x); // This part needs to be changed later
+				
 				for (j = k; k < n; k = +msum) {
 					x[j] = wa2[j];
 					h = eps * Math.abs(wa2[j]);
@@ -769,7 +770,11 @@ public class Minpack {
 				jeval = true;
 //	            Calculate the jacobian matrix.
 				iFlag = 2;
+				
 				fdjac1(fcn, n, x, fVec, fJac, ldfJac, iFlag, ml, mu, epsfcn, wa1, wa2);
+				for(int c = 0;c<fVec.length;c++) {
+					System.out.println(fJac[c][0]);
+				}
 				nFev = nFev + msum;
 //	            Compute the qr factorization of the jacobian.
 				qrfac(n, n, fJac, ldfJac, false, iwa, 1, wa1, wa2, wa3);
@@ -865,7 +870,9 @@ public class Minpack {
 					}
 //					Evaluate the function at x + p and calculate its norm.
 					iFlag = 1;
+					
 					wa4 = fcn.evaluate(wa2);
+					
 					nFev = nFev + 1;
 					if (iFlag < 0) {
 						throw new IllegalArgumentException("iFlag returned from fcn as a negative");
@@ -963,6 +970,7 @@ public class Minpack {
 						info = 5;
 					}
 					if (info != 0) {
+						System.out.println("Test issue with info at : " + infoDict[info]);
 						return x;
 					}
 //					Criterion for recalculating jacobian approximation
@@ -1023,7 +1031,7 @@ public class Minpack {
 	public static double[] hybrd1(SystemOfEquations fcn, double[] x, double tol) {
 		
 //	    Check the input parameters for errors.
-				
+
 		if (fcn.size() != x.length) {
 			System.out.println("not square, exiting now");
 			System.exit(0);
@@ -1062,10 +1070,11 @@ public class Minpack {
 
 			x = hybrd(fcn, n, x, fVec, xTol, maxFev, ml, mu, epsfcn, diag, mode, factor, nPrint, info, nFev, fJac,
 					ldfJac, r, lr, qtf, wa1, wa2, wa3, wa4);
-
 			if (info == 5) {
 				info = 4;
 			}
+		}else {
+			System.out.println("error of bad stuff");
 		}
 		return x;
 	}
@@ -1469,7 +1478,7 @@ public class Minpack {
 	 * intent(inout) :: wa(Lwa)  a work array of length lwa.
 	 */
 	//
-	public static void hyberj1(SystemOfEquations fcn, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac,
+	public static void hybrj1(SystemOfEquations fcn, int n, double[] x, double[] fVec, double[][] fJac, int ldfJac,
 			double tol, int info, double[] wa, int lwa) {
 
 //			subroutine hybrj1(fcn, n, x, fVec, fJac, ldfJac, Tol, info, wa, Lwa)
@@ -2824,7 +2833,7 @@ public class Minpack {
 				if (nPrint > 0) {
 					iFlag = 0;
 					if (((iter - 1) % nPrint) == 0) {
-						// fcn(m, n, x, fVec, wa3, iFlag)
+						// fcn(m, n, x, fVec, wa3, iFlag)  // print something
 					}
 					if (iFlag < 0) {
 						// throw error exit main
@@ -2842,8 +2851,13 @@ public class Minpack {
 					}
 				}
 				iFlag = 2;
+				double[][] tempJ = fcn.evaluateJacobian(x);//should be evaluating the jacobian // fcn(m, n, x, fVec, wa3, iFlag)
 				for (i = 0; i < m; i++) {
-					fVec = fcn.evaluate(x); // fcn(m, n, x, fVec, wa3, iFlag)
+					for(j=0;j<n;j++) {
+						wa3[j] = tempJ[iFlag-1][j];
+					}
+					
+					
 					if (iFlag < 0) {
 						// throw error exit main
 					}
@@ -2976,7 +2990,7 @@ public class Minpack {
 //	                    Evaluate the function at x + p and calculate its norm.
 					//
 					iFlag = 1;
-					wa4 = fcn.evaluate(x); // call fcn(m, n, wa2, wa4, wa3, iFlag)
+					wa4 = fcn.evaluate(wa2); // call fcn(m, n, wa2, wa4, wa3, iFlag)
 					nFev = nFev + 1;
 					if (iFlag < 0) {
 						/// exit main

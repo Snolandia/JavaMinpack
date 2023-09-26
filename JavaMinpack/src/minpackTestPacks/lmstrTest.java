@@ -3,6 +3,8 @@ package minpackTestPacks;
 import java.util.Arrays;
 
 import Minpack.Minpack;
+import Minpack.SystemOfEquations;
+import Minpack.systemInterface;
 
 public class lmstrTest {
 //	!*****************************************************************************************
@@ -39,9 +41,10 @@ public class lmstrTest {
 
 	static  double one = 1.0;
 	static double ten = 10.0;
-	static double tol = Math.sqrt(1.0e-16);//dpmpar(1))
+	static double tol = 1.490116119384766E-008;//sqrt dpmpar(1))
 	static double solution_abstol = 1.0e-5;    //abstol for matching previously generated solutions
 	static double solution_reltol = 1.0e-4;    //reltol for matching previously generated solutions
+	static SystemOfEquations fcn = new SystemOfEquations();
 	
  
 		public static void testLmstr(){
@@ -49,9 +52,9 @@ public class lmstrTest {
 //	    use iso_fortran_env, only: nwrite => output_unit
 //
 //	    implicit none
-//
-//	    //originally from file22
-	    
+
+		systemInterface.func f = (i) -> ffcn(i) ;
+		systemInterface.jacob j = (i) -> jfcn(i) ;
 
 	    ic = 0;
 	    for(icase = 0;icase< ncases+1;icase++){
@@ -67,6 +70,8 @@ public class lmstrTest {
 	            nProb = nProbs[icase];
 	            n = ns[icase];
 	            m = ms[icase];
+	    		fcn.useFunctionMethod(f,n);
+	    		fcn.useJacobianMethod(j,n,n);
 	            lwa = 5*n+m;
 	            ldfJac = n;
 				iwa = new int[n];
@@ -88,13 +93,13 @@ public class lmstrTest {
 	                Minpack.lmstr1(fcn, m, n, x, fVec, fjac, ldfJac, tol, info, iwa, wa, lwa);
 	                ssqfcn(m, n, x, fVec, nProb);
 	                fnorm2 = Minpack.enorm(m, fVec);
-	                np[ic] = nProb;
-	                na[ic] = n;
-	                ma[ic] = m;
-	                nf[ic] = nFev;
-	                nj[ic] = nJev;
-	                nx[ic] = info;
-	                fnm[ic] = fnorm2;
+	                np[ic-1] = nProb;
+	                na[ic-1] = n;
+	                ma[ic-1] = m;
+	                nf[ic-1] = nFev;
+	                nj[ic-1] = nJev;
+	                nx[ic-1] = info;
+	                fnm[ic-1] = fnorm2;
 	                System.out.println("(5x,a,d15.7//5x,a,d15.7//5x,a,i10//5x,a,i10//5x,a,18x,i10//5x,a//*(5x,5d15.7/))" +
 	                        " INITIAL L2 NORM OF THE RESIDUALS"+ fnorm1+
 	                        " FINAL L2 NORM OF THE RESIDUALS  "+ fnorm2+ 
@@ -115,7 +120,7 @@ public class lmstrTest {
 
 				double[] diff = new double[x.length], absDiff = new double[x.length], relDiff = new double[x.length], icF;
 		//
-			    if (info_original[ic]<5) {//    Ignore any where the original minpack failed
+			    if (info_original[ic-1]<5) {//    Ignore any where the original minpack failed
 					icF = solution(ic);
 					for(int i =0;i<x.length;i++) {
 						diff[i] = icF[i] - x[i];
@@ -150,37 +155,39 @@ public class lmstrTest {
 //	!  matrix and is therefore called only when iflag = 2.) each
 //	!  call to ssqfcn or ssqjac should specify the appropriate
 //	!  value of problem number (nProb).
-	public static void fcn(int m, int n, double[] x, double[] fVec, double[] fJrom, int iFlag){
+	public static double[] ffcn(double[] x){
 //	subroutine fcn(m, n, x, fVec, Fjrow, Iflag)
 //	    implicit none
-//
-//	    int m
-//	    int n
+	    int m = x.length;
+	    int n = x.length;
 //	    integer,intent(inout) :: Iflag
 //	    real(wp),intent(in) :: x(n)
-//	    real(wp),intent(inout) :: fVec[m]
+	    double[] fVec = new double[m];
 //	    real(wp),intent(inout) :: Fjrow(n)
 //
 	    int ldfJac = 65;
 //
 	    int j;
-		double[][] temp = new double[ldfJac][40];
 //	    real(wp), save :: temp(ldfJac, 40)
 //	        !//this array is filled when FCN is called with IFLAG=2.
 //	        !//When FCN is called with IFLAG=2,3,..., the argument array
 //	        !//FJROW is filled with a row of TEMP. This will work only if
 //	        !//TEMP is given the SAVE attribute, which was not done in
 //	        !//the original code.
-//
-//	    switch(iFlag){
-//	    case(1):
-//	        ssqfcn(m, n, x, fVec, nProb);
-//	        nFev = nFev + 1;
-//	        break;
+		
+
+	    ssqfcn(m, n, x, fVec, nProb);
+	    nFev = nFev + 1;
+		return fVec;
+	}
+		public static double[][] jfcn(double[] x){
 //	    case(2):
 //	        //populate the temp array
-//	        ssqjac(m, n, x, temp, ldfJac, nProb);
-//	        nJev = nJev + 1;
+			int m = x.length;
+		    int n = x.length;
+			double[][] temp = new double[ldfJac][40];
+	        ssqjac(m, n, x, temp, ldfJac, nProb);
+	        nJev = nJev + 1;
 //		break;
 //	    }
 //
@@ -188,28 +195,16 @@ public class lmstrTest {
 //	    for(j=0;j<n;j++){
 //	        fJrow[j] = temp(iFlag - 1, j);
 //	    }
+	        return temp;
 }
-//	end subroutine fcn
-//	!*****************************************************************************************
-//
-//	!*****************************************************************************************
-//	!>
-//	!  Replaced statement function in original code.
-//		
+
+
 	public static double dfloat(int i) {
 			double f = i;
 			return f;
 		}
-//	    pure elemental function dfloat(i) result(f)
-//	        implicit none
-//	        integer, intent(in) :: i
-//	        double f
-//	        f = real(i, wp)
-//	    end function dfloat
-//	!*****************************************************************************************
-//
-//	!*****************************************************************************************
-//	!>
+
+
 //	!  Get expected `x` vectors for each case.
 		public static double[] solution(int nProb){
 //	    pure function solution(nProb) result(x)

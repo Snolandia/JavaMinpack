@@ -1,4 +1,11 @@
 package minpackTestPacks;
+
+import java.util.Arrays;
+
+import Minpack.Minpack;
+import Minpack.SystemOfEquations;
+import Minpack.systemInterface;
+
 //
 public class lmdifTest {
 //	!*****************************************************************************************
@@ -21,81 +28,95 @@ public class lmdifTest {
 //	    implicit none
 //
 //	    ! originally from file22
-//	    int ncases = 28
-//	    int[] nProbs  = new int[ncases] [1,1,2,2,3,3,4,5,6,7,8,9,10,11,11,11,12,13,14,15,15,15,15,16,16,16,17,18]
-//	    int[] ns = new int[ncases]  [5,5,5,5,5,5,2,3,4,2,3,4,3,6,9,12,3,2,4,1,8,9,10,10,30,40,5,11]
-//	    int[] ms = new int[ncases]  [10,50,10,50,10,50,2,3,4,2,15,11,16,31,31,31,10,10,20,8,8,9,10,10,30,40,33,65]
-//	    int[] nTriess = new int[ncases]  [1,1,1,1,1,1,3,3,3,3,3,3,2,3,3,3,1,1,3,3,1,1,1,3,1,1,1,1]
-//
-//	    int[] info_original = new int[53]  [1,1,1,1,1,1,2,2,2,2,2,2,5,5,5,1,1,1,1,1,1,1,1,5,1,4,&
-//	                                                        1,1,1,1,2,2,2,2,2,2,1,5,1,5,1,1,1,1,2,1,1,2,1,2,2,1,1]
+	    static int ncases = 28;
+	    static int[] nProbs  = new int[] {1,1,2,2,3,3,4,5,6,7,8,9,10,11,11,11,12,13,14,15,15,15,15,16,16,16,17,18};
+	    static int[] ns = new int[]  {5,5,5,5,5,5,2,3,4,2,3,4,3,6,9,12,3,2,4,1,8,9,10,10,30,40,5,11};
+	    static int[] ms = new int[]  {10,50,10,50,10,50,2,3,4,2,15,11,16,31,31,31,10,10,20,8,8,9,10,10,30,40,33,65};
+	    static int[] nTriess = new int[]  {1,1,1,1,1,1,3,3,3,3,3,3,2,3,3,3,1,1,3,3,1,1,1,3,1,1,1,1};
+
+	    static int[] info_original = new int[]  {1,1,1,1,1,1,2,2,2,2,2,2,5,5,5,1,1,1,1,1,1,1,1,5,1,4,
+	                                                        1,1,1,1,2,2,2,2,2,2,1,5,1,5,1,1,1,1,2,1,1,2,1,2,2,1,1};
 //	                                                        !! original `info` from the original minpack
+
+	    static int i, ic, info, k, m, n, nFev, nJev, nProb, nTries, iCase, lwa;
+	    static double factor, fnorm1, fnorm2;
+	    static int[] ma = new int[53], na  = new int[53], nf  = new int[53], nj  = new int[53], np = new int[53], nx = new int[53];
+	    static double[] fnm = new double[53];
+	    static int[] iwa;
+	    static double[] fVec, wa, x;
+	    
+	    static double one = 1.0;
+	    static double ten = 10.0;
+	    static double tol = 1.490116119384766E-008; //sqrt dpmpar(1));
+	    static double solution_reltol = 1.0e-3; //!! reltol for matching previously generated solutions
+	    
+	    static SystemOfEquations fcn = new SystemOfEquations();
+//		
+		public static void testlmdif() {
+	
+		systemInterface.func f = (i) -> ffcn(i) ;
+		
+	    
 //
-//	    int i, ic, info, k, m, n, NFEv, NJEv, nProb, nTries, iCase, lwa
-//	    double factor, fnorm1, fnorm2
-//	    int ma(53), na(53), nf(53), nj(53), np(53), nx(53)
-//	    double fnm(53)
-//	    int[] iwa
-//	    double[] fVec, wa, x
-//
-//	    double one = 1.0;
-//	    double ten = 10.0;
-//	    double tol = Math.sqrt(dpmpar(1))
-//	    real(wp), parameter :: solution_reltol = 1.0e-3; !! reltol for matching previously generated solutions
-//
-//	    ic = 0
-//	    do iCase = 1, ncases+1
-//
-//	        if (iCase == ncases+1) {
-//	            write (nwrite, '(A,I3,A/)') '1SUMMARY OF ', ic, ' CALLS TO LMDIF1'
-//	            write (nwrite, '(A/)')      ' nProb   N    M   NFEV  NJEV  INFO  FINAL L2 NORM'
-//	            for(i=0;i< ;i++){ic
-//	                write (nwrite, '(3I5,3I6,1X,D15.7)') np(i), na(i), ma(i), nf(i), nj(i), nx[i], fnm(i)
-//	            }
-//	            stop
-//	        } else {
-//	            nProb = nProbs(iCase)
-//	            n = ns(iCase)
-//	            m = ms(iCase)
-//	            lwa = m*n+5*n+m
-//	            nTries = nTriess(iCase)
+	    ic = 0;
+	    for(iCase = 0;iCase< ncases+1;iCase++) {
+
+	        if (iCase == ncases+1) {
+	            System.out.println( "(A,I3,A/)" + "1SUMMARY OF " + ic + " CALLS TO LMDIF1");
+	            System.out.println( "(A/)" + " nProb   N    M   nFev  nJev  INFO  FINAL L2 NORM");
+	            for(i=0;i< ic;i++){
+	                System.out.println( "(3I5,3I6,1X,D15.7)" + np[i] + " " + na[i] + " " + ma[i] + " " + nf[i] + " " + nj[i] + " " + nx[i] + " " + fnm[i]);
+	            }
+	            break;
+	        } else {
+	            nProb = nProbs[iCase];
+	            n = ns[iCase];
+	            fcn.useFunctionMethod(f,n);
+	            m = ms[iCase];
+	            lwa = m*n+5*n+m;
+	            nTries = nTriess[iCase];
 //	            if (allocated(iwa))  deallocate(iwa);  allocate(iwa(n))
 //	            if (allocated(fVec)) deallocate(fVec); allocate(fVec(m))
 //	            if (allocated(wa))   deallocate(wa);   allocate(wa(lwa))
 //	            if (allocated(x))    deallocate(x);    allocate(x(n))
-//	            factor = one
-//	            do k = 1, nTries
-//	                ic = ic + 1
-//	                call initpt(n, x, nProb, factor)
-//	                call ssqfcn(m, n, x, fVec, nProb)
-//	                fnorm1 = enorm(m, fVec)
-//	                write (nwrite, '(////5X,A,I5,5X,A,2I5,5X//)') ' PROBLEM', nProb, ' DIMENSIONS', n, m
-//	                NFEv = 0
-//	                NJEv = 0
-//	                call lmdif1(fcn, m, n, x, fVec, tol, info, iwa, wa, lwa)
-//	                call ssqfcn(m, n, x, fVec, nProb)
-//	                fnorm2 = enorm(m, fVec)
-//	                np[ic] = nProb
-//	                na[ic] = n
-//	                ma[ic] = m
-//	                nf[ic] = NFEv
-//	                NJEv = NJEv/n
-//	                nj[ic] = NJEv
-//	                nx[ic] = info
-//	                fnm[ic] = fnorm2
-//	                write(nwrite,'(5X,A,D15.7//5X,A,D15.7//5X,A,I10//5X,A,I10//5X,A,18X,I10//5X,A//*(5X,5D15.7/))') &
-//	                             ' INITIAL L2 NORM OF THE RESIDUALS', fnorm1, &
-//	                             ' FINAL L2 NORM OF THE RESIDUALS  ', fnorm2, &
-//	                             ' NUMBER OF FUNCTION EVALUATIONS  ', NFEv,   &
-//	                             ' NUMBER OF JACOBIAN EVALUATIONS  ', NJEv,   &
-//	                             ' EXIT PARAMETER', info,                     &
-//	                             ' FINAL APPROXIMATE SOLUTION', x(1:n)
-//	                factor = ten*factor
-//	                call compare_solutions(ic, x, solution_reltol, tol)
-//	            }
-//	        }
-//	    }
-//
+	            iwa = new int[n];
+	            fVec = new double[m];
+	            wa = new double[lwa];
+	            x = new double[n];
+	            factor = one;
+	            for( k = 0;k< nTries;k++) {
+	                ic = ic + 1;
+	                initpt(n, x, nProb, factor);
+	                ssqfcn(m, n, x, fVec, nProb);
+	                fnorm1 = Minpack.enorm(m, fVec);
+	                System.out.println( "(////5X,A,I5,5X,A,2I5,5X//)"+ " PROBLEM "+ nProb + " DIMENSIONS "+ n+"/"+ m);
+	                nFev = 0;
+	                nJev = 0;
+	                Minpack.lmdif1(fcn, m, n, x, fVec, tol, info, iwa, wa, lwa);
+	                ssqfcn(m, n, x, fVec, nProb);
+	                fnorm2 = Minpack.enorm(m, fVec);
+	                np[ic-1] = nProb;
+	                na[ic-1] = n;
+	                ma[ic-1] = m;
+	                nf[ic-1] = nFev;
+	                nJev = nJev/n;
+	                nj[ic-1] = nJev;
+	                nx[ic-1] = info;
+	                fnm[ic-1] = fnorm2;
+	                System.out.println("(5X,A,D15.7//5X,A,D15.7//5X,A,I10//5X,A,I10//5X,A,18X,I10//5X,A//*(5X,5D15.7/))" +
+	                             " INITIAL L2 NORM OF THE RESIDUALS" + fnorm1 +
+	                             " FINAL L2 NORM OF THE RESIDUALS  " + fnorm2 +
+	                             " NUMBER OF FUNCTION EVALUATIONS  " + nFev +
+	                             " NUMBER OF JACOBIAN EVALUATIONS  " + nJev +
+	                             " EXIT PARAMETER" + info +
+	                             " FINAL APPROXIMATE SOLUTION" + x[0]);
+	                factor = ten*factor;
+	                compareSolutions(ic, x, solution_reltol, tol);
+	            }
+	        }
+	    }
+
+		}
 //	    contains
 //	!*****************************************************************************************
 //
@@ -103,35 +124,30 @@ public class lmdifTest {
 //	!>
 //	!  Compare with previously generated solutions.
 //
-//	    subroutine compare_solutions(ic, x, reltol, abstol)
-//
-//	    implicit none
-//
-//	    integer,intent(in) :: ic !! problem number (index is `solution` vector)
-//	    real(wp),dimension(:),intent(in) :: x !! computed `x` vector from the method
-//	    real(wp),intent(in) :: reltol !! relative tolerance for `x` to pass
-//	    real(wp),intent(in) :: abstol !! absolute tolerance for `x` to pass
-//
-//	    real(wp),dimension(size(x)) :: diff, absdiff, reldiff
-//
-//	    if (info_original[ic]<5) {    ! ignore any where the original minpack failed
-//	        diff = solution[ic] - x
-//	        absdiff = abs(diff)
-//	        if (any(absdiff>abstol)) { ! first do an absolute diff
-//	            ! also do a rel diff if the abs diff fails (also protect for divide by zero)
-//	            reldiff = absdiff
-//	            where (solution[ic] != 0.0;) reldiff = absdiff / abs(solution[ic])
-//	            if (any(reldiff > reltol)) {
-//	                write(nwrite,'(A)') 'Failed case'
-//	                write(nwrite, '(//5x, a//(5x, 5d15.7))') 'Math.expected x: ', solution[ic]
-//	                write(nwrite, '(/5x, a//(5x, 5d15.7))')  'Computed x: ', x
-//	                write(nwrite, '(/5x, a//(5x, 5d15.7))')  'absdiff: ', absdiff
-//	                write(nwrite, '(/5x, a//(5x, 5d15.7))')  'reldiff: ', reldiff
-//	                error stop ! test failed
-//	            }
-//	        }
-//	    }
-//
+		public static void compareSolutions(int ic, double[]x, double relTol, double absTol) {
+
+			double[] diff = new double[x.length], absDiff = new double[x.length], relDiff = new double[x.length], icF;
+				    if (info_original[ic-1]<5) {//    Ignore any where the original minpack failed
+						icF = solution(ic);
+						for(int i =0;i<x.length;i++) {
+							diff[i] = icF[i] - x[i];
+							absDiff[i] = Math.abs(icF[i] - x[i]);
+							if(absDiff[i]>absTol) {
+								relDiff[i] = absDiff[i];
+								if(icF[i] != 0) {
+									relDiff[i] = absDiff[i] / Math.abs(icF[i]);
+								}
+								if(relDiff[i] > relTol) {
+									System.out.println("(A)"+ "Failed case");
+					                System.out.println("Expected x: " + Arrays.toString(icF));
+					                System.out.println("Computed x: " + Arrays.toString(x));
+					                System.out.println("absdiff: " + absDiff[i]);
+					                System.out.println( "reldiff: " + relDiff[i]);
+								}
+							}
+						}
+				    }
+		}
 //	    end subroutine compare_solutions
 //	!*****************************************************************************************
 //
@@ -151,14 +167,22 @@ public class lmdifTest {
 //	        real(wp),intent(in) :: x(n)
 //	        real(wp),intent(out) :: fVec(m)
 //	        integer,intent(inout) :: Iflag
-//
+//		
+		public static double[] ffcn(double[] x) {
+			double[] fVec = new double[x.length];
+			int m = x.length;
+			int n = x.length;
+			ssqfcn(m, n, x, fVec, nProb);
+			nFev = nFev +1;
+			return fVec;
+		}
 //	        call ssqfcn(m, n, x, fVec, nProb)
 //
 //	        switch (Iflag)
 //	        case(1)
-//	            NFEv = NFEv + 1
+//	            nFev = nFev + 1
 //	        case(2)
-//	            NJEv = NJEv + 1
+//	            nJev = nJev + 1
 //	       default:
 //	            error stop 'invalid iflag value'
 //	        }
